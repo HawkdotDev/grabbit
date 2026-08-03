@@ -6,10 +6,12 @@ import {
   EngineSettings,
   SpeedSample
 } from '../../engine/types'
+import { TopBar } from './components/TopBar'
 import { Sidebar } from './components/Sidebar'
-import { Header } from './components/Header'
 import { SpeedChart } from './components/SpeedChart'
 import { DownloadCard } from './components/DownloadCard'
+import { InspectorPanel } from './components/InspectorPanel'
+import { TerminalDrawer } from './components/TerminalDrawer'
 import { AddDownloadModal } from './components/AddDownloadModal'
 import { SettingsModal } from './components/SettingsModal'
 import { HashModal } from './components/HashModal'
@@ -20,7 +22,7 @@ export function App(): React.JSX.Element {
   const [activeCategory, setActiveCategory] = useState<
     DownloadCategory | 'downloading' | 'completed' | 'paused'
   >('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery] = useState('')
   const [speedHistory, setSpeedHistory] = useState<SpeedSample[]>([])
   const [settings, setSettings] = useState<EngineSettings>({
     maxConcurrentDownloads: 5,
@@ -37,6 +39,7 @@ export function App(): React.JSX.Element {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
+  const [activeTab, setActiveTab] = useState('all')
 
   // Fetch initial state & setup event listeners
   useEffect(() => {
@@ -95,8 +98,10 @@ export function App(): React.JSX.Element {
     return downloads.filter((d) => {
       // Category filter
       let matchesCat = true
-      if (activeCategory === 'downloading') matchesCat = d.status === 'downloading'
-      else if (activeCategory === 'completed') matchesCat = d.status === 'completed'
+      if (activeCategory === 'downloading' || activeTab === 'downloading')
+        matchesCat = d.status === 'downloading'
+      else if (activeCategory === 'completed' || activeTab === 'completed')
+        matchesCat = d.status === 'completed'
       else if (activeCategory === 'paused') matchesCat = d.status === 'paused'
       else if (activeCategory !== 'all') matchesCat = d.category === activeCategory
 
@@ -109,7 +114,7 @@ export function App(): React.JSX.Element {
 
       return matchesCat && matchesSearch
     })
-  }, [downloads, activeCategory, searchQuery])
+  }, [downloads, activeCategory, activeTab, searchQuery])
 
   // Handlers
   const handleAddDownload = async (args: {
@@ -161,37 +166,40 @@ export function App(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white">
-      {/* Sidebar Navigation */}
-      <Sidebar
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        downloads={downloads}
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#121316] text-slate-100 font-sans antialiased selection:bg-[#a3e635] selection:text-slate-950">
+      {/* Top Window Bar & Action Toolbar */}
+      <TopBar
         onOpenAddModal={() => setIsAddModalOpen(true)}
+        onPauseAll={handlePauseAll}
+        onResumeAll={handleResumeAll}
+        onClearCompleted={handleClearCompleted}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
-        globalSpeed={globalSpeed}
+        showSpeedChart={showSpeedChart}
+        setShowSpeedChart={setShowSpeedChart}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-950">
-        <Header
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onPauseAll={handlePauseAll}
-          onResumeAll={handleResumeAll}
-          onClearCompleted={handleClearCompleted}
-          showSpeedChart={showSpeedChart}
-          setShowSpeedChart={setShowSpeedChart}
+      {/* Main Workspace Body */}
+      <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
+        {/* Left File Tree Sidebar */}
+        <Sidebar
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          downloads={downloads}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+          globalSpeed={globalSpeed}
         />
 
-        {/* Scrollable Downloads View */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-4">
+        {/* Center Main Dashboard Pane */}
+        <main className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#121316] min-w-0">
           {/* Live Speed Graph */}
           {showSpeedChart && <SpeedChart history={speedHistory} />}
 
           {/* Download List */}
           {filteredDownloads.length > 0 ? (
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               {filteredDownloads.map((download) => (
                 <DownloadCard
                   key={download.id}
@@ -204,26 +212,36 @@ export function App(): React.JSX.Element {
               ))}
             </div>
           ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-slate-900/40 rounded-2xl border border-slate-800/80 border-dashed">
-              <div className="p-4 bg-slate-900 rounded-full border border-slate-800 text-slate-500 mb-3">
+            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-[#18191d] rounded-2xl border border-[#2a2d34] border-dashed font-mono">
+              <div className="p-4 bg-[#121316] rounded-full border border-[#2a2d34] text-[#a3e635] mb-3">
                 <Inbox className="h-8 w-8" />
               </div>
-              <h3 className="text-sm font-semibold text-slate-300">No downloads found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4">
-                Click the button below or paste a URL to start an accelerated multi-threaded
-                download.
+              <h3 className="text-sm font-bold text-slate-200">No tasks in current view</h3>
+              <p className="text-xs text-slate-400 max-w-sm mt-1 mb-4">
+                Click below to add a new task or select a different category in the Explorer
+                sidebar.
               </p>
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-cyan-900/30 transition flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 bg-[#ccff00] hover:bg-[#b8e600] text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-[#ccff00]/10 transition flex items-center gap-2 cursor-pointer font-sans"
               >
                 <Download className="h-4 w-4" />
-                Add First Download
+                Add New Task
               </button>
             </div>
           )}
         </main>
+
+        {/* Right Inspector Panel */}
+        <InspectorPanel
+          downloads={downloads}
+          onResumeAll={handleResumeAll}
+          onClearCompleted={handleClearCompleted}
+        />
       </div>
+
+      {/* Bottom IDE Terminal Drawer */}
+      <TerminalDrawer downloads={downloads} globalSpeed={globalSpeed} />
 
       {/* Modals */}
       <AddDownloadModal

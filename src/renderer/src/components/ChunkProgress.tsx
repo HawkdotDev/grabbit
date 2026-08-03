@@ -18,9 +18,11 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
   }
 
   return (
-    <div className="mt-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-2">
+    <div className="mt-3 p-3 bg-[#121316] rounded-xl border border-[#2a2d34] space-y-2">
       <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-        <span>Multi-Thread Chunk Split ({chunks.length} Threads)</span>
+        <span className="text-[#a3e635] font-bold">
+          Multi-Thread Chunk Split ({chunks.length} Threads)
+        </span>
         <span>Parallel Positioned Writes (pwrite)</span>
       </div>
 
@@ -29,14 +31,14 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
           const chunkSize = Math.max(1, chunk.endByte - chunk.startByte + 1)
           const pct = Math.min(100, Math.round((chunk.downloadedBytes / chunkSize) * 100))
 
-          let statusBg = 'bg-slate-800 border-slate-700'
+          let statusBg = 'bg-[#18191d] border-[#2a2d34]'
           if (chunk.status === 'completed')
-            statusBg = 'bg-emerald-950/80 border-emerald-800 text-emerald-400'
+            statusBg = 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
           if (chunk.status === 'downloading')
-            statusBg = 'bg-cyan-950/80 border-cyan-800 text-cyan-400'
+            statusBg = 'bg-[#1e2e11] border-[#446611] text-[#a3e635]'
           if (chunk.status === 'paused')
-            statusBg = 'bg-amber-950/80 border-amber-800 text-amber-400'
-          if (chunk.status === 'error') statusBg = 'bg-rose-950/80 border-rose-800 text-rose-400'
+            statusBg = 'bg-amber-950/60 border-amber-800 text-amber-400'
+          if (chunk.status === 'error') statusBg = 'bg-rose-950/60 border-rose-800 text-rose-400'
 
           return (
             <div
@@ -45,7 +47,7 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
             >
               {/* Internal progress bar */}
               <div
-                className="absolute left-0 top-0 bottom-0 bg-cyan-500/20 transition-all duration-300"
+                className="absolute left-0 top-0 bottom-0 bg-[#a3e635]/20 transition-all duration-300"
                 style={{ width: `${pct}%` }}
               />
 

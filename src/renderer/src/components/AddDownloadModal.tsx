@@ -48,22 +48,22 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-mono text-xs">
+      <div className="bg-[#18191d] border border-[#2a2d34] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-5 border-b border-[#2a2d34] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-cyan-950 text-cyan-400 rounded-xl border border-cyan-800">
+            <div className="p-2 bg-[#202228] text-[#a3e635] rounded-xl border border-[#2a2d34]">
               <Download className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">Add New Download</h2>
+              <h2 className="text-base font-bold text-slate-100 font-sans">Add New Task</h2>
               <p className="text-xs text-slate-400">Multi-threaded HTTP Range Acceleration</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-[#202228] rounded-xl transition cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -73,8 +73,8 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Download URL */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Download URL <span className="text-cyan-400">*</span>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5 font-sans">
+              Download URL <span className="text-[#a3e635]">*</span>
             </label>
             <input
               type="url"
@@ -82,13 +82,13 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com/file.zip"
-              className="w-full bg-slate-950 text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:border-cyan-500 font-mono"
+              className="w-full bg-[#121316] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-[#2a2d34] focus:outline-none focus:border-[#a3e635] font-mono"
             />
           </div>
 
           {/* Custom Filename */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5 font-sans">
               Custom Filename (Optional)
             </label>
             <input
@@ -96,13 +96,13 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               placeholder="Leave empty for auto-detection"
-              className="w-full bg-slate-950 text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:border-cyan-500 font-mono"
+              className="w-full bg-[#121316] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-[#2a2d34] focus:outline-none focus:border-[#a3e635] font-mono"
             />
           </div>
 
           {/* Save Directory */}
           <div>
-            <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1 font-sans">
               <Folder className="h-3.5 w-3.5 text-slate-400" />
               Save Path
             </label>
@@ -110,19 +110,19 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               type="text"
               value={savePath}
               onChange={(e) => setSavePath(e.target.value)}
-              className="w-full bg-slate-950 text-slate-100 text-xs px-3.5 py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:border-cyan-500 font-mono"
+              className="w-full bg-[#121316] text-slate-100 text-xs px-3.5 py-2.5 rounded-xl border border-[#2a2d34] focus:outline-none focus:border-[#a3e635] font-mono"
             />
           </div>
 
           {/* Thread Count & Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between font-sans">
                 <span className="flex items-center gap-1">
-                  <Sliders className="h-3.5 w-3.5 text-cyan-400" />
+                  <Sliders className="h-3.5 w-3.5 text-[#a3e635]" />
                   Thread Count
                 </span>
-                <span className="font-mono text-cyan-400 font-bold">{threadCount} Threads</span>
+                <span className="font-mono text-[#a3e635] font-bold">{threadCount} Threads</span>
               </label>
               <input
                 type="range"
@@ -130,16 +130,18 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                 max="32"
                 value={threadCount}
                 onChange={(e) => setThreadCount(parseInt(e.target.value, 10))}
-                className="w-full accent-cyan-500 cursor-pointer"
+                className="w-full accent-[#a3e635] cursor-pointer"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Priority</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5 font-sans">
+                Priority
+              </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as DownloadPriority)}
-                className="w-full bg-slate-950 text-slate-100 text-xs px-3.5 py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:border-cyan-500 font-mono cursor-pointer"
+                className="w-full bg-[#121316] text-slate-100 text-xs px-3.5 py-2.5 rounded-xl border border-[#2a2d34] focus:outline-none focus:border-[#a3e635] font-mono cursor-pointer"
               >
                 <option value="high">High Priority</option>
                 <option value="normal">Normal Priority</option>
@@ -149,19 +151,19 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2a2d34]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-[#202228] transition cursor-pointer font-sans"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-semibold text-white bg-cyan-600 hover:bg-cyan-500 active:scale-95 rounded-xl shadow-lg shadow-cyan-900/30 transition cursor-pointer"
+              className="px-5 py-2 text-xs font-bold text-slate-950 bg-[#ccff00] hover:bg-[#b8e600] active:scale-95 rounded-xl shadow-lg shadow-[#ccff00]/10 transition cursor-pointer font-sans"
             >
-              Start Accelerated Download
+              Start Accelerated Task
             </button>
           </div>
         </form>

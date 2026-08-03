@@ -1,1 +1,10 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-ide-bg: #121316;
+  --color-ide-surface: #18191d;
+  --color-ide-card: #1e2025;
+  --color-ide-border: #2a2d34;
+  --color-lime-accent: #a3e635;
+  --color-lime-bright: #ccff00;
+}

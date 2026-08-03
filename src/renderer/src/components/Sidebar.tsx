@@ -1,21 +1,23 @@
 import React from 'react'
 import { DownloadCategory, DownloadItem } from '../../../engine/types'
 import {
-  Download,
-  CheckCircle2,
-  PauseCircle,
+  Folder,
+  Plus,
+  Search,
+  ChevronRight,
+  ChevronDown,
   FileText,
   Archive,
   Film,
   Music,
   Cpu,
-  Image,
-  Code,
-  Folder,
-  Plus,
-  Settings,
-  Activity,
-  Layers
+  Image as ImageIcon,
+  Code2,
+  Home,
+  Layers,
+  CheckCircle2,
+  PauseCircle,
+  Download
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -31,10 +33,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeCategory,
   setActiveCategory,
   downloads,
-  onOpenAddModal,
-  onOpenSettingsModal,
-  globalSpeed
+  onOpenAddModal
 }) => {
+  const [isToolsOpen, setIsToolsOpen] = React.useState(true)
+  const [isExplorerOpen, setIsExplorerOpen] = React.useState(true)
+
   const getCount = (cat: string): number => {
     if (cat === 'all') return downloads.length
     if (cat === 'downloading') return downloads.filter((d) => d.status === 'downloading').length
@@ -43,117 +46,152 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return downloads.filter((d) => d.category === cat).length
   }
 
-  const formatSpeed = (bytesPerSec: number): string => {
-    if (bytesPerSec <= 0) return '0 B/s'
-    const k = 1024
-    const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s']
-    const i = Math.floor(Math.log(bytesPerSec) / Math.log(k))
-    return `${(bytesPerSec / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+  const getExtensionIcon = (id: string): React.JSX.Element => {
+    switch (id) {
+      case 'all':
+        return <Layers className="h-4 w-4 text-[#a3e635]" />
+      case 'downloading':
+        return <Download className="h-4 w-4 text-cyan-400" />
+      case 'completed':
+        return <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+      case 'paused':
+        return <PauseCircle className="h-4 w-4 text-amber-400" />
+      case 'documents':
+        return <FileText className="h-4 w-4 text-amber-500" /> // html/doc orange
+      case 'compressed':
+        return <Archive className="h-4 w-4 text-purple-400" /> // php/zip purple
+      case 'video':
+        return <Film className="h-4 w-4 text-[#a3e635]" /> // python green
+      case 'audio':
+        return <Music className="h-4 w-4 text-cyan-400" /> // css blue
+      case 'executables':
+        return <Cpu className="h-4 w-4 text-teal-400" /> // exe mint
+      case 'images':
+        return <ImageIcon className="h-4 w-4 text-yellow-400" /> // js yellow
+      case 'code':
+        return <Code2 className="h-4 w-4 text-indigo-400" />
+      default:
+        return <Folder className="h-4 w-4 text-slate-400" />
+    }
   }
 
   const categories = [
-    { id: 'all', label: 'All Downloads', icon: Layers },
-    { id: 'downloading', label: 'Downloading', icon: Download },
-    { id: 'completed', label: 'Completed', icon: CheckCircle2 },
-    { id: 'paused', label: 'Paused', icon: PauseCircle },
-    { id: 'documents', label: 'Documents', icon: FileText },
-    { id: 'compressed', label: 'Archives', icon: Archive },
-    { id: 'video', label: 'Videos', icon: Film },
-    { id: 'audio', label: 'Audio', icon: Music },
-    { id: 'executables', label: 'Executables', icon: Cpu },
-    { id: 'images', label: 'Images', icon: Image },
-    { id: 'code', label: 'Code', icon: Code },
-    { id: 'other', label: 'Other Files', icon: Folder }
+    { id: 'all', label: 'product.json' },
+    { id: 'downloading', label: 'script.py' },
+    { id: 'completed', label: 'main.html' },
+    { id: 'paused', label: 'mailer.php' },
+    { id: 'documents', label: 'index.html' },
+    { id: 'compressed', label: 'archive.zip' },
+    { id: 'video', label: 'video.mkv' },
+    { id: 'audio', label: 'audio.mp3' },
+    { id: 'executables', label: 'ngrok.exe' },
+    { id: 'images', label: 'banner.png' },
+    { id: 'code', label: 'index.css' }
   ]
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between h-full select-none">
-      {/* Top Header */}
+    <aside className="w-64 bg-[#18191d] border-r border-[#2a2d34] flex flex-col justify-between h-full select-none font-mono text-xs">
       <div>
-        <div className="p-5 flex items-center justify-between border-b border-slate-800/80">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
-              <Download className="h-5 w-5 text-white" />
+        {/* Top Dropdown Pill */}
+        <div className="p-3 border-b border-[#23252b]">
+          <button className="w-full bg-[#202228] hover:bg-[#282b33] text-slate-200 px-3 py-2 rounded-xl border border-[#2a2d34] flex items-center justify-between transition cursor-pointer">
+            <div className="flex items-center gap-2">
+              <Home className="h-4 w-4 text-[#a3e635]" />
+              <span className="font-bold text-xs">Neobit Workspace</span>
             </div>
-            <div>
-              <h1 className="font-bold text-base tracking-tight text-white leading-none">neobit</h1>
-              <span className="text-[10px] font-semibold text-cyan-400 uppercase tracking-wider">
-                Accelerator
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <div className="p-3">
-          <button
-            onClick={onOpenAddModal}
-            className="w-full py-2.5 px-4 bg-cyan-600 hover:bg-cyan-500 active:scale-[0.98] text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-900/30 transition duration-200 cursor-pointer"
-          >
-            <Plus className="h-4 w-4 stroke-[2.5]" />
-            New Download
+            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
           </button>
         </div>
 
-        {/* Category List */}
-        <nav className="px-2 py-2 space-y-0.5 overflow-y-auto max-h-[calc(100vh-260px)]">
-          {categories.map((cat) => {
-            const Icon = cat.icon
-            const count = getCount(cat.id)
-            const isActive = activeCategory === cat.id
+        {/* Create Task & Search Button */}
+        <div className="p-3 flex items-center gap-2">
+          <button
+            onClick={onOpenAddModal}
+            className="flex-1 bg-[#202228] hover:bg-[#282b33] text-slate-200 py-2 px-3 rounded-xl border border-[#2a2d34] flex items-center justify-center gap-2 transition cursor-pointer font-sans font-semibold text-xs"
+          >
+            <Plus className="h-4 w-4 text-[#a3e635]" />
+            <span>Create new task</span>
+          </button>
 
-            return (
-              <button
-                key={cat.id}
-                onClick={() =>
-                  setActiveCategory(
-                    cat.id as DownloadCategory | 'downloading' | 'completed' | 'paused'
-                  )
-                }
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition duration-150 cursor-pointer ${
-                  isActive
-                    ? 'bg-slate-800 text-cyan-400 font-semibold'
-                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-500'}`} />
-                  <span>{cat.label}</span>
-                </div>
-                {count > 0 && (
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                      isActive ? 'bg-cyan-950 text-cyan-400' : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
-      </div>
-
-      {/* Footer Info & Settings */}
-      <div className="p-3 border-t border-slate-800 bg-slate-900/60 space-y-2">
-        <div className="flex items-center justify-between px-3 py-2 bg-slate-950/60 rounded-xl border border-slate-800/80">
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-cyan-400 animate-pulse" />
-            <span className="text-xs text-slate-400 font-medium">Speed</span>
-          </div>
-          <span className="text-xs font-mono font-bold text-cyan-400">
-            {formatSpeed(globalSpeed)}
-          </span>
+          <button
+            onClick={onOpenAddModal}
+            className="p-2 bg-[#202228] hover:bg-[#282b33] text-slate-400 hover:text-white rounded-xl border border-[#2a2d34] transition cursor-pointer"
+            title="Search"
+          >
+            <Search className="h-4 w-4" />
+          </button>
         </div>
 
-        <button
-          onClick={onOpenSettingsModal}
-          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg transition duration-150 cursor-pointer"
-        >
-          <Settings className="h-4 w-4" />
-          <span>Preferences &amp; Engine Settings</span>
-        </button>
+        {/* Explorer Header */}
+        <div className="px-4 py-1.5 flex items-center justify-between text-slate-400 font-sans font-bold text-xs uppercase tracking-wider">
+          <span>Explorer</span>
+          <button
+            onClick={() => setIsExplorerOpen(!isExplorerOpen)}
+            className="text-slate-500 hover:text-slate-300"
+          >
+            {isExplorerOpen ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
+          </button>
+        </div>
+
+        {/* File Tree Navigation */}
+        {isExplorerOpen && (
+          <nav className="px-2 py-1 space-y-0.5 overflow-y-auto max-h-[calc(100vh-280px)]">
+            {/* Tools Folder */}
+            <div>
+              <button
+                onClick={() => setIsToolsOpen(!isToolsOpen)}
+                className="w-full flex items-center gap-2 px-2 py-1 text-slate-300 hover:bg-[#202228] rounded-md transition cursor-pointer"
+              >
+                {isToolsOpen ? (
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
+                )}
+                <Folder className="h-4 w-4 text-amber-500 fill-amber-500/20" />
+                <span className="font-semibold text-slate-200">categories</span>
+              </button>
+
+              {isToolsOpen && (
+                <div className="pl-6 space-y-0.5 mt-0.5">
+                  {categories.map((cat) => {
+                    const count = getCount(cat.id)
+                    const isActive = activeCategory === cat.id
+
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() =>
+                          setActiveCategory(
+                            cat.id as DownloadCategory | 'downloading' | 'completed' | 'paused'
+                          )
+                        }
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer ${
+                          isActive
+                            ? 'bg-[#252830] text-[#a3e635] font-bold border border-[#a3e635]/30'
+                            : 'text-slate-300 hover:bg-[#202228] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          {getExtensionIcon(cat.id)}
+                          <span className="truncate">{cat.id}</span>
+                        </div>
+                        {count > 0 && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#2a2d34] text-[#a3e635]">
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </nav>
+        )}
       </div>
     </aside>
   )
