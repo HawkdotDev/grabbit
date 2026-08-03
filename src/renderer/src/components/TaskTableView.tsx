@@ -109,7 +109,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = ({
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#141414] font-sans text-xs select-none overflow-hidden border border-[#2e2e2e] rounded-none">
+    <div className="w-full h-full flex flex-col bg-[#141414] font-sans text-xs select-none overflow-hidden rounded-none">
       <div className="overflow-x-auto overflow-y-auto flex-1">
         <table className="w-full border-collapse text-left font-sans">
           {/* Table Header */}

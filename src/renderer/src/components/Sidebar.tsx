@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       style={{ width }}
-      className="bg-[#1e1e1e] border-r border-[#2e2e2e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none"
+      className="bg-[#1e1e1e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none"
     >
       <div className="space-y-3">
         {/* + Add Task Button matching Todoist coral red style */}

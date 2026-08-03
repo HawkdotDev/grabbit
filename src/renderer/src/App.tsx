@@ -292,14 +292,14 @@ export function App(): React.JSX.Element {
         {/* Vertical Resize Handle between Sidebar and Workspace */}
         <div
           onMouseDown={handleSidebarMouseDown}
-          className="w-1 cursor-col-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
+          className="w-[2px] cursor-col-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
           title="Drag to resize sidebar"
         />
 
         {/* Center Task Workspace Split (Table on Top, Detail Inspector on Bottom) */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
           {/* Upper Main Task Data Table */}
-          <main className="flex-1 min-h-0 overflow-hidden p-2 bg-[#141414]">
+          <main className="flex-1 min-h-0 overflow-hidden p-0 bg-[#141414]">
             <TaskTableView
               downloads={filteredDownloads}
               selectedId={selectedDownload?.id || null}
@@ -314,7 +314,7 @@ export function App(): React.JSX.Element {
           {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
           <div
             onMouseDown={handleInspectorMouseDown}
-            className="h-1 cursor-row-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
+            className="h-[2px] cursor-row-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
             title="Drag to resize inspector pane"
           />
 
