@@ -8,7 +8,7 @@ interface SpeedChartProps {
 export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
   if (!history || history.length < 2) {
     return (
-      <div className="h-28 bg-ide-surface rounded-xl border border-ide-border p-4 flex items-center justify-center text-xs font-mono text-slate-500">
+      <div className="h-28 bg-[#1e1e1e] rounded-xl border border-[#2e2e2e] p-4 flex items-center justify-center text-xs font-mono text-slate-500">
         Collecting real-time bandwidth metrics...
       </div>
     )
@@ -37,42 +37,42 @@ export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
   const currentSpeed = history[history.length - 1]?.downloadSpeed || 0
 
   return (
-    <div className="bg-ide-surface rounded-xl border border-ide-border p-4 shadow-xl mb-4 font-mono text-xs">
+    <div className="bg-[#1e1e1e] rounded-xl border border-[#2e2e2e] p-4 shadow-md mb-4 text-xs font-sans">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-lime-accent animate-ping" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#e44232] animate-ping" />
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-200">
             Real-time Bandwidth Usage
           </h3>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 font-mono">
           <span className="text-slate-400">
             Peak: <strong className="text-slate-200">{formatSpeed(maxSpeed)}</strong>
           </span>
-          <span className="text-lime-accent font-bold">Current: {formatSpeed(currentSpeed)}</span>
+          <span className="text-[#e44232] font-bold">Current: {formatSpeed(currentSpeed)}</span>
         </div>
       </div>
 
-      <div className="relative w-full h-20 overflow-hidden rounded-lg bg-ide-bg p-2 border border-ide-border">
+      <div className="relative w-full h-20 overflow-hidden rounded-lg bg-[#141414] p-2 border border-[#2e2e2e]">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-full preserve-3d"
           preserveAspectRatio="none"
         >
           <defs>
-            <linearGradient id="limeGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#a3e635" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#a3e635" stopOpacity="0.0" />
+            <linearGradient id="coralGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#e44232" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#e44232" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
           {/* Area under curve */}
-          <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#limeGrad)" />
+          <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#coralGrad)" />
 
           {/* Line path */}
           <polyline
             fill="none"
-            stroke="#a3e635"
+            stroke="#e44232"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"

@@ -37,24 +37,22 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-mono text-xs">
-      <div className="bg-ide-surface border border-ide-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
+      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-ide-border flex items-center justify-between">
+        <div className="p-5 border-b border-[#2e2e2e] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#202228] text-lime-accent rounded-xl border border-ide-border">
+            <div className="p-2 bg-[#381c1c] text-[#e44232] rounded-xl border border-[#e44232]/20">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100 font-sans">
-                Cryptographic Hash Check
-              </h2>
+              <h2 className="text-base font-bold text-slate-100">Cryptographic Hash Check</h2>
               <p className="text-xs text-slate-400 truncate max-w-xs">{download.name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-[#202228] rounded-xl transition cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -70,8 +68,8 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
                 onClick={() => setAlgo(a)}
                 className={`py-2 rounded-xl text-xs font-mono font-bold uppercase transition cursor-pointer border ${
                   algo === a
-                    ? 'bg-[#223311] text-lime-accent border-[#446611]'
-                    : 'bg-ide-bg text-slate-400 border-ide-border hover:text-slate-200'
+                    ? 'bg-[#381c1c] text-[#e44232] border-[#e44232]/40'
+                    : 'bg-[#141414] text-slate-400 border-[#2e2e2e] hover:text-slate-200'
                 }`}
               >
                 {a}
@@ -80,7 +78,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 font-sans">
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
               Expected Checksum Hash
             </label>
             <input
@@ -89,7 +87,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
               value={expectedHash}
               onChange={(e) => setExpectedHash(e.target.value)}
               placeholder="Paste SHA-256 / MD5 hash..."
-              className="w-full bg-ide-bg text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-ide-border focus:outline-none focus:border-lime-accent font-mono"
+              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
             />
           </div>
 
@@ -122,18 +120,18 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
           )}
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-ide-border">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2e2e2e]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-[#202228] transition cursor-pointer font-sans"
+              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/5 transition cursor-pointer"
             >
               Close
             </button>
             <button
               type="submit"
               disabled={isVerifying}
-              className="px-5 py-2 text-xs font-bold text-slate-950 bg-lime-bright hover:bg-[#b8e600] active:scale-95 rounded-xl shadow-lg shadow-lime-bright/10 transition flex items-center gap-2 cursor-pointer font-sans disabled:opacity-50"
+              className="px-5 py-2 text-xs font-bold text-white bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 rounded-xl shadow-lg shadow-[#e44232]/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isVerifying && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>{isVerifying ? 'Calculating...' : 'Verify Hash'}</span>

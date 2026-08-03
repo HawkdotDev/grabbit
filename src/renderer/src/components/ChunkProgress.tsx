@@ -18,9 +18,9 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
   }
 
   return (
-    <div className="mt-3 p-3 bg-ide-bg rounded-xl border border-ide-border space-y-2">
-      <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-        <span className="text-lime-accent font-bold">
+    <div className="mt-3 p-3 bg-[#141414] rounded-xl border border-[#2e2e2e] space-y-2 font-mono">
+      <div className="flex items-center justify-between text-[11px] text-slate-400">
+        <span className="text-[#e44232] font-bold">
           Multi-Thread Chunk Split ({chunks.length} Threads)
         </span>
         <span>Parallel Positioned Writes (pwrite)</span>
@@ -31,11 +31,11 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
           const chunkSize = Math.max(1, chunk.endByte - chunk.startByte + 1)
           const pct = Math.min(100, Math.round((chunk.downloadedBytes / chunkSize) * 100))
 
-          let statusBg = 'bg-ide-surface border-ide-border'
+          let statusBg = 'bg-[#1e1e1e] border-[#2e2e2e]'
           if (chunk.status === 'completed')
             statusBg = 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
           if (chunk.status === 'downloading')
-            statusBg = 'bg-[#1e2e11] border-[#446611] text-lime-accent'
+            statusBg = 'bg-[#381c1c] border-[#e44232]/40 text-[#e44232]'
           if (chunk.status === 'paused')
             statusBg = 'bg-amber-950/60 border-amber-800 text-amber-400'
           if (chunk.status === 'error') statusBg = 'bg-rose-950/60 border-rose-800 text-rose-400'
@@ -43,11 +43,11 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
           return (
             <div
               key={chunk.id}
-              className={`relative overflow-hidden p-1.5 rounded-lg border text-[10px] font-mono flex flex-col justify-between ${statusBg}`}
+              className={`relative overflow-hidden p-1.5 rounded-lg border text-[10px] flex flex-col justify-between ${statusBg}`}
             >
               {/* Internal progress bar */}
               <div
-                className="absolute left-0 top-0 bottom-0 bg-lime-accent/20 transition-all duration-300"
+                className="absolute left-0 top-0 bottom-0 bg-[#e44232]/20 transition-all duration-300"
                 style={{ width: `${pct}%` }}
               />
 

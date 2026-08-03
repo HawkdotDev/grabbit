@@ -44,7 +44,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
       case 'compressed':
         return <Archive className="h-5 w-5 text-purple-400" />
       case 'video':
-        return <Film className="h-5 w-5 text-lime-accent" />
+        return <Film className="h-5 w-5 text-emerald-400" />
       case 'audio':
         return <Music className="h-5 w-5 text-cyan-400" />
       case 'executables':
@@ -90,32 +90,32 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
         : 0
 
   return (
-    <div className="bg-ide-surface rounded-xl border border-ide-border p-4 shadow-lg transition duration-200 hover:border-[#383d47] font-mono text-xs">
+    <div className="bg-[#1e1e1e] rounded-xl border border-[#2e2e2e] p-4 shadow-md transition duration-200 hover:border-slate-700/60 font-sans text-xs">
       <div className="flex items-start justify-between gap-4">
         {/* Category Icon & Main Info */}
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="p-2.5 bg-ide-bg rounded-xl border border-ide-border shrink-0">
+          <div className="p-2.5 bg-[#141414] rounded-xl border border-[#2e2e2e] shrink-0">
             {getCategoryIcon(download.category)}
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm text-slate-100 truncate" title={download.name}>
+              <h3 className="font-semibold text-sm text-slate-100 truncate" title={download.name}>
                 {download.name}
               </h3>
               <span
-                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
                   download.priority === 'high'
-                    ? 'bg-rose-950 text-rose-400 border border-rose-800'
+                    ? 'bg-rose-950/60 text-rose-400 border border-rose-800/80'
                     : download.priority === 'normal'
-                      ? 'bg-[#202228] text-slate-300 border border-ide-border'
-                      : 'bg-ide-bg text-slate-500'
+                      ? 'bg-white/5 text-slate-300 border border-white/5'
+                      : 'bg-[#141414] text-slate-500'
                 }`}
               >
                 {download.priority}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 truncate mt-1" title={download.url}>
+            <p className="text-xs text-slate-400 truncate mt-1 font-mono" title={download.url}>
               {download.url}
             </p>
           </div>
@@ -126,7 +126,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {download.status === 'downloading' && (
             <button
               onClick={() => onPause(download.id)}
-              className="p-2 bg-[#202228] hover:bg-[#282b33] text-amber-400 rounded-xl border border-ide-border transition cursor-pointer"
+              className="p-2 bg-white/5 hover:bg-white/10 text-amber-400 rounded-lg border border-white/5 transition cursor-pointer"
               title="Pause Download"
             >
               <Pause className="h-4 w-4" />
@@ -136,7 +136,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {(download.status === 'paused' || download.status === 'error') && (
             <button
               onClick={() => onResume(download.id)}
-              className="p-2 bg-[#202228] hover:bg-[#282b33] text-lime-accent rounded-xl border border-ide-border transition cursor-pointer"
+              className="p-2 bg-white/5 hover:bg-white/10 text-[#e44232] rounded-lg border border-white/5 transition cursor-pointer"
               title="Resume Download"
             >
               <Play className="h-4 w-4" />
@@ -146,7 +146,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {download.status === 'completed' && (
             <button
               onClick={() => onOpenHashModal(download)}
-              className="p-2 bg-[#202228] hover:bg-[#282b33] text-cyan-400 rounded-xl border border-ide-border transition cursor-pointer"
+              className="p-2 bg-white/5 hover:bg-white/10 text-cyan-400 rounded-lg border border-white/5 transition cursor-pointer"
               title="Verify Checksum"
             >
               <ShieldCheck className="h-4 w-4" />
@@ -155,7 +155,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
 
           <button
             onClick={() => onCancel(download.id)}
-            className="p-2 bg-[#202228] hover:bg-rose-950 hover:text-rose-400 text-slate-400 rounded-xl border border-ide-border transition cursor-pointer"
+            className="p-2 bg-white/5 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 rounded-lg border border-white/5 transition cursor-pointer"
             title="Cancel & Remove"
           >
             <X className="h-4 w-4" />
@@ -168,13 +168,13 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             {download.status === 'downloading' && (
-              <span className="flex items-center gap-1.5 text-lime-accent font-bold">
-                <span className="h-2 w-2 rounded-full bg-lime-accent animate-ping" />
+              <span className="flex items-center gap-1.5 text-[#e44232] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[#e44232] animate-ping" />
                 Downloading ({formatSpeed(download.speed)})
               </span>
             )}
             {download.status === 'completed' && (
-              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Completed
               </span>
@@ -193,16 +193,16 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
             )}
           </div>
 
-          <div className="text-slate-400">
+          <div className="text-slate-400 font-mono text-xs">
             <span>{formatBytes(download.downloadedSize)}</span>
             <span className="mx-1">/</span>
             <span>{formatBytes(download.totalSize)}</span>
-            <span className="ml-2 font-bold text-lime-accent">{pct}%</span>
+            <span className="ml-2 font-bold text-[#e44232]">{pct}%</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2.5 w-full bg-ide-bg rounded-full overflow-hidden p-0.5 border border-ide-border">
+        <div className="h-2.5 w-full bg-[#141414] rounded-full overflow-hidden p-0.5 border border-[#2e2e2e]">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
               download.status === 'completed'
@@ -211,19 +211,19 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                   ? 'bg-rose-500'
                   : download.status === 'paused'
                     ? 'bg-amber-500'
-                    : 'bg-lime-accent'
+                    : 'bg-[#e44232]'
             }`}
             style={{ width: `${pct}%` }}
           />
         </div>
 
         {/* Sub-info Bar & Chunk Visualizer Toggle */}
-        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+          <div className="flex items-center gap-3 font-mono text-[11px]">
             <span>Threads: {download.threadCount || 1}</span>
             {download.status === 'downloading' && <span>ETA: {formatEta(download.eta)}</span>}
             {download.checksum && (
-              <span className="text-lime-accent truncate max-w-xs">
+              <span className="text-[#e44232] truncate max-w-xs">
                 Hash: {download.checksum.substring(0, 16)}...
               </span>
             )}
@@ -232,7 +232,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {download.chunks && download.chunks.length > 0 && (
             <button
               onClick={() => setShowChunks(!showChunks)}
-              className="flex items-center gap-1 text-slate-400 hover:text-lime-accent transition cursor-pointer"
+              className="flex items-center gap-1 text-slate-400 hover:text-[#e44232] transition cursor-pointer font-medium"
             >
               <span>{showChunks ? 'Hide Chunks' : 'View Thread Chunks'}</span>
               {showChunks ? (
