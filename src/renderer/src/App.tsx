@@ -166,7 +166,7 @@ export function App(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#121316] text-slate-100 font-sans antialiased selection:bg-[#a3e635] selection:text-slate-950">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans antialiased selection:bg-lime-accent selection:text-slate-950">
       {/* Top Window Bar & Action Toolbar */}
       <TopBar
         onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -193,7 +193,7 @@ export function App(): React.JSX.Element {
         />
 
         {/* Center Main Dashboard Pane */}
-        <main className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#121316] min-w-0">
+        <main className="flex-1 overflow-y-auto p-5 space-y-4 bg-ide-bg min-w-0">
           {/* Live Speed Graph */}
           {showSpeedChart && <SpeedChart history={speedHistory} />}
 
@@ -212,8 +212,8 @@ export function App(): React.JSX.Element {
               ))}
             </div>
           ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-[#18191d] rounded-2xl border border-[#2a2d34] border-dashed font-mono">
-              <div className="p-4 bg-[#121316] rounded-full border border-[#2a2d34] text-[#a3e635] mb-3">
+            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-ide-surface rounded-2xl border border-ide-border border-dashed font-mono">
+              <div className="p-4 bg-ide-bg rounded-full border border-ide-border text-lime-accent mb-3">
                 <Inbox className="h-8 w-8" />
               </div>
               <h3 className="text-sm font-bold text-slate-200">No tasks in current view</h3>
@@ -223,7 +223,7 @@ export function App(): React.JSX.Element {
               </p>
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2 bg-[#ccff00] hover:bg-[#b8e600] text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-[#ccff00]/10 transition flex items-center gap-2 cursor-pointer font-sans"
+                className="px-4 py-2 bg-lime-bright hover:bg-[#b8e600] text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-bright/10 transition flex items-center gap-2 cursor-pointer font-sans"
               >
                 <Download className="h-4 w-4" />
                 Add New Task

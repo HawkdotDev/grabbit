@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const getExtensionIcon = (id: string): React.JSX.Element => {
     switch (id) {
       case 'all':
-        return <Layers className="h-4 w-4 text-[#a3e635]" />
+        return <Layers className="h-4 w-4 text-lime-accent" />
       case 'downloading':
         return <Download className="h-4 w-4 text-cyan-400" />
       case 'completed':
@@ -57,17 +57,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       case 'paused':
         return <PauseCircle className="h-4 w-4 text-amber-400" />
       case 'documents':
-        return <FileText className="h-4 w-4 text-amber-500" /> // html/doc orange
+        return <FileText className="h-4 w-4 text-amber-500" />
       case 'compressed':
-        return <Archive className="h-4 w-4 text-purple-400" /> // php/zip purple
+        return <Archive className="h-4 w-4 text-purple-400" />
       case 'video':
-        return <Film className="h-4 w-4 text-[#a3e635]" /> // python green
+        return <Film className="h-4 w-4 text-lime-accent" />
       case 'audio':
-        return <Music className="h-4 w-4 text-cyan-400" /> // css blue
+        return <Music className="h-4 w-4 text-cyan-400" />
       case 'executables':
-        return <Cpu className="h-4 w-4 text-teal-400" /> // exe mint
+        return <Cpu className="h-4 w-4 text-teal-400" />
       case 'images':
-        return <ImageIcon className="h-4 w-4 text-yellow-400" /> // js yellow
+        return <ImageIcon className="h-4 w-4 text-yellow-400" />
       case 'code':
         return <Code2 className="h-4 w-4 text-indigo-400" />
       default:
@@ -90,13 +90,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ]
 
   return (
-    <aside className="w-64 bg-[#18191d] border-r border-[#2a2d34] flex flex-col justify-between h-full select-none font-mono text-xs">
+    <aside className="w-64 bg-ide-surface border-r border-ide-border flex flex-col justify-between h-full select-none font-mono text-xs">
       <div>
         {/* Top Dropdown Pill */}
         <div className="p-3 border-b border-[#23252b]">
-          <button className="w-full bg-[#202228] hover:bg-[#282b33] text-slate-200 px-3 py-2 rounded-xl border border-[#2a2d34] flex items-center justify-between transition cursor-pointer">
+          <button className="w-full bg-[#202228] hover:bg-[#282b33] text-slate-200 px-3 py-2 rounded-xl border border-ide-border flex items-center justify-between transition cursor-pointer">
             <div className="flex items-center gap-2">
-              <Home className="h-4 w-4 text-[#a3e635]" />
+              <Home className="h-4 w-4 text-lime-accent" />
               <span className="font-bold text-xs">Neobit Workspace</span>
             </div>
             <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
@@ -107,15 +107,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-3 flex items-center gap-2">
           <button
             onClick={onOpenAddModal}
-            className="flex-1 bg-[#202228] hover:bg-[#282b33] text-slate-200 py-2 px-3 rounded-xl border border-[#2a2d34] flex items-center justify-center gap-2 transition cursor-pointer font-sans font-semibold text-xs"
+            className="flex-1 bg-[#202228] hover:bg-[#282b33] text-slate-200 py-2 px-3 rounded-xl border border-ide-border flex items-center justify-center gap-2 transition cursor-pointer font-sans font-semibold text-xs"
           >
-            <Plus className="h-4 w-4 text-[#a3e635]" />
+            <Plus className="h-4 w-4 text-lime-accent" />
             <span>Create new task</span>
           </button>
 
           <button
             onClick={onOpenAddModal}
-            className="p-2 bg-[#202228] hover:bg-[#282b33] text-slate-400 hover:text-white rounded-xl border border-[#2a2d34] transition cursor-pointer"
+            className="p-2 bg-[#202228] hover:bg-[#282b33] text-slate-400 hover:text-white rounded-xl border border-ide-border transition cursor-pointer"
             title="Search"
           >
             <Search className="h-4 w-4" />
@@ -171,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         }
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer ${
                           isActive
-                            ? 'bg-[#252830] text-[#a3e635] font-bold border border-[#a3e635]/30'
+                            ? 'bg-[#252830] text-lime-accent font-bold border border-lime-accent/30'
                             : 'text-slate-300 hover:bg-[#202228] hover:text-white'
                         }`}
                       >
@@ -180,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <span className="truncate">{cat.id}</span>
                         </div>
                         {count > 0 && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#2a2d34] text-[#a3e635]">
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#2a2d34] text-lime-accent">
                             {count}
                           </span>
                         )}

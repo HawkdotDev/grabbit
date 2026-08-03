@@ -31,15 +31,15 @@ export const TopBar: React.FC<TopBarProps> = ({
   ]
 
   return (
-    <header className="bg-[#18191d] border-b border-[#2a2d34] flex flex-col select-none">
+    <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none">
       {/* Upper Window Control Bar */}
       <div className="h-10 px-4 flex items-center justify-between border-b border-[#23252b]">
         {/* Left window controls + Tabs */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f56] inline-block" />
-            <span className="h-3 w-3 rounded-full bg-[#ffbd2e] inline-block" />
-            <span className="h-3 w-3 rounded-full bg-[#27c93f] inline-block" />
+            <span className="h-3 w-3 rounded-full bg-rose-500 inline-block" />
+            <span className="h-3 w-3 rounded-full bg-amber-500 inline-block" />
+            <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
           </div>
 
           <button
@@ -60,11 +60,11 @@ export const TopBar: React.FC<TopBarProps> = ({
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-3 py-1 text-xs font-mono rounded-t-md flex items-center gap-2 border-t-2 transition cursor-pointer ${
                     isActive
-                      ? 'bg-[#121316] text-[#a3e635] border-[#a3e635] font-semibold'
+                      ? 'bg-ide-bg text-lime-accent border-lime-accent font-semibold'
                       : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-[#202228]'
                   }`}
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#a3e635]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-lime-accent" />
                   <span>{tab.label}</span>
                 </button>
               )
@@ -74,8 +74,8 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Status Badge */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-[#202228] px-2.5 py-1 rounded-md text-xs font-mono text-[#a3e635] border border-[#2a2d34]">
-            <Zap className="h-3.5 w-3.5 fill-[#a3e635]/20" />
+          <div className="flex items-center gap-1.5 bg-[#202228] px-2.5 py-1 rounded-md text-xs font-mono text-lime-accent border border-ide-border">
+            <Zap className="h-3.5 w-3.5 fill-lime-accent/20" />
             <span>Neobit Engine v1.0</span>
           </div>
         </div>
@@ -87,15 +87,15 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="flex items-center gap-1.5 overflow-x-auto py-1">
           <button
             onClick={onOpenAddModal}
-            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-[#2a2d34] flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-ide-border flex items-center gap-2 transition cursor-pointer"
           >
-            <Plus className="h-3.5 w-3.5 text-[#a3e635]" />
+            <Plus className="h-3.5 w-3.5 text-lime-accent" />
             <span>New Task</span>
           </button>
 
           <button
             onClick={onResumeAll}
-            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-[#2a2d34] flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-ide-border flex items-center gap-2 transition cursor-pointer"
           >
             <Play className="h-3.5 w-3.5 text-emerald-400" />
             <span>Resume All</span>
@@ -103,7 +103,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <button
             onClick={onPauseAll}
-            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-[#2a2d34] flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-ide-border flex items-center gap-2 transition cursor-pointer"
           >
             <Pause className="h-3.5 w-3.5 text-amber-400" />
             <span>Pause All</span>
@@ -111,7 +111,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <button
             onClick={onClearCompleted}
-            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-[#2a2d34] flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-200 text-xs font-mono rounded-lg border border-ide-border flex items-center gap-2 transition cursor-pointer"
           >
             <Trash2 className="h-3.5 w-3.5 text-slate-400" />
             <span>Clear Finished</span>
@@ -121,8 +121,8 @@ export const TopBar: React.FC<TopBarProps> = ({
             onClick={() => setShowSpeedChart(!showSpeedChart)}
             className={`px-3 py-1.5 text-xs font-mono rounded-lg border flex items-center gap-2 transition cursor-pointer ${
               showSpeedChart
-                ? 'bg-[#223311] text-[#a3e635] border-[#446611]'
-                : 'bg-[#202228] text-slate-400 border-[#2a2d34] hover:bg-[#282b33]'
+                ? 'bg-[#223311] text-lime-accent border-[#446611]'
+                : 'bg-[#202228] text-slate-400 border-ide-border hover:bg-[#282b33]'
             }`}
           >
             <Activity className="h-3.5 w-3.5" />
@@ -133,9 +133,9 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Settings Action */}
         <button
           onClick={onOpenSettingsModal}
-          className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-300 text-xs font-mono rounded-lg border border-[#2a2d34] flex items-center gap-2 transition cursor-pointer"
+          className="px-3 py-1.5 bg-[#202228] hover:bg-[#282b33] text-slate-300 text-xs font-mono rounded-lg border border-ide-border flex items-center gap-2 transition cursor-pointer"
         >
-          <Sliders className="h-3.5 w-3.5 text-[#a3e635]" />
+          <Sliders className="h-3.5 w-3.5 text-lime-accent" />
           <span>Config</span>
         </button>
       </div>
