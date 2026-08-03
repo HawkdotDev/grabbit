@@ -25,7 +25,7 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
   }
 
   return (
-    <footer className="bg-[#18191d] border-t border-[#2a2d34] flex flex-col font-mono text-xs select-none shrink-0">
+    <footer className="bg-ide-surface border-t border-ide-border flex flex-col font-mono text-xs select-none shrink-0">
       {/* Drawer Header Tabs */}
       <div className="h-9 px-4 flex items-center justify-between bg-[#141518] border-b border-[#23252b]">
         <div className="flex items-center gap-4">
@@ -33,12 +33,12 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
             onClick={() => setActiveTab('problems')}
             className={`flex items-center gap-1.5 py-1 text-xs cursor-pointer ${
               activeTab === 'problems'
-                ? 'text-[#a3e635] font-bold border-b-2 border-[#a3e635]'
+                ? 'text-lime-accent font-bold border-b-2 border-lime-accent'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <span>PROBLEMS</span>
-            <span className="px-1.5 py-0.2 bg-[#2a2d34] rounded-full text-[10px] text-slate-300">
+            <span className="px-1.5 py-0.2 bg-ide-border rounded-full text-[10px] text-slate-300">
               {errorCount}
             </span>
           </button>
@@ -47,7 +47,7 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
             onClick={() => setActiveTab('output')}
             className={`py-1 text-xs cursor-pointer ${
               activeTab === 'output'
-                ? 'text-[#a3e635] font-bold border-b-2 border-[#a3e635]'
+                ? 'text-lime-accent font-bold border-b-2 border-lime-accent'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -58,7 +58,7 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
             onClick={() => setActiveTab('terminal')}
             className={`flex items-center gap-1 py-1 text-xs cursor-pointer ${
               activeTab === 'terminal'
-                ? 'text-[#a3e635] font-bold border-b-2 border-[#a3e635]'
+                ? 'text-lime-accent font-bold border-b-2 border-lime-accent'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -70,7 +70,7 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
             onClick={() => setActiveTab('debug')}
             className={`py-1 text-xs cursor-pointer ${
               activeTab === 'debug'
-                ? 'text-[#a3e635] font-bold border-b-2 border-[#a3e635]'
+                ? 'text-lime-accent font-bold border-b-2 border-lime-accent'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -88,14 +88,14 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
 
       {/* Terminal Content Body */}
       {!isCollapsed && (
-        <div className="h-28 bg-[#121316] p-3 overflow-y-auto space-y-1 text-[11px] text-slate-300 font-mono">
+        <div className="h-28 bg-ide-bg p-3 overflow-y-auto space-y-1 text-[11px] text-slate-300 font-mono">
           <div className="text-slate-500">
             [Neobit Kernel v1.0.0] Multithreaded Engine initialized on Bun v1.2.0
           </div>
 
           {activeDownloads.map((d) => (
             <div key={d.id} className="flex items-center gap-2">
-              <span className="text-[#a3e635] font-bold">[ENGINE ACTIVE]</span>
+              <span className="text-lime-accent font-bold">[ENGINE ACTIVE]</span>
               <span className="text-slate-400">Task {d.id}:</span>
               <span className="text-slate-200 font-semibold truncate max-w-xs">{d.name}</span>
               <span className="text-cyan-400">@ {formatSpeed(d.speed)}</span>
@@ -115,7 +115,7 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
       <div className="h-7 px-4 bg-[#0d0e11] border-t border-[#23252b] flex items-center justify-between text-[11px] text-slate-400 font-mono">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1 text-slate-300">
-            <span className="h-2 w-2 rounded-full bg-[#a3e635]" />
+            <span className="h-2 w-2 rounded-full bg-lime-accent" />
             <span>Neobit Active</span>
           </span>
           <span>Speed: {formatSpeed(globalSpeed)}</span>
@@ -130,7 +130,7 @@ export const TerminalDrawer: React.FC<TerminalDrawerProps> = ({ downloads, globa
           <span>Spaces: 4</span>
           <span>UTF-8</span>
           <span>CRLF</span>
-          <span className="text-[#a3e635]">TypeScript</span>
+          <span className="text-lime-accent">TypeScript</span>
         </div>
       </div>
     </footer>

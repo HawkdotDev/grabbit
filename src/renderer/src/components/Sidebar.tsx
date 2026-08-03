@@ -180,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <span className="truncate">{cat.id}</span>
                         </div>
                         {count > 0 && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#2a2d34] text-lime-accent">
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-ide-border text-lime-accent">
                             {count}
                           </span>
                         )}
