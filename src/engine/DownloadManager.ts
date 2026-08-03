@@ -117,7 +117,19 @@ export class DownloadManager extends EventEmitter {
       threadCount,
       chunks,
       createdAt: Date.now(),
-      etag
+      etag,
+      upSpeed: 0,
+      uploadedSize: 0,
+      ratio: 0.0,
+      seedsCount: 12,
+      peersCount: 45,
+      infoHash: 'e44232' + Math.random().toString(16).substring(2, 14),
+      tags: ['neobit', category],
+      trackers: [
+        { url: 'udp://tracker.neobit.io:6969/announce', status: 'working', peers: 45 },
+        { url: 'https://tracker.openbittorrent.com:443/announce', status: 'working', peers: 12 }
+      ],
+      files: [{ path: filename, size: totalSize, downloaded: 0, priority: 'normal' }]
     }
 
     this.downloads.set(download.id, download)

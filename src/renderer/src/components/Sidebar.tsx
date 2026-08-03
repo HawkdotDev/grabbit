@@ -1,13 +1,8 @@
-import React from 'react'
-import { DownloadCategory, DownloadItem } from '../../../engine/types'
+import React, { useState } from 'react'
+import { DownloadCategory, DownloadItem, StatusFilter } from '../../../engine/types'
 import {
   Plus,
-  Search,
   Inbox,
-  Calendar,
-  Clock,
-  ChevronDown,
-  ChevronRight,
   Folder,
   FileText,
   Archive,
@@ -16,199 +11,322 @@ import {
   Cpu,
   Image as ImageIcon,
   Code2,
-  Download
+  ChevronDown,
+  ChevronRight,
+  Globe,
+  Tag,
+  CheckCircle2,
+  AlertTriangle,
+  Pause,
+  Play,
+  Activity,
+  Search
 } from 'lucide-react'
 
 interface SidebarProps {
-  activeCategory: DownloadCategory | 'downloading' | 'completed' | 'paused'
-  setActiveCategory: (cat: DownloadCategory | 'downloading' | 'completed' | 'paused') => void
+  activeStatusFilter: StatusFilter
+  setActiveStatusFilter: (status: StatusFilter) => void
+  activeCategory: DownloadCategory
+  setActiveCategory: (cat: DownloadCategory) => void
+  activeTag: string
+  setActiveTag: (tag: string) => void
+  activeTrackerFilter: string
+  setActiveTrackerFilter: (tracker: string) => void
   downloads: DownloadItem[]
   onOpenAddModal: () => void
-  onOpenSettingsModal: () => void
-  globalSpeed: number
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
+  activeStatusFilter,
+  setActiveStatusFilter,
   activeCategory,
   setActiveCategory,
+  activeTag,
+  setActiveTag,
+  activeTrackerFilter,
+  setActiveTrackerFilter,
   downloads,
   onOpenAddModal
 }) => {
-  const [isProjectsOpen, setIsProjectsOpen] = React.useState(true)
+  const [isStatusOpen, setIsStatusOpen] = useState(true)
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(true)
+  const [isTagsOpen, setIsTagsOpen] = useState(true)
+  const [isTrackersOpen, setIsTrackersOpen] = useState(true)
 
-  const getCount = (cat: string): number => {
+  // Status Filter Counts
+  const getStatusCount = (status: StatusFilter): number => {
+    if (status === 'all') return downloads.length
+    if (status === 'downloading') return downloads.filter((d) => d.status === 'downloading').length
+    if (status === 'seeding') return downloads.filter((d) => d.status === 'seeding').length
+    if (status === 'completed') return downloads.filter((d) => d.status === 'completed').length
+    if (status === 'running')
+      return downloads.filter((d) => d.status === 'downloading' || d.status === 'seeding').length
+    if (status === 'stopped')
+      return downloads.filter((d) => d.status === 'paused' || d.status === 'queued').length
+    if (status === 'active')
+      return downloads.filter((d) => d.speed > 0 || (d.upSpeed || 0) > 0).length
+    if (status === 'inactive')
+      return downloads.filter((d) => d.speed === 0 && (d.upSpeed || 0) === 0).length
+    if (status === 'stalled') return downloads.filter((d) => d.status === 'stalled').length
+    if (status === 'checking') return downloads.filter((d) => d.status === 'checking').length
+    if (status === 'errored') return downloads.filter((d) => d.status === 'error').length
+    return 0
+  }
+
+  // Category Counts
+  const getCategoryCount = (cat: string): number => {
     if (cat === 'all') return downloads.length
-    if (cat === 'downloading') return downloads.filter((d) => d.status === 'downloading').length
-    if (cat === 'completed') return downloads.filter((d) => d.status === 'completed').length
-    if (cat === 'paused') return downloads.filter((d) => d.status === 'paused').length
+    if (cat === 'other') return downloads.filter((d) => d.category === 'other').length
     return downloads.filter((d) => d.category === cat).length
   }
 
-  const getCategoryIcon = (id: string): React.JSX.Element => {
-    switch (id) {
-      case 'documents':
-        return <FileText className="h-4 w-4 text-amber-500" />
-      case 'compressed':
-        return <Archive className="h-4 w-4 text-purple-400" />
-      case 'video':
-        return <Film className="h-4 w-4 text-emerald-400" />
-      case 'audio':
-        return <Music className="h-4 w-4 text-cyan-400" />
-      case 'executables':
-        return <Cpu className="h-4 w-4 text-teal-400" />
-      case 'images':
-        return <ImageIcon className="h-4 w-4 text-yellow-400" />
-      case 'code':
-        return <Code2 className="h-4 w-4 text-indigo-400" />
-      default:
-        return <Folder className="h-4 w-4 text-slate-400" />
+  const statusItems: Array<{ id: StatusFilter; label: string; icon: React.JSX.Element }> = [
+    { id: 'all', label: 'All', icon: <Inbox className="h-3.5 w-3.5 text-slate-400" /> },
+    {
+      id: 'downloading',
+      label: 'Downloading',
+      icon: <Activity className="h-3.5 w-3.5 text-[#e44232]" />
+    },
+    {
+      id: 'seeding',
+      label: 'Seeding',
+      icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+    },
+    {
+      id: 'completed',
+      label: 'Completed',
+      icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+    },
+    { id: 'running', label: 'Running', icon: <Play className="h-3.5 w-3.5 text-cyan-400" /> },
+    { id: 'stopped', label: 'Stopped', icon: <Pause className="h-3.5 w-3.5 text-amber-400" /> },
+    { id: 'active', label: 'Active', icon: <Activity className="h-3.5 w-3.5 text-emerald-400" /> },
+    { id: 'inactive', label: 'Inactive', icon: <Pause className="h-3.5 w-3.5 text-slate-500" /> },
+    {
+      id: 'stalled',
+      label: 'Stalled',
+      icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+    },
+    { id: 'checking', label: 'Checking', icon: <Search className="h-3.5 w-3.5 text-indigo-400" /> },
+    {
+      id: 'errored',
+      label: 'Errored',
+      icon: <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />
     }
-  }
-
-  const mainNav = [
-    { id: 'all', label: 'Inbox', icon: Inbox },
-    { id: 'downloading', label: 'Active Queue', icon: Download },
-    { id: 'completed', label: 'Completed', icon: Clock },
-    { id: 'paused', label: 'Paused', icon: Calendar }
   ]
 
-  const categories = [
-    { id: 'documents', label: 'Documents' },
-    { id: 'compressed', label: 'Archives' },
-    { id: 'video', label: 'Videos' },
-    { id: 'audio', label: 'Audio' },
-    { id: 'executables', label: 'Executables' },
-    { id: 'images', label: 'Images' },
-    { id: 'code', label: 'Code' }
+  const categories: Array<{ id: DownloadCategory; label: string; icon: React.JSX.Element }> = [
+    { id: 'all', label: 'All', icon: <Folder className="h-3.5 w-3.5 text-slate-400" /> },
+    {
+      id: 'other',
+      label: 'Uncategorized',
+      icon: <Folder className="h-3.5 w-3.5 text-slate-500" />
+    },
+    {
+      id: 'documents',
+      label: 'Documents',
+      icon: <FileText className="h-3.5 w-3.5 text-amber-500" />
+    },
+    {
+      id: 'compressed',
+      label: 'Archives',
+      icon: <Archive className="h-3.5 w-3.5 text-purple-400" />
+    },
+    { id: 'video', label: 'Videos', icon: <Film className="h-3.5 w-3.5 text-emerald-400" /> },
+    { id: 'audio', label: 'Audio', icon: <Music className="h-3.5 w-3.5 text-cyan-400" /> },
+    {
+      id: 'executables',
+      label: 'Executables',
+      icon: <Cpu className="h-3.5 w-3.5 text-teal-400" />
+    },
+    { id: 'images', label: 'Images', icon: <ImageIcon className="h-3.5 w-3.5 text-yellow-400" /> },
+    { id: 'code', label: 'Code', icon: <Code2 className="h-3.5 w-3.5 text-indigo-400" /> }
   ]
 
   return (
-    <aside className="w-64 bg-[#1e1e1e] border-r border-[#2e2e2e] flex flex-col justify-between h-full select-none font-sans text-sm p-3">
-      <div className="space-y-4">
-        {/* + Add Task Button matching image */}
-        <div className="flex items-center justify-between gap-2">
+    <aside className="w-60 bg-[#1e1e1e] border-r border-[#2e2e2e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none">
+      <div className="space-y-3">
+        {/* + Add Task Button matching Todoist coral red style */}
+        <button
+          onClick={onOpenAddModal}
+          className="w-full py-2 px-3 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-[0.98] text-white rounded-none font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#e44232]/20 transition cursor-pointer"
+        >
+          <Plus className="h-4 w-4 stroke-[2.5]" />
+          <span>Add task</span>
+        </button>
+
+        {/* STATUS FILTER SECTION */}
+        <div className="border-t border-[#2e2e2e] pt-2">
           <button
-            onClick={onOpenAddModal}
-            className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-[#e44232] rounded-none font-semibold text-sm flex items-center gap-2 transition cursor-pointer"
+            onClick={() => setIsStatusOpen(!isStatusOpen)}
+            className="w-full flex items-center justify-between px-2 py-1 text-slate-400 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
           >
-            <span className="h-5 w-5 rounded-none bg-[#e44232]/20 flex items-center justify-center text-[#e44232]">
-              <Plus className="h-3.5 w-3.5 stroke-[3]" />
-            </span>
-            <span>Add task</span>
-          </button>
-
-          <span className="text-[11px] font-mono text-slate-500 bg-white/5 px-2 py-1 border border-white/5 rounded-none">
-            Ctrl N
-          </span>
-        </div>
-
-        {/* Navigation Section */}
-        <div className="space-y-0.5">
-          {/* Quick Search */}
-          <button
-            onClick={onOpenAddModal}
-            className="w-full flex items-center gap-3 px-2.5 py-2 text-slate-300 hover:bg-white/5 rounded-none transition cursor-pointer font-medium text-sm"
-          >
-            <Search className="h-4 w-4 text-slate-400" />
-            <span>Search</span>
-          </button>
-
-          {/* Main Views */}
-          {mainNav.map((item) => {
-            const Icon = item.icon
-            const count = getCount(item.id)
-            const isActive = activeCategory === item.id
-
-            return (
-              <button
-                key={item.id}
-                onClick={() =>
-                  setActiveCategory(
-                    item.id as DownloadCategory | 'downloading' | 'completed' | 'paused'
-                  )
-                }
-                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-none transition cursor-pointer font-medium text-sm ${
-                  isActive
-                    ? 'bg-[#381c1c] text-[#e44232] font-semibold'
-                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-[#e44232]' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
-                </div>
-                {count > 0 && (
-                  <span
-                    className={`text-xs font-mono px-2 py-0.5 rounded-none ${
-                      isActive ? 'bg-[#e44232]/20 text-[#e44232]' : 'bg-white/5 text-slate-400'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Projects / Categories Section */}
-        <div className="pt-2 border-t border-[#2e2e2e]">
-          <button
-            onClick={() => setIsProjectsOpen(!isProjectsOpen)}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 text-slate-400 hover:text-slate-200 font-semibold text-xs transition cursor-pointer"
-          >
-            <span>My Categories</span>
-            {isProjectsOpen ? (
-              <ChevronDown className="h-4 w-4" />
+            <span>STATUS</span>
+            {isStatusOpen ? (
+              <ChevronDown className="h-3.5 w-3.5" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             )}
           </button>
 
-          {isProjectsOpen && (
+          {isStatusOpen && (
             <div className="space-y-0.5 mt-1">
-              {categories.map((cat) => {
-                const count = getCount(cat.id)
-                const isActive = activeCategory === cat.id
-
+              {statusItems.map((st) => {
+                const count = getStatusCount(st.id)
+                const isActive = activeStatusFilter === st.id
                 return (
                   <button
-                    key={cat.id}
-                    onClick={() =>
-                      setActiveCategory(
-                        cat.id as DownloadCategory | 'downloading' | 'completed' | 'paused'
-                      )
-                    }
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-none transition cursor-pointer text-sm font-medium ${
+                    key={st.id}
+                    onClick={() => setActiveStatusFilter(st.id)}
+                    className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
                       isActive
                         ? 'bg-[#381c1c] text-[#e44232] font-semibold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      {getCategoryIcon(cat.id)}
-                      <span>{cat.label}</span>
+                    <div className="flex items-center gap-2">
+                      {st.icon}
+                      <span>{st.label}</span>
                     </div>
-                    {count > 0 && (
-                      <span className="text-xs font-mono px-2 py-0.5 rounded-none bg-white/5 text-slate-400">
-                        {count}
-                      </span>
-                    )}
+                    <span className="font-mono text-[11px] text-slate-400">({count})</span>
                   </button>
                 )
               })}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Footer System Info */}
-      <div className="pt-3 border-t border-[#2e2e2e] flex items-center justify-between text-xs text-slate-400 px-2 font-medium">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 bg-[#e44232] animate-pulse rounded-none" />
-          <span>Neobit Engine</span>
+        {/* CATEGORIES SECTION */}
+        <div className="border-t border-[#2e2e2e] pt-2">
+          <button
+            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+            className="w-full flex items-center justify-between px-2 py-1 text-slate-400 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
+          >
+            <span>CATEGORIES</span>
+            {isCategoriesOpen ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
+          </button>
+
+          {isCategoriesOpen && (
+            <div className="space-y-0.5 mt-1">
+              {categories.map((cat) => {
+                const count = getCategoryCount(cat.id)
+                const isActive = activeCategory === cat.id
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
+                      isActive
+                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {cat.icon}
+                      <span>{cat.label}</span>
+                    </div>
+                    <span className="font-mono text-[11px] text-slate-400">({count})</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
-        <span className="font-mono text-slate-300">v1.0.0</span>
+
+        {/* TAGS SECTION */}
+        <div className="border-t border-[#2e2e2e] pt-2">
+          <button
+            onClick={() => setIsTagsOpen(!isTagsOpen)}
+            className="w-full flex items-center justify-between px-2 py-1 text-slate-400 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
+          >
+            <span>TAGS</span>
+            {isTagsOpen ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
+          </button>
+
+          {isTagsOpen && (
+            <div className="space-y-0.5 mt-1">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'untagged', label: 'Untagged' },
+                { id: 'neobit', label: 'neobit' }
+              ].map((tg) => {
+                const isActive = activeTag === tg.id
+                return (
+                  <button
+                    key={tg.id}
+                    onClick={() => setActiveTag(tg.id)}
+                    className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
+                      isActive
+                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>{tg.label}</span>
+                    </div>
+                    <span className="font-mono text-[11px] text-slate-400">
+                      ({downloads.length})
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* TRACKERS SECTION */}
+        <div className="border-t border-[#2e2e2e] pt-2">
+          <button
+            onClick={() => setIsTrackersOpen(!isTrackersOpen)}
+            className="w-full flex items-center justify-between px-2 py-1 text-slate-400 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
+          >
+            <span>TRACKERS</span>
+            {isTrackersOpen ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
+          </button>
+
+          {isTrackersOpen && (
+            <div className="space-y-0.5 mt-1">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'trackerless', label: 'Trackerless' },
+                { id: 'working', label: 'Working Trackers' }
+              ].map((tr) => {
+                const isActive = activeTrackerFilter === tr.id
+                return (
+                  <button
+                    key={tr.id}
+                    onClick={() => setActiveTrackerFilter(tr.id)}
+                    className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
+                      isActive
+                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-3.5 w-3.5 text-[#e44232]" />
+                      <span>{tr.label}</span>
+                    </div>
+                    <span className="font-mono text-[11px] text-slate-400">
+                      ({downloads.length})
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   )

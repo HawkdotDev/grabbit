@@ -9,7 +9,21 @@ export type DownloadCategory =
   | 'code'
   | 'other'
 
-export type DownloadStatus = 'downloading' | 'paused' | 'completed' | 'queued' | 'error'
+export type StatusFilter =
+  | 'all'
+  | 'downloading'
+  | 'seeding'
+  | 'completed'
+  | 'running'
+  | 'stopped'
+  | 'active'
+  | 'inactive'
+  | 'stalled'
+  | 'checking'
+  | 'errored'
+
+export type DownloadStatus =
+  'downloading' | 'paused' | 'completed' | 'queued' | 'error' | 'seeding' | 'stalled' | 'checking'
 
 export type DownloadPriority = 'high' | 'normal' | 'low'
 
@@ -22,6 +36,19 @@ export interface ChunkInfo {
   status: 'downloading' | 'completed' | 'paused' | 'queued' | 'error'
 }
 
+export interface DownloadFileItem {
+  path: string
+  size: number
+  downloaded: number
+  priority: 'ignore' | 'normal' | 'high'
+}
+
+export interface TrackerInfo {
+  url: string
+  status: 'working' | 'error' | 'disabled'
+  peers: number
+}
+
 export interface DownloadItem {
   id: string
   url: string
@@ -30,6 +57,11 @@ export interface DownloadItem {
   totalSize: number
   downloadedSize: number
   speed: number // bytes per second
+  upSpeed?: number // upload speed
+  uploadedSize?: number
+  ratio?: number
+  seedsCount?: number
+  peersCount?: number
   eta: number // seconds
   status: DownloadStatus
   category: DownloadCategory
@@ -39,8 +71,12 @@ export interface DownloadItem {
   createdAt: number
   completedAt?: number
   checksum?: string
+  infoHash?: string
   etag?: string
   error?: string
+  tags?: string[]
+  trackers?: TrackerInfo[]
+  files?: DownloadFileItem[]
 }
 
 export interface EngineSettings {
