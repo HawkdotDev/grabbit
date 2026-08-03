@@ -1,0 +1,65 @@
+import React from 'react'
+import { ChunkInfo } from '../../../engine/types'
+
+interface ChunkProgressProps {
+  chunks: ChunkInfo[]
+  totalSize: number
+}
+
+export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
+  if (!chunks || chunks.length === 0) return null
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+  }
+
+  return (
+    <div className="mt-3 p-3 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-2">
+      <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+        <span>Multi-Thread Chunk Split ({chunks.length} Threads)</span>
+        <span>Parallel Positioned Writes (pwrite)</span>
+      </div>
+
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+        {chunks.map((chunk) => {
+          const chunkSize = Math.max(1, chunk.endByte - chunk.startByte + 1)
+          const pct = Math.min(100, Math.round((chunk.downloadedBytes / chunkSize) * 100))
+
+          let statusBg = 'bg-slate-800 border-slate-700'
+          if (chunk.status === 'completed')
+            statusBg = 'bg-emerald-950/80 border-emerald-800 text-emerald-400'
+          if (chunk.status === 'downloading')
+            statusBg = 'bg-cyan-950/80 border-cyan-800 text-cyan-400'
+          if (chunk.status === 'paused')
+            statusBg = 'bg-amber-950/80 border-amber-800 text-amber-400'
+          if (chunk.status === 'error') statusBg = 'bg-rose-950/80 border-rose-800 text-rose-400'
+
+          return (
+            <div
+              key={chunk.id}
+              className={`relative overflow-hidden p-1.5 rounded-lg border text-[10px] font-mono flex flex-col justify-between ${statusBg}`}
+            >
+              {/* Internal progress bar */}
+              <div
+                className="absolute left-0 top-0 bottom-0 bg-cyan-500/20 transition-all duration-300"
+                style={{ width: `${pct}%` }}
+              />
+
+              <div className="relative z-10 flex items-center justify-between font-bold">
+                <span>T#{chunk.id + 1}</span>
+                <span>{pct}%</span>
+              </div>
+              <div className="relative z-10 text-[9px] text-slate-400 truncate mt-1">
+                {formatBytes(chunk.downloadedBytes)}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

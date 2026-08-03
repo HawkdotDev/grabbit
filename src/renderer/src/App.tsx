@@ -1,63 +1,254 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import { useState, useEffect, useMemo } from 'react'
+import {
+  DownloadCategory,
+  DownloadItem,
+  DownloadPriority,
+  EngineSettings,
+  SpeedSample
+} from '../../engine/types'
+import { Sidebar } from './components/Sidebar'
+import { Header } from './components/Header'
+import { SpeedChart } from './components/SpeedChart'
+import { DownloadCard } from './components/DownloadCard'
+import { AddDownloadModal } from './components/AddDownloadModal'
+import { SettingsModal } from './components/SettingsModal'
+import { HashModal } from './components/HashModal'
+import { Download, Inbox } from 'lucide-react'
 
-function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+export function App(): React.JSX.Element {
+  const [downloads, setDownloads] = useState<DownloadItem[]>([])
+  const [activeCategory, setActiveCategory] = useState<
+    DownloadCategory | 'downloading' | 'completed' | 'paused'
+  >('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [speedHistory, setSpeedHistory] = useState<SpeedSample[]>([])
+  const [settings, setSettings] = useState<EngineSettings>({
+    maxConcurrentDownloads: 5,
+    defaultThreadCount: 8,
+    maxGlobalSpeedLimitKbps: 0,
+    defaultSavePath: 'C:\\Users\\Downloads',
+    autoCategorize: true,
+    enableNotifications: true,
+    startOnBoot: false,
+    theme: 'dark'
+  })
+
+  const [showSpeedChart, setShowSpeedChart] = useState(true)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
+
+  // Fetch initial state & setup event listeners
+  useEffect(() => {
+    if (window.api) {
+      window.api.getAllDownloads().then((data) => setDownloads(data || []))
+      window.api.getSettings().then((s) => {
+        if (s) setSettings(s)
+      })
+      window.api.getSpeedHistory().then((h) => setSpeedHistory(h || []))
+
+      const unsubProgress = window.api.onDownloadProgress((updated) => {
+        setDownloads((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
+      })
+
+      const unsubAdded = window.api.onDownloadAdded((newDl) => {
+        setDownloads((prev) => [newDl, ...prev.filter((d) => d.id !== newDl.id)])
+      })
+
+      const unsubUpdated = window.api.onDownloadUpdated((updated) => {
+        setDownloads((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
+      })
+
+      const unsubCompleted = window.api.onDownloadCompleted((updated) => {
+        setDownloads((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
+      })
+
+      const unsubRemoved = window.api.onDownloadRemoved((id) => {
+        setDownloads((prev) => prev.filter((d) => d.id !== id))
+      })
+
+      const unsubStats = window.api.onStatsTick((sample) => {
+        setSpeedHistory((prev) => [...prev.slice(-59), sample])
+      })
+
+      return () => {
+        unsubProgress()
+        unsubAdded()
+        unsubUpdated()
+        unsubCompleted()
+        unsubRemoved()
+        unsubStats()
+      }
+    }
+    return undefined
+  }, [])
+
+  // Calculate total global speed
+  const globalSpeed = useMemo(() => {
+    return downloads
+      .filter((d) => d.status === 'downloading')
+      .reduce((acc, d) => acc + (d.speed || 0), 0)
+  }, [downloads])
+
+  // Filter downloads
+  const filteredDownloads = useMemo(() => {
+    return downloads.filter((d) => {
+      // Category filter
+      let matchesCat = true
+      if (activeCategory === 'downloading') matchesCat = d.status === 'downloading'
+      else if (activeCategory === 'completed') matchesCat = d.status === 'completed'
+      else if (activeCategory === 'paused') matchesCat = d.status === 'paused'
+      else if (activeCategory !== 'all') matchesCat = d.category === activeCategory
+
+      // Search query filter
+      let matchesSearch = true
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase()
+        matchesSearch = d.name.toLowerCase().includes(q) || d.url.toLowerCase().includes(q)
+      }
+
+      return matchesCat && matchesSearch
+    })
+  }, [downloads, activeCategory, searchQuery])
+
+  // Handlers
+  const handleAddDownload = async (args: {
+    url: string
+    filename?: string
+    savePath?: string
+    category?: DownloadCategory
+    priority?: DownloadPriority
+    threadCount?: number
+  }): Promise<void> => {
+    if (window.api) {
+      await window.api.addDownload(args)
+    }
+  }
+
+  const handlePause = (id: string): void => {
+    window.api?.pauseDownload(id)
+  }
+  const handleResume = (id: string): void => {
+    window.api?.resumeDownload(id)
+  }
+  const handleCancel = (id: string): void => {
+    window.api?.cancelDownload(id)
+  }
+
+  const handlePauseAll = (): void => {
+    downloads
+      .filter((d) => d.status === 'downloading')
+      .forEach((d) => window.api?.pauseDownload(d.id))
+  }
+
+  const handleResumeAll = (): void => {
+    downloads
+      .filter((d) => d.status === 'paused' || d.status === 'error')
+      .forEach((d) => window.api?.resumeDownload(d.id))
+  }
+
+  const handleClearCompleted = (): void => {
+    downloads
+      .filter((d) => d.status === 'completed')
+      .forEach((d) => window.api?.cancelDownload(d.id))
+  }
+
+  const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
+    if (window.api) {
+      const updated = await window.api.updateSettings(newSettings)
+      setSettings(updated)
+    }
+  }
 
   return (
-    <main className="flex flex-col items-center justify-center p-8 text-center max-w-2xl mx-auto">
-      <div className="relative mb-6 group">
-        <div className="absolute -inset-1 rounded-full bg-linear-to-r from-cyan-500 to-blue-600 blur opacity-40 group-hover:opacity-100 transition duration-500"></div>
-        <img
-          alt="logo"
-          className="relative h-28 w-28 drop-shadow-lg transition-transform duration-300 group-hover:scale-105 select-none"
-          src={electronLogo}
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        downloads={downloads}
+        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        globalSpeed={globalSpeed}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-950">
+        <Header
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onPauseAll={handlePauseAll}
+          onResumeAll={handleResumeAll}
+          onClearCompleted={handleClearCompleted}
+          showSpeedChart={showSpeedChart}
+          setShowSpeedChart={setShowSpeedChart}
         />
+
+        {/* Scrollable Downloads View */}
+        <main className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* Live Speed Graph */}
+          {showSpeedChart && <SpeedChart history={speedHistory} />}
+
+          {/* Download List */}
+          {filteredDownloads.length > 0 ? (
+            <div className="space-y-3.5">
+              {filteredDownloads.map((download) => (
+                <DownloadCard
+                  key={download.id}
+                  download={download}
+                  onPause={handlePause}
+                  onResume={handleResume}
+                  onCancel={handleCancel}
+                  onOpenHashModal={(item) => setHashModalDownload(item)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-slate-900/40 rounded-2xl border border-slate-800/80 border-dashed">
+              <div className="p-4 bg-slate-900 rounded-full border border-slate-800 text-slate-500 mb-3">
+                <Inbox className="h-8 w-8" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-300">No downloads found</h3>
+              <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4">
+                Click the button below or paste a URL to start an accelerated multi-threaded
+                download.
+              </p>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-cyan-900/30 transition flex items-center gap-2 cursor-pointer"
+              >
+                <Download className="h-4 w-4" />
+                Add First Download
+              </button>
+            </div>
+          )}
+        </main>
       </div>
 
-      <span className="inline-flex items-center rounded-full bg-cyan-950/60 px-3.5 py-1 text-xs font-semibold text-cyan-400 ring-1 ring-inset ring-cyan-500/30 mb-4">
-        Powered by electron-vite &amp; Bun
-      </span>
+      {/* Modals */}
+      <AddDownloadModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAddDownload}
+        defaultSavePath={settings.defaultSavePath}
+      />
 
-      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
-        Build high-performance apps with{' '}
-        <span className="bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-          React
-        </span>{' '}
-        &amp;{' '}
-        <span className="bg-linear-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-          TypeScript
-        </span>
-      </h1>
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        settings={settings}
+        onSave={handleSaveSettings}
+      />
 
-      <p className="text-sm sm:text-base text-slate-400 mb-8 max-w-md">
-        Please try pressing{' '}
-        <kbd className="px-2 py-1 text-xs font-mono font-semibold text-slate-200 bg-slate-800 border border-slate-700 rounded-md shadow-sm">
-          F12
-        </kbd>{' '}
-        to open the developer tools.
-      </p>
-
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        <a
-          href="https://electron-vite.org/"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center rounded-full bg-cyan-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 transition-all duration-200"
-        >
-          Documentation
-        </a>
-        <button
-          type="button"
-          onClick={ipcHandle}
-          className="inline-flex items-center justify-center rounded-full bg-slate-800 px-6 py-2.5 text-sm font-semibold text-slate-200 border border-slate-700 shadow-sm hover:bg-slate-700 hover:text-white transition-all duration-200 cursor-pointer"
-        >
-          Send IPC
-        </button>
-      </div>
-
-      <Versions />
-    </main>
+      <HashModal
+        download={hashModalDownload}
+        isOpen={hashModalDownload !== null}
+        onClose={() => setHashModalDownload(null)}
+        onVerify={async (id, expectedHash, algo) => {
+          return await window.api.verifyHash({ id, expectedHash, algo })
+        }}
+      />
+    </div>
   )
 }
 

@@ -1,12 +1,79 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import {
+  DownloadCategory,
+  DownloadItem,
+  DownloadPriority,
+  EngineSettings,
+  SpeedSample
+} from '../engine/types'
 
-// Custom APIs for renderer
-const api = {}
+const api = {
+  addDownload: (args: {
+    url: string
+    filename?: string
+    savePath?: string
+    category?: DownloadCategory
+    priority?: DownloadPriority
+    threadCount?: number
+  }): Promise<DownloadItem> => ipcRenderer.invoke('download:add', args),
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+  pauseDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:pause', id),
+  resumeDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:resume', id),
+  cancelDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:cancel', id),
+  getAllDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
+
+  verifyHash: (args: {
+    id: string
+    expectedHash: string
+    algo?: 'sha256' | 'md5' | 'sha512'
+  }): Promise<{ matches: boolean; actualHash: string }> =>
+    ipcRenderer.invoke('download:verifyHash', args),
+
+  getSettings: (): Promise<EngineSettings> => ipcRenderer.invoke('settings:get'),
+  updateSettings: (settings: Partial<EngineSettings>): Promise<EngineSettings> =>
+    ipcRenderer.invoke('settings:update', settings),
+
+  getSpeedHistory: (): Promise<SpeedSample[]> => ipcRenderer.invoke('stats:getHistory'),
+
+  // Listeners
+  onDownloadProgress: (callback: (download: DownloadItem) => void): (() => void) => {
+    const handler = (_: unknown, download: DownloadItem): void => callback(download)
+    ipcRenderer.on('download:onProgress', handler)
+    return () => ipcRenderer.removeListener('download:onProgress', handler)
+  },
+
+  onDownloadAdded: (callback: (download: DownloadItem) => void): (() => void) => {
+    const handler = (_: unknown, download: DownloadItem): void => callback(download)
+    ipcRenderer.on('download:onAdded', handler)
+    return () => ipcRenderer.removeListener('download:onAdded', handler)
+  },
+
+  onDownloadUpdated: (callback: (download: DownloadItem) => void): (() => void) => {
+    const handler = (_: unknown, download: DownloadItem): void => callback(download)
+    ipcRenderer.on('download:onUpdated', handler)
+    return () => ipcRenderer.removeListener('download:onUpdated', handler)
+  },
+
+  onDownloadCompleted: (callback: (download: DownloadItem) => void): (() => void) => {
+    const handler = (_: unknown, download: DownloadItem): void => callback(download)
+    ipcRenderer.on('download:onCompleted', handler)
+    return () => ipcRenderer.removeListener('download:onCompleted', handler)
+  },
+
+  onDownloadRemoved: (callback: (id: string) => void): (() => void) => {
+    const handler = (_: unknown, id: string): void => callback(id)
+    ipcRenderer.on('download:onRemoved', handler)
+    return () => ipcRenderer.removeListener('download:onRemoved', handler)
+  },
+
+  onStatsTick: (callback: (sample: SpeedSample) => void): (() => void) => {
+    const handler = (_: unknown, sample: SpeedSample): void => callback(sample)
+    ipcRenderer.on('stats:onTick', handler)
+    return () => ipcRenderer.removeListener('stats:onTick', handler)
+  }
+}
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
