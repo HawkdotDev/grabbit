@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   DownloadCategory,
   DownloadItem,
@@ -27,6 +27,12 @@ export function App(): React.JSX.Element {
   const [filterBy, setFilterBy] = useState<'name' | 'category' | 'tag'>('name')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
+  // Resizable Pane Sizes
+  const [sidebarWidth, setSidebarWidth] = useState(240)
+  const [inspectorHeight, setInspectorHeight] = useState(240)
+  const [isDraggingSidebar, setIsDraggingSidebar] = useState(false)
+  const [isDraggingInspector, setIsDraggingInspector] = useState(false)
+
   const [speedHistory, setSpeedHistory] = useState<SpeedSample[]>([])
   const [settings, setSettings] = useState<EngineSettings>({
     maxConcurrentDownloads: 5,
@@ -42,6 +48,51 @@ export function App(): React.JSX.Element {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
+
+  // Sidebar drag handler
+  const handleSidebarMouseDown = (e: React.MouseEvent): void => {
+    e.preventDefault()
+    setIsDraggingSidebar(true)
+  }
+
+  // Inspector drag handler
+  const handleInspectorMouseDown = (e: React.MouseEvent): void => {
+    e.preventDefault()
+    setIsDraggingInspector(true)
+  }
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent): void => {
+      if (isDraggingSidebar) {
+        const newWidth = Math.min(500, Math.max(160, e.clientX))
+        setSidebarWidth(newWidth)
+      }
+      if (isDraggingInspector) {
+        const newHeight = Math.min(600, Math.max(100, window.innerHeight - e.clientY - 28))
+        setInspectorHeight(newHeight)
+      }
+    },
+    [isDraggingSidebar, isDraggingInspector]
+  )
+
+  const handleMouseUp = useCallback((): void => {
+    setIsDraggingSidebar(false)
+    setIsDraggingInspector(false)
+  }, [])
+
+  useEffect(() => {
+    if (isDraggingSidebar || isDraggingInspector) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDraggingSidebar, isDraggingInspector, handleMouseMove, handleMouseUp])
 
   // Fetch initial state & setup event listeners
   useEffect(() => {
@@ -221,10 +272,11 @@ export function App(): React.JSX.Element {
         globalSpeed={globalSpeed}
       />
 
-      {/* Main Content split into Sidebar and Workspace */}
+      {/* Main Content split into Sidebar and Workspace with Resizable Splitters */}
       <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
-        {/* Left Sidebar Filter Tree */}
+        {/* Left Resizable Sidebar Filter Tree */}
         <Sidebar
+          width={sidebarWidth}
           activeStatusFilter={activeStatusFilter}
           setActiveStatusFilter={setActiveStatusFilter}
           activeCategory={activeCategory}
@@ -235,6 +287,13 @@ export function App(): React.JSX.Element {
           setActiveTrackerFilter={setActiveTrackerFilter}
           downloads={downloads}
           onOpenAddModal={() => setIsAddModalOpen(true)}
+        />
+
+        {/* Vertical Resize Handle between Sidebar and Workspace */}
+        <div
+          onMouseDown={handleSidebarMouseDown}
+          className="w-1 cursor-col-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
+          title="Drag to resize sidebar"
         />
 
         {/* Center Task Workspace Split (Table on Top, Detail Inspector on Bottom) */}
@@ -252,8 +311,19 @@ export function App(): React.JSX.Element {
             />
           </main>
 
-          {/* Lower Detail Inspector Tabbed Pane */}
-          <BottomDetailInspector download={selectedDownload} speedHistory={speedHistory} />
+          {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
+          <div
+            onMouseDown={handleInspectorMouseDown}
+            className="h-1 cursor-row-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
+            title="Drag to resize inspector pane"
+          />
+
+          {/* Lower Resizable Detail Inspector Tabbed Pane */}
+          <BottomDetailInspector
+            height={inspectorHeight}
+            download={selectedDownload}
+            speedHistory={speedHistory}
+          />
         </div>
       </div>
 

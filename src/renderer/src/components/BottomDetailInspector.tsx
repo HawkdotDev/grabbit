@@ -5,11 +5,13 @@ import { SpeedChart } from './SpeedChart'
 import { Info, Globe, Users, Link, FileText, Activity } from 'lucide-react'
 
 interface BottomDetailInspectorProps {
+  height?: number
   download: DownloadItem | null
   speedHistory: SpeedSample[]
 }
 
 export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
+  height = 240,
   download,
   speedHistory
 }) => {
@@ -43,7 +45,10 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
   ]
 
   return (
-    <div className="h-64 bg-[#1e1e1e] border-t border-[#2e2e2e] flex flex-col font-sans text-xs select-none shrink-0">
+    <div
+      style={{ height }}
+      className="bg-[#1e1e1e] border-t border-[#2e2e2e] flex flex-col font-sans text-xs select-none shrink-0"
+    >
       {/* Bottom Tab Bar (qBittorrent style pill tabs at bottom) */}
       <div className="h-9 px-3 bg-[#141414] border-b border-[#292929] flex items-center justify-between">
         <div className="flex items-center gap-1">

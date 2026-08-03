@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 
 interface SidebarProps {
+  width?: number
   activeStatusFilter: StatusFilter
   setActiveStatusFilter: (status: StatusFilter) => void
   activeCategory: DownloadCategory
@@ -37,6 +38,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
+  width = 240,
   activeStatusFilter,
   setActiveStatusFilter,
   activeCategory,
@@ -143,7 +145,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ]
 
   return (
-    <aside className="w-60 bg-[#1e1e1e] border-r border-[#2e2e2e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none">
+    <aside
+      style={{ width }}
+      className="bg-[#1e1e1e] border-r border-[#2e2e2e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none"
+    >
       <div className="space-y-3">
         {/* + Add Task Button matching Todoist coral red style */}
         <button

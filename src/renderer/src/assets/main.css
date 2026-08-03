@@ -18,3 +18,26 @@
 .style-no-drag {
   -webkit-app-region: no-drag;
 }
+
+/* Custom Sleek Dark Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #141414;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2e2e2e;
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e44232;
+}
+
+::-webkit-scrollbar-corner {
+  background: #141414;
+}
