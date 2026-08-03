@@ -89,15 +89,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={onOpenAddModal}
-            className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-[#e44232] rounded-lg font-semibold text-sm flex items-center gap-2 transition cursor-pointer"
+            className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-[#e44232] rounded-none font-semibold text-sm flex items-center gap-2 transition cursor-pointer"
           >
-            <span className="h-5 w-5 rounded-full bg-[#e44232]/20 flex items-center justify-center text-[#e44232]">
+            <span className="h-5 w-5 rounded-none bg-[#e44232]/20 flex items-center justify-center text-[#e44232]">
               <Plus className="h-3.5 w-3.5 stroke-[3]" />
             </span>
             <span>Add task</span>
           </button>
 
-          <span className="text-[11px] font-mono text-slate-500 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+          <span className="text-[11px] font-mono text-slate-500 bg-white/5 px-2 py-1 border border-white/5 rounded-none">
             Ctrl N
           </span>
         </div>
@@ -107,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Quick Search */}
           <button
             onClick={onOpenAddModal}
-            className="w-full flex items-center gap-3 px-2.5 py-2 text-slate-300 hover:bg-white/5 rounded-lg transition cursor-pointer font-medium text-sm"
+            className="w-full flex items-center gap-3 px-2.5 py-2 text-slate-300 hover:bg-white/5 rounded-none transition cursor-pointer font-medium text-sm"
           >
             <Search className="h-4 w-4 text-slate-400" />
             <span>Search</span>
@@ -127,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     item.id as DownloadCategory | 'downloading' | 'completed' | 'paused'
                   )
                 }
-                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition cursor-pointer font-medium text-sm ${
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-none transition cursor-pointer font-medium text-sm ${
                   isActive
                     ? 'bg-[#381c1c] text-[#e44232] font-semibold'
                     : 'text-slate-300 hover:bg-white/5 hover:text-white'
@@ -139,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
                 {count > 0 && (
                   <span
-                    className={`text-xs font-mono px-2 py-0.5 rounded-full ${
+                    className={`text-xs font-mono px-2 py-0.5 rounded-none ${
                       isActive ? 'bg-[#e44232]/20 text-[#e44232]' : 'bg-white/5 text-slate-400'
                     }`}
                   >
@@ -179,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         cat.id as DownloadCategory | 'downloading' | 'completed' | 'paused'
                       )
                     }
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition cursor-pointer text-sm font-medium ${
+                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-none transition cursor-pointer text-sm font-medium ${
                       isActive
                         ? 'bg-[#381c1c] text-[#e44232] font-semibold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
@@ -190,7 +190,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <span>{cat.label}</span>
                     </div>
                     {count > 0 && (
-                      <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
+                      <span className="text-xs font-mono px-2 py-0.5 rounded-none bg-white/5 text-slate-400">
                         {count}
                       </span>
                     )}
@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer System Info */}
       <div className="pt-3 border-t border-[#2e2e2e] flex items-center justify-between text-xs text-slate-400 px-2 font-medium">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#e44232] animate-pulse" />
+          <span className="h-2 w-2 bg-[#e44232] animate-pulse rounded-none" />
           <span>Neobit Engine</span>
         </div>
         <span className="font-mono text-slate-300">v1.0.0</span>

@@ -18,7 +18,7 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
   }
 
   return (
-    <div className="mt-3 p-3 bg-[#141414] rounded-xl border border-[#2e2e2e] space-y-2 font-mono">
+    <div className="mt-3 p-3 bg-[#141414] border border-[#2e2e2e] space-y-2 font-mono rounded-none">
       <div className="flex items-center justify-between text-[11px] text-slate-400">
         <span className="text-[#e44232] font-bold">
           Multi-Thread Chunk Split ({chunks.length} Threads)
@@ -43,11 +43,11 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
           return (
             <div
               key={chunk.id}
-              className={`relative overflow-hidden p-1.5 rounded-lg border text-[10px] flex flex-col justify-between ${statusBg}`}
+              className={`relative overflow-hidden p-1.5 border text-[10px] flex flex-col justify-between rounded-none ${statusBg}`}
             >
               {/* Internal progress bar */}
               <div
-                className="absolute left-0 top-0 bottom-0 bg-[#e44232]/20 transition-all duration-300"
+                className="absolute left-0 top-0 bottom-0 bg-[#e44232]/20 transition-all duration-300 rounded-none"
                 style={{ width: `${pct}%` }}
               />
 

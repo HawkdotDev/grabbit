@@ -71,11 +71,11 @@ export const TopBar: React.FC<TopBarProps> = ({
       <div className="h-11 px-4 flex items-center justify-between border-b border-[#292929] style-drag">
         {/* Left window controls + Tabs (No drag zone) */}
         <div className="flex items-center gap-5 style-no-drag">
-          {/* macOS Style Interactive Dots */}
+          {/* Square Style Interactive Window Dots */}
           <div className="flex items-center gap-2">
             <button
               onClick={handleClose}
-              className="h-3 w-3 rounded-full bg-rose-500 hover:bg-rose-600 transition cursor-pointer flex items-center justify-center group"
+              className="h-3 w-3 bg-rose-500 hover:bg-rose-600 transition cursor-pointer flex items-center justify-center group rounded-none"
               title="Close"
             >
               <X className="h-2 w-2 text-rose-950 opacity-0 group-hover:opacity-100 transition stroke-[3]" />
@@ -83,7 +83,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             <button
               onClick={handleMinimize}
-              className="h-3 w-3 rounded-full bg-amber-500 hover:bg-amber-600 transition cursor-pointer flex items-center justify-center group"
+              className="h-3 w-3 bg-amber-500 hover:bg-amber-600 transition cursor-pointer flex items-center justify-center group rounded-none"
               title="Minimize"
             >
               <Minus className="h-2 w-2 text-amber-950 opacity-0 group-hover:opacity-100 transition stroke-[3]" />
@@ -91,7 +91,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             <button
               onClick={handleMaximize}
-              className="h-3 w-3 rounded-full bg-emerald-500 hover:bg-emerald-600 transition cursor-pointer flex items-center justify-center group"
+              className="h-3 w-3 bg-emerald-500 hover:bg-emerald-600 transition cursor-pointer flex items-center justify-center group rounded-none"
               title="Maximize / Restore"
             >
               <Square className="h-2 w-2 text-emerald-950 opacity-0 group-hover:opacity-100 transition stroke-[3]" />
@@ -108,14 +108,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-none flex items-center gap-2 transition cursor-pointer ${
                     isActive
                       ? 'bg-[#381c1c] text-[#e44232]'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-[#e44232]' : 'bg-slate-500'}`}
+                    className={`h-1.5 w-1.5 rounded-none ${isActive ? 'bg-[#e44232]' : 'bg-slate-500'}`}
                   />
                   <span>{tab.label}</span>
                 </button>
@@ -126,7 +126,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Status & Window Controls (No drag zone) */}
         <div className="flex items-center gap-3 style-no-drag">
-          <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full text-xs font-semibold text-[#e44232] border border-white/5">
+          <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 text-xs font-semibold text-[#e44232] border border-white/5 rounded-none">
             <Zap className="h-3.5 w-3.5 fill-[#e44232]/20" />
             <span>Neobit Engine</span>
           </div>
@@ -137,7 +137,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={handleMinimize}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer rounded-none"
               title="Minimize Window"
             >
               <Minus className="h-3.5 w-3.5" />
@@ -145,7 +145,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             <button
               onClick={handleMaximize}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer rounded-none"
               title={isMaximized ? 'Restore Window' : 'Maximize Window'}
             >
               {isMaximized ? <Copy className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
@@ -153,7 +153,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
             <button
               onClick={handleClose}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-rose-600 rounded-lg transition cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-rose-600 transition cursor-pointer rounded-none"
               title="Close Application"
             >
               <X className="h-3.5 w-3.5" />
@@ -168,7 +168,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="flex items-center gap-2 overflow-x-auto py-1">
           <button
             onClick={onOpenAddModal}
-            className="px-3.5 py-1.5 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 text-white text-xs font-semibold rounded-lg shadow-md shadow-[#e44232]/20 flex items-center gap-2 transition cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 text-white text-xs font-semibold shadow-md shadow-[#e44232]/20 flex items-center gap-2 transition cursor-pointer rounded-none"
           >
             <Plus className="h-4 w-4 stroke-[2.5]" />
             <span>Add task</span>
@@ -176,7 +176,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <button
             onClick={onResumeAll}
-            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-lg border border-white/5 flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/5 flex items-center gap-2 transition cursor-pointer rounded-none"
           >
             <Play className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400/20" />
             <span>Resume All</span>
@@ -184,7 +184,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <button
             onClick={onPauseAll}
-            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-lg border border-white/5 flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/5 flex items-center gap-2 transition cursor-pointer rounded-none"
           >
             <Pause className="h-3.5 w-3.5 text-amber-400 fill-amber-400/20" />
             <span>Pause All</span>
@@ -192,7 +192,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <button
             onClick={onClearCompleted}
-            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold rounded-lg border border-white/5 flex items-center gap-2 transition cursor-pointer"
+            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/5 flex items-center gap-2 transition cursor-pointer rounded-none"
           >
             <Trash2 className="h-3.5 w-3.5 text-slate-400" />
             <span>Clear Finished</span>
@@ -200,7 +200,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <button
             onClick={() => setShowSpeedChart(!showSpeedChart)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-2 transition cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-semibold border flex items-center gap-2 transition cursor-pointer rounded-none ${
               showSpeedChart
                 ? 'bg-[#381c1c] text-[#e44232] border-[#e44232]/30'
                 : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'
@@ -214,7 +214,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Settings Action */}
         <button
           onClick={onOpenSettingsModal}
-          className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold rounded-lg border border-white/5 flex items-center gap-2 transition cursor-pointer"
+          className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold border border-white/5 flex items-center gap-2 transition cursor-pointer rounded-none"
         >
           <Sliders className="h-3.5 w-3.5 text-[#e44232]" />
           <span>Settings</span>

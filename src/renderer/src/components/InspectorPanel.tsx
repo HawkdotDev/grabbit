@@ -20,18 +20,18 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   return (
     <aside className="w-80 bg-[#1e1e1e] border-l border-[#2e2e2e] p-4 flex flex-col gap-4 font-sans text-xs select-none shrink-0">
       {/* Inspector Header */}
-      <div className="bg-[#141414] p-3.5 rounded-xl border border-[#2e2e2e] flex items-center justify-between">
+      <div className="bg-[#141414] p-3.5 border border-[#2e2e2e] flex items-center justify-between rounded-none">
         <div className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4 text-[#e44232] animate-spin" />
           <span className="font-semibold text-slate-200">Tasks Evaluated</span>
         </div>
-        <span className="px-2.5 py-0.5 rounded-full bg-[#381c1c] text-[#e44232] font-mono font-bold">
+        <span className="px-2.5 py-0.5 bg-[#381c1c] text-[#e44232] font-mono font-bold rounded-none">
           {downloads.length}
         </span>
       </div>
 
       {/* Issues / Error List Card */}
-      <div className="bg-[#141414] p-3.5 rounded-xl border border-[#2e2e2e] space-y-2">
+      <div className="bg-[#141414] p-3.5 border border-[#2e2e2e] space-y-2 rounded-none">
         <div className="flex items-center justify-between text-slate-300 font-semibold border-b border-[#292929] pb-2">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-rose-400" />
@@ -44,7 +44,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           errorDownloads.map((err) => (
             <div
               key={err.id}
-              className="p-2.5 bg-rose-950/20 rounded-lg border border-rose-900/40 text-rose-300 space-y-1"
+              className="p-2.5 bg-rose-950/20 border border-rose-900/40 text-rose-300 space-y-1 rounded-none"
             >
               <div className="font-semibold truncate">{err.name}</div>
               <div className="text-[11px] text-slate-400 font-mono">
@@ -60,7 +60,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       </div>
 
       {/* Quick Summary Cards */}
-      <div className="bg-[#141414] p-3.5 rounded-xl border border-[#2e2e2e] space-y-2.5">
+      <div className="bg-[#141414] p-3.5 border border-[#2e2e2e] space-y-2.5 rounded-none">
         <div className="flex items-center justify-between text-slate-200 font-semibold">
           <span>Engine Status</span>
           <span className="text-[#e44232] font-mono">32 Threads</span>
@@ -82,11 +82,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         </div>
       </div>
 
-      {/* Primary Action Button (Sleek Coral Red matching image) */}
+      {/* Primary Action Button */}
       <div className="mt-auto space-y-2">
         <button
           onClick={onResumeAll}
-          className="w-full py-3 px-4 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-[0.98] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#e44232]/20 transition duration-150 cursor-pointer font-sans"
+          className="w-full py-3 px-4 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#e44232]/20 transition duration-150 cursor-pointer font-sans rounded-none"
         >
           <Zap className="h-4 w-4 fill-white" />
           <span>Accelerate All Tasks</span>
@@ -95,7 +95,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         {completedCount > 0 && (
           <button
             onClick={onClearCompleted}
-            className="w-full py-2 px-3 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl border border-white/5 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer font-sans"
+            className="w-full py-2 px-3 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer font-sans rounded-none"
           >
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
             <span>Clean Finished Tasks</span>

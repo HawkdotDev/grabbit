@@ -90,11 +90,11 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
         : 0
 
   return (
-    <div className="bg-[#1e1e1e] rounded-xl border border-[#2e2e2e] p-4 shadow-md transition duration-200 hover:border-slate-700/60 font-sans text-xs">
+    <div className="bg-[#1e1e1e] rounded-none border border-[#2e2e2e] p-4 shadow-md transition duration-200 hover:border-slate-700/60 font-sans text-xs">
       <div className="flex items-start justify-between gap-4">
         {/* Category Icon & Main Info */}
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="p-2.5 bg-[#141414] rounded-xl border border-[#2e2e2e] shrink-0">
+          <div className="p-2.5 bg-[#141414] rounded-none border border-[#2e2e2e] shrink-0">
             {getCategoryIcon(download.category)}
           </div>
 
@@ -104,7 +104,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                 {download.name}
               </h3>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
+                className={`px-2 py-0.5 rounded-none text-[10px] font-mono font-bold uppercase tracking-wider ${
                   download.priority === 'high'
                     ? 'bg-rose-950/60 text-rose-400 border border-rose-800/80'
                     : download.priority === 'normal'
@@ -126,7 +126,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {download.status === 'downloading' && (
             <button
               onClick={() => onPause(download.id)}
-              className="p-2 bg-white/5 hover:bg-white/10 text-amber-400 rounded-lg border border-white/5 transition cursor-pointer"
+              className="p-2 bg-white/5 hover:bg-white/10 text-amber-400 rounded-none border border-white/5 transition cursor-pointer"
               title="Pause Download"
             >
               <Pause className="h-4 w-4" />
@@ -136,7 +136,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {(download.status === 'paused' || download.status === 'error') && (
             <button
               onClick={() => onResume(download.id)}
-              className="p-2 bg-white/5 hover:bg-white/10 text-[#e44232] rounded-lg border border-white/5 transition cursor-pointer"
+              className="p-2 bg-white/5 hover:bg-white/10 text-[#e44232] rounded-none border border-white/5 transition cursor-pointer"
               title="Resume Download"
             >
               <Play className="h-4 w-4" />
@@ -146,7 +146,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {download.status === 'completed' && (
             <button
               onClick={() => onOpenHashModal(download)}
-              className="p-2 bg-white/5 hover:bg-white/10 text-cyan-400 rounded-lg border border-white/5 transition cursor-pointer"
+              className="p-2 bg-white/5 hover:bg-white/10 text-cyan-400 rounded-none border border-white/5 transition cursor-pointer"
               title="Verify Checksum"
             >
               <ShieldCheck className="h-4 w-4" />
@@ -155,7 +155,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
 
           <button
             onClick={() => onCancel(download.id)}
-            className="p-2 bg-white/5 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 rounded-lg border border-white/5 transition cursor-pointer"
+            className="p-2 bg-white/5 hover:bg-rose-950/60 hover:text-rose-400 text-slate-400 rounded-none border border-white/5 transition cursor-pointer"
             title="Cancel & Remove"
           >
             <X className="h-4 w-4" />
@@ -169,7 +169,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           <div className="flex items-center gap-2">
             {download.status === 'downloading' && (
               <span className="flex items-center gap-1.5 text-[#e44232] font-semibold">
-                <span className="h-2 w-2 rounded-full bg-[#e44232] animate-ping" />
+                <span className="h-2 w-2 bg-[#e44232] animate-ping rounded-none" />
                 Downloading ({formatSpeed(download.speed)})
               </span>
             )}
@@ -202,9 +202,9 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2.5 w-full bg-[#141414] rounded-full overflow-hidden p-0.5 border border-[#2e2e2e]">
+        <div className="h-2.5 w-full bg-[#141414] overflow-hidden p-0.5 border border-[#2e2e2e] rounded-none">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${
+            className={`h-full transition-all duration-300 rounded-none ${
               download.status === 'completed'
                 ? 'bg-emerald-500'
                 : download.status === 'error'

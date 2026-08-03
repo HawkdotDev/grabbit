@@ -49,11 +49,11 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
-      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="p-5 border-b border-[#2e2e2e] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#381c1c] text-[#e44232] rounded-xl border border-[#e44232]/20">
+            <div className="p-2 bg-[#381c1c] text-[#e44232] rounded-none border border-[#e44232]/20">
               <Download className="h-5 w-5" />
             </div>
             <div>
@@ -63,7 +63,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-none transition cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -82,7 +82,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com/file.zip"
-              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
+              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
             />
           </div>
 
@@ -96,7 +96,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               placeholder="Leave empty for auto-detection"
-              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-xl border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
+              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
             />
           </div>
 
@@ -110,7 +110,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               type="text"
               value={savePath}
               onChange={(e) => setSavePath(e.target.value)}
-              className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-xl border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
+              className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
             />
           </div>
 
@@ -139,7 +139,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as DownloadPriority)}
-                className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-xl border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono cursor-pointer"
+                className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono cursor-pointer"
               >
                 <option value="high">High Priority</option>
                 <option value="normal">Normal Priority</option>
@@ -153,13 +153,13 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/5 transition cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-none hover:bg-white/5 transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 rounded-xl shadow-lg shadow-[#e44232]/20 transition cursor-pointer"
+              className="px-5 py-2 text-xs font-bold text-white bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 rounded-none shadow-lg shadow-[#e44232]/20 transition cursor-pointer"
             >
               Start Accelerated Task
             </button>

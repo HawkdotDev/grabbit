@@ -211,8 +211,8 @@ export function App(): React.JSX.Element {
               ))}
             </div>
           ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-[#1e1e1e] rounded-2xl border border-[#2e2e2e] border-dashed font-sans">
-              <div className="p-4 bg-[#141414] rounded-full border border-[#2e2e2e] text-[#e44232] mb-3">
+            <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-[#1e1e1e] border border-[#2e2e2e] border-dashed font-sans rounded-none">
+              <div className="p-4 bg-[#141414] border border-[#2e2e2e] text-[#e44232] mb-3 rounded-none">
                 <Inbox className="h-8 w-8" />
               </div>
               <h3 className="text-base font-semibold text-slate-200">Inbox empty</h3>
@@ -221,7 +221,7 @@ export function App(): React.JSX.Element {
               </p>
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="px-4 py-2 bg-[#e44232] hover:bg-[#ff4d3d] text-white font-bold text-xs rounded-xl shadow-lg shadow-[#e44232]/20 transition flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 bg-[#e44232] hover:bg-[#ff4d3d] text-white font-bold text-xs shadow-lg shadow-[#e44232]/20 transition flex items-center gap-2 cursor-pointer rounded-none"
               >
                 <Download className="h-4 w-4" />
                 Add task
