@@ -286,7 +286,8 @@ export function App(): React.JSX.Element {
           activeTrackerFilter={activeTrackerFilter}
           setActiveTrackerFilter={setActiveTrackerFilter}
           downloads={downloads}
-          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+          onToggleAnalytics={() => setIsSettingsModalOpen(true)}
         />
 
         {/* Vertical Resize Handle between Sidebar and Workspace */}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { DownloadCategory, DownloadItem, StatusFilter } from '../../../engine/types'
 import {
-  Plus,
   Inbox,
   Folder,
   FileText,
@@ -20,7 +19,8 @@ import {
   Pause,
   Play,
   Activity,
-  Search
+  Search,
+  Sliders
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -34,7 +34,8 @@ interface SidebarProps {
   activeTrackerFilter: string
   setActiveTrackerFilter: (tracker: string) => void
   downloads: DownloadItem[]
-  onOpenAddModal: () => void
+  onOpenSettingsModal?: () => void
+  onToggleAnalytics?: () => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -48,7 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTrackerFilter,
   setActiveTrackerFilter,
   downloads,
-  onOpenAddModal
+  onOpenSettingsModal,
+  onToggleAnalytics
 }) => {
   const [isStatusOpen, setIsStatusOpen] = useState(true)
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true)
@@ -150,14 +152,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
       className="bg-[#1e1e1e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none"
     >
       <div className="space-y-3">
-        {/* + Add Task Button matching Todoist coral red style */}
-        <button
-          onClick={onOpenAddModal}
-          className="w-full py-2 px-3 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-[0.98] text-white rounded-none font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#e44232]/20 transition cursor-pointer"
-        >
-          <Plus className="h-4 w-4 stroke-[2.5]" />
-          <span>Add task</span>
-        </button>
+        {/* Divided Top Action Buttons (Non-task related: Settings & Analytics) */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenSettingsModal}
+            className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-slate-200 border border-white/5 rounded-none font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            title="Open Preferences & Engine Settings"
+          >
+            <Sliders className="h-3.5 w-3.5 text-[#e44232]" />
+            <span>Settings</span>
+          </button>
+
+          <button
+            onClick={onToggleAnalytics}
+            className="flex-1 py-1.5 px-2 bg-[#381c1c] hover:bg-[#482424] active:scale-[0.98] text-[#e44232] border border-[#e44232]/30 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            title="Toggle Bandwidth & Engine Diagnostics"
+          >
+            <Activity className="h-3.5 w-3.5" />
+            <span>Analytics</span>
+          </button>
+        </div>
 
         {/* STATUS FILTER SECTION */}
         <div className="border-t border-[#2e2e2e] pt-2">
