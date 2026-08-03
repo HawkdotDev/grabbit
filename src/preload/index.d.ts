@@ -33,6 +33,12 @@ export interface NeobitAPI {
 
   getSpeedHistory: () => Promise<SpeedSample[]>
 
+  // Window controls
+  minimizeWindow: () => Promise<boolean>
+  maximizeWindow: () => Promise<boolean>
+  closeWindow: () => Promise<boolean>
+  isWindowMaximized: () => Promise<boolean>
+
   // Listeners
   onDownloadProgress: (callback: (download: DownloadItem) => void) => () => void
   onDownloadAdded: (callback: (download: DownloadItem) => void) => () => void

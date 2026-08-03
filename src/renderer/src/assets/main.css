@@ -10,3 +10,11 @@
   --color-coral-bright: #ff4d3d;
   --color-coral-tint: #381c1c;
 }
+
+.style-drag {
+  -webkit-app-region: drag;
+}
+
+.style-no-drag {
+  -webkit-app-region: no-drag;
+}

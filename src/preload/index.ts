@@ -36,6 +36,12 @@ const api = {
 
   getSpeedHistory: (): Promise<SpeedSample[]> => ipcRenderer.invoke('stats:getHistory'),
 
+  // Window controls
+  minimizeWindow: (): Promise<boolean> => ipcRenderer.invoke('window:minimize'),
+  maximizeWindow: (): Promise<boolean> => ipcRenderer.invoke('window:maximize'),
+  closeWindow: (): Promise<boolean> => ipcRenderer.invoke('window:close'),
+  isWindowMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:isMaximized'),
+
   // Listeners
   onDownloadProgress: (callback: (download: DownloadItem) => void): (() => void) => {
     const handler = (_: unknown, download: DownloadItem): void => callback(download)

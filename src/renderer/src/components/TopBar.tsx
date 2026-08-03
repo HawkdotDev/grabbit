@@ -1,5 +1,17 @@
-import React from 'react'
-import { Plus, Play, Pause, Trash2, Sliders, Activity, Zap } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import {
+  Plus,
+  Play,
+  Pause,
+  Trash2,
+  Sliders,
+  Activity,
+  Zap,
+  Minus,
+  Square,
+  Copy,
+  X
+} from 'lucide-react'
 
 interface TopBarProps {
   onOpenAddModal: () => void
@@ -24,6 +36,29 @@ export const TopBar: React.FC<TopBarProps> = ({
   activeTab,
   setActiveTab
 }) => {
+  const [isMaximized, setIsMaximized] = useState(false)
+
+  useEffect(() => {
+    if (window.api) {
+      window.api.isWindowMaximized().then(setIsMaximized)
+    }
+  }, [])
+
+  const handleMinimize = (): void => {
+    window.api?.minimizeWindow()
+  }
+
+  const handleMaximize = async (): Promise<void> => {
+    if (window.api) {
+      const state = await window.api.maximizeWindow()
+      setIsMaximized(state)
+    }
+  }
+
+  const handleClose = (): void => {
+    window.api?.closeWindow()
+  }
+
   const tabs = [
     { id: 'all', label: 'Inbox Overview' },
     { id: 'downloading', label: 'Active Queue' },
@@ -32,14 +67,35 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header className="bg-[#1e1e1e] border-b border-[#2e2e2e] flex flex-col select-none font-sans">
-      {/* Upper Window Control Bar */}
-      <div className="h-11 px-4 flex items-center justify-between border-b border-[#292929]">
-        {/* Left window controls + Tabs */}
-        <div className="flex items-center gap-5">
+      {/* Upper Window Control Bar - Draggable Title Bar */}
+      <div className="h-11 px-4 flex items-center justify-between border-b border-[#292929] style-drag">
+        {/* Left window controls + Tabs (No drag zone) */}
+        <div className="flex items-center gap-5 style-no-drag">
+          {/* macOS Style Interactive Dots */}
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-rose-500 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-amber-500 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
+            <button
+              onClick={handleClose}
+              className="h-3 w-3 rounded-full bg-rose-500 hover:bg-rose-600 transition cursor-pointer flex items-center justify-center group"
+              title="Close"
+            >
+              <X className="h-2 w-2 text-rose-950 opacity-0 group-hover:opacity-100 transition stroke-[3]" />
+            </button>
+
+            <button
+              onClick={handleMinimize}
+              className="h-3 w-3 rounded-full bg-amber-500 hover:bg-amber-600 transition cursor-pointer flex items-center justify-center group"
+              title="Minimize"
+            >
+              <Minus className="h-2 w-2 text-amber-950 opacity-0 group-hover:opacity-100 transition stroke-[3]" />
+            </button>
+
+            <button
+              onClick={handleMaximize}
+              className="h-3 w-3 rounded-full bg-emerald-500 hover:bg-emerald-600 transition cursor-pointer flex items-center justify-center group"
+              title="Maximize / Restore"
+            >
+              <Square className="h-2 w-2 text-emerald-950 opacity-0 group-hover:opacity-100 transition stroke-[3]" />
+            </button>
           </div>
 
           <div className="h-4 w-px bg-[#2e2e2e]" />
@@ -68,11 +124,40 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         </div>
 
-        {/* Right Status Badge */}
-        <div className="flex items-center gap-3">
+        {/* Right Status & Window Controls (No drag zone) */}
+        <div className="flex items-center gap-3 style-no-drag">
           <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full text-xs font-semibold text-[#e44232] border border-white/5">
             <Zap className="h-3.5 w-3.5 fill-[#e44232]/20" />
-            <span>Neobit Engine Active</span>
+            <span>Neobit Engine</span>
+          </div>
+
+          <div className="h-4 w-px bg-[#2e2e2e]" />
+
+          {/* Integrated Window Control Action Buttons */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleMinimize}
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
+              title="Minimize Window"
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              onClick={handleMaximize}
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition cursor-pointer"
+              title={isMaximized ? 'Restore Window' : 'Maximize Window'}
+            >
+              {isMaximized ? <Copy className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+            </button>
+
+            <button
+              onClick={handleClose}
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-rose-600 rounded-lg transition cursor-pointer"
+              title="Close Application"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </div>

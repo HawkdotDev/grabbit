@@ -11,7 +11,6 @@ import { Sidebar } from './components/Sidebar'
 import { SpeedChart } from './components/SpeedChart'
 import { DownloadCard } from './components/DownloadCard'
 import { InspectorPanel } from './components/InspectorPanel'
-import { TerminalDrawer } from './components/TerminalDrawer'
 import { AddDownloadModal } from './components/AddDownloadModal'
 import { SettingsModal } from './components/SettingsModal'
 import { HashModal } from './components/HashModal'
@@ -238,9 +237,6 @@ export function App(): React.JSX.Element {
           onClearCompleted={handleClearCompleted}
         />
       </div>
-
-      {/* Bottom IDE Terminal Drawer */}
-      <TerminalDrawer downloads={downloads} globalSpeed={globalSpeed} />
 
       {/* Modals */}
       <AddDownloadModal
