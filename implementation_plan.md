@@ -58,86 +58,86 @@ Each row maps a feature from [features.md](file:///c:/Users/dwaip/OneDrive/Docum
 
 ### Download Acceleration and Management
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| Split Downloads | `src/engine/ChunkEngine.ts` — HTTP Range multi-connection splitter | 🟡 Simulated in [DownloadManager.ts](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/engine/DownloadManager.ts). Needs real HTTP Range implementation |
-| Resume Interrupted Downloads | `src/engine/ChunkEngine.ts` — ETag/byte-offset resume | 🔴 Not yet built. Requires persisting chunk byte offsets to SQLite and re-issuing Range requests |
-| Download Queue and Scheduling | `src/engine/DownloadManager.ts` — Priority queue scheduler | 🟢 Built. Priority ordering (high/normal/low), max concurrent limit, auto-start queued tasks |
-| Traffic Limit Control | `src/engine/RateLimiter.ts` — Token bucket algorithm | 🟡 Settings UI exists ([SettingsModal.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/renderer/components/SettingsModal.tsx)). Backend throttling logic not wired to real streams |
+| Feature                       | Module                                                             | Status                                                                                                                                                                                                  |
+| :---------------------------- | :----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Split Downloads               | `src/engine/ChunkEngine.ts` — HTTP Range multi-connection splitter | 🟡 Simulated in [DownloadManager.ts](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/engine/DownloadManager.ts). Needs real HTTP Range implementation                                  |
+| Resume Interrupted Downloads  | `src/engine/ChunkEngine.ts` — ETag/byte-offset resume              | 🔴 Not yet built. Requires persisting chunk byte offsets to SQLite and re-issuing Range requests                                                                                                        |
+| Download Queue and Scheduling | `src/engine/DownloadManager.ts` — Priority queue scheduler         | 🟢 Built. Priority ordering (high/normal/low), max concurrent limit, auto-start queued tasks                                                                                                            |
+| Traffic Limit Control         | `src/engine/RateLimiter.ts` — Token bucket algorithm               | 🟡 Settings UI exists ([SettingsModal.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/renderer/components/SettingsModal.tsx)). Backend throttling logic not wired to real streams |
 
 ---
 
 ### Organization and Usability
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| Category Management | `src/engine/CategoryManager.ts` — Extension → category rules | 🟢 Built. Auto-categorizes by file extension into 7 categories |
-| File Naming Templates | `src/engine/NamingTemplates.ts` — Pattern-based renaming | 🔴 Not yet built. Needs template engine (`{year}/{category}/{filename}`) |
-| Drag-and-Drop Functionality | `src/renderer/components/DropZone.tsx` — HTML5 drag-drop zone | 🔴 Not yet built. Need `onDrop` handler to extract URLs/files from drag events |
-| Integration with Web Browsers | `src/main/browser-integration/` — Native Messaging Host | 🔴 Not yet built. Requires Chrome/Firefox extension + NMH manifest installer |
+| Feature                       | Module                                                        | Status                                                                         |
+| :---------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------- |
+| Category Management           | `src/engine/CategoryManager.ts` — Extension → category rules  | 🟢 Built. Auto-categorizes by file extension into 7 categories                 |
+| File Naming Templates         | `src/engine/NamingTemplates.ts` — Pattern-based renaming      | 🔴 Not yet built. Needs template engine (`{year}/{category}/{filename}`)       |
+| Drag-and-Drop Functionality   | `src/renderer/components/DropZone.tsx` — HTML5 drag-drop zone | 🔴 Not yet built. Need `onDrop` handler to extract URLs/files from drag events |
+| Integration with Web Browsers | `src/main/browser-integration/` — Native Messaging Host       | 🔴 Not yet built. Requires Chrome/Firefox extension + NMH manifest installer   |
 
 ---
 
 ### Advanced Features
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| Video Downloading | `src/engine/MediaEngine.ts` — yt-dlp child process wrapper | 🔴 Not yet built. Bundle `yt-dlp` binary, parse format list, pipe progress events |
-| BitTorrent Client Integration | `src/engine/TorrentEngine.ts` — WebTorrent / libtorrent | 🔴 Not yet built. Parse magnet URIs, display peer/seed counts, piece progress |
-| File Conversion | `src/engine/MediaEngine.ts` — FFmpeg post-download transcoding | 🔴 Not yet built. Bundle `ffmpeg`, run remux/encode as post-processing step |
-| Remote Access | `src/server/RemoteServer.ts` — WebSocket JSON-RPC server | 🟡 Settings UI exists. Server not yet implemented |
-| Security & Privacy (hash checking) | `src/engine/HashVerifier.ts` — SHA-256/MD5 calculator | 🟡 UI modal exists ([DownloadCard.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/renderer/components/DownloadCard.tsx)). Needs real `crypto.createHash` stream |
+| Feature                            | Module                                                         | Status                                                                                                                                                                                |
+| :--------------------------------- | :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Video Downloading                  | `src/engine/MediaEngine.ts` — yt-dlp child process wrapper     | 🔴 Not yet built. Bundle `yt-dlp` binary, parse format list, pipe progress events                                                                                                     |
+| BitTorrent Client Integration      | `src/engine/TorrentEngine.ts` — WebTorrent / libtorrent        | 🔴 Not yet built. Parse magnet URIs, display peer/seed counts, piece progress                                                                                                         |
+| File Conversion                    | `src/engine/MediaEngine.ts` — FFmpeg post-download transcoding | 🔴 Not yet built. Bundle `ffmpeg`, run remux/encode as post-processing step                                                                                                           |
+| Remote Access                      | `src/server/RemoteServer.ts` — WebSocket JSON-RPC server       | 🟡 Settings UI exists. Server not yet implemented                                                                                                                                     |
+| Security & Privacy (hash checking) | `src/engine/HashVerifier.ts` — SHA-256/MD5 calculator          | 🟡 UI modal exists ([DownloadCard.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/renderer/components/DownloadCard.tsx)). Needs real `crypto.createHash` stream |
 
 ---
 
 ### Advanced Download Control
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| Adaptive Speed Limiter | `src/engine/RateLimiter.ts` — Dynamic token bucket with schedule awareness | 🔴 Not yet built |
-| Proxy Server Support | `src/engine/ProxyManager.ts` — HTTP/SOCKS5 proxy routing | 🟡 Settings UI field exists. Not wired to download streams |
-| IP Address Masking | `src/engine/ProxyManager.ts` — Route through proxy chain | 🔴 Not yet built. Depends on proxy support |
+| Feature                | Module                                                                     | Status                                                     |
+| :--------------------- | :------------------------------------------------------------------------- | :--------------------------------------------------------- |
+| Adaptive Speed Limiter | `src/engine/RateLimiter.ts` — Dynamic token bucket with schedule awareness | 🔴 Not yet built                                           |
+| Proxy Server Support   | `src/engine/ProxyManager.ts` — HTTP/SOCKS5 proxy routing                   | 🟡 Settings UI field exists. Not wired to download streams |
+| IP Address Masking     | `src/engine/ProxyManager.ts` — Route through proxy chain                   | 🔴 Not yet built. Depends on proxy support                 |
 
 ---
 
 ### Automation and Scripting
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| Download Scripting | `src/automation/ScriptRunner.ts` — User JS/shell script executor | 🔴 Not yet built |
-| Integration with Cloud Storage | `src/automation/CloudSync.ts` — Google Drive / S3 / WebDAV adapters | 🟡 Settings toggle exists. Adapters not implemented |
-| Post-Processing Actions | `src/automation/PostProcessor.ts` — Virus scan, extract, rename pipeline | 🟡 Settings toggle exists. Pipeline not implemented |
+| Feature                        | Module                                                                   | Status                                              |
+| :----------------------------- | :----------------------------------------------------------------------- | :-------------------------------------------------- |
+| Download Scripting             | `src/automation/ScriptRunner.ts` — User JS/shell script executor         | 🔴 Not yet built                                    |
+| Integration with Cloud Storage | `src/automation/CloudSync.ts` — Google Drive / S3 / WebDAV adapters      | 🟡 Settings toggle exists. Adapters not implemented |
+| Post-Processing Actions        | `src/automation/PostProcessor.ts` — Virus scan, extract, rename pipeline | 🟡 Settings toggle exists. Pipeline not implemented |
 
 ---
 
 ### Advanced Download Monitoring and Reporting
 
-| Feature | Module | Status |
-|:---|:---|:---|
+| Feature                      | Module                                                      | Status                                                            |
+| :--------------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------- |
 | Detailed Download Statistics | `src/renderer/components/StatsPanel.tsx` — Aggregate charts | 🟡 SpeedChart exists. Per-task & historical stats panel not built |
-| Bandwidth Usage Monitoring | `src/engine/DownloadManager.ts` — Bandwidth history array | 🟢 Built. Real-time bandwidth tracking with SVG chart |
-| Download Logs and History | `src/engine/Storage.ts` — SQLite history table + log viewer | 🔴 Not yet built. Using localStorage; needs SQLite migration |
+| Bandwidth Usage Monitoring   | `src/engine/DownloadManager.ts` — Bandwidth history array   | 🟢 Built. Real-time bandwidth tracking with SVG chart             |
+| Download Logs and History    | `src/engine/Storage.ts` — SQLite history table + log viewer | 🔴 Not yet built. Using localStorage; needs SQLite migration      |
 
 ---
 
 ### Security and Content Management
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| Malware Scanning | `src/automation/PostProcessor.ts` — OS AV CLI trigger | 🔴 Not yet built. Call `MpCmdRun.exe` (Windows) / `spctl` (macOS) |
-| Content Filtering | `src/engine/ContentFilter.ts` — URL/MIME blocklist | 🔴 Not yet built |
-| Parental Controls | `src/engine/ContentFilter.ts` — Password-protected blocklist | 🔴 Not yet built |
+| Feature           | Module                                                       | Status                                                            |
+| :---------------- | :----------------------------------------------------------- | :---------------------------------------------------------------- |
+| Malware Scanning  | `src/automation/PostProcessor.ts` — OS AV CLI trigger        | 🔴 Not yet built. Call `MpCmdRun.exe` (Windows) / `spctl` (macOS) |
+| Content Filtering | `src/engine/ContentFilter.ts` — URL/MIME blocklist           | 🔴 Not yet built                                                  |
+| Parental Controls | `src/engine/ContentFilter.ts` — Password-protected blocklist | 🔴 Not yet built                                                  |
 
 ---
 
 ### Additional Considerations
 
-| Feature | Module | Status |
-|:---|:---|:---|
-| User Interface | Full React component suite | 🟢 Built. 9 components, IDE-inspired dark red theme |
-| Platform Compatibility | Electron + electron-builder | 🟢 Built. Windows NSIS, macOS DMG, Linux AppImage configs ready |
-| Customization Options | `src/renderer/components/SettingsModal.tsx` | 🟢 Built. 4-tab settings panel (Engine, Network, Automation, Remote) |
-| API Integration | `src/server/RemoteServer.ts` — WebSocket JSON-RPC | 🟡 Config UI exists. Server not implemented |
+| Feature                | Module                                            | Status                                                               |
+| :--------------------- | :------------------------------------------------ | :------------------------------------------------------------------- |
+| User Interface         | Full React component suite                        | 🟢 Built. 9 components, IDE-inspired dark red theme                  |
+| Platform Compatibility | Electron + electron-builder                       | 🟢 Built. Windows NSIS, macOS DMG, Linux AppImage configs ready      |
+| Customization Options  | `src/renderer/components/SettingsModal.tsx`       | 🟢 Built. 4-tab settings panel (Engine, Network, Automation, Remote) |
+| API Integration        | `src/server/RemoteServer.ts` — WebSocket JSON-RPC | 🟡 Config UI exists. Server not implemented                          |
 
 ---
 
@@ -344,16 +344,16 @@ bun test src/main/__tests__/ipc.test.ts
 
 ### Manual Verification
 
-| Test Case | How to Verify |
-|:---|:---|
-| Multi-connection split download | Download a 1GB+ test file, verify N `.part` files created, merged correctly |
-| Resume after disconnect | Kill network mid-download, reconnect, verify resumes from last byte offset |
-| Rate limiting | Set 500 KB/s limit, verify download speed stays within ±10% of limit |
-| BitTorrent | Add a magnet link, verify peer discovery and piece download |
-| Video extraction | Paste a YouTube URL, verify format selection and download |
-| Browser extension | Install Chrome extension, click a download link, verify it routes to neobit |
-| Remote access | Connect from mobile browser to `ws://localhost:6800`, add a download |
-| Production packaging | Build installer, install on clean Windows machine, verify full functionality |
+| Test Case                       | How to Verify                                                                |
+| :------------------------------ | :--------------------------------------------------------------------------- |
+| Multi-connection split download | Download a 1GB+ test file, verify N `.part` files created, merged correctly  |
+| Resume after disconnect         | Kill network mid-download, reconnect, verify resumes from last byte offset   |
+| Rate limiting                   | Set 500 KB/s limit, verify download speed stays within ±10% of limit         |
+| BitTorrent                      | Add a magnet link, verify peer discovery and piece download                  |
+| Video extraction                | Paste a YouTube URL, verify format selection and download                    |
+| Browser extension               | Install Chrome extension, click a download link, verify it routes to neobit  |
+| Remote access                   | Connect from mobile browser to `ws://localhost:6800`, add a download         |
+| Production packaging            | Build installer, install on clean Windows machine, verify full functionality |
 
 ---
 

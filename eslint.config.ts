@@ -1,15 +1,15 @@
-import { defineConfig } from 'eslint/config'
+import type { Linter } from 'eslint'
 import tseslint from '@electron-toolkit/eslint-config-ts'
 import eslintConfigPrettier from '@electron-toolkit/eslint-config-prettier'
 import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 
-export default defineConfig(
+const config: Linter.Config[] = [
   { ignores: ['**/node_modules', '**/dist', '**/out'] },
-  tseslint.configs.recommended,
-  eslintPluginReact.configs.flat.recommended,
-  eslintPluginReact.configs.flat['jsx-runtime'],
+  ...(tseslint.configs.recommended as Linter.Config[]),
+  eslintPluginReact.configs.flat.recommended as Linter.Config,
+  eslintPluginReact.configs.flat['jsx-runtime'] as Linter.Config,
   {
     settings: {
       react: {
@@ -20,13 +20,15 @@ export default defineConfig(
   {
     files: ['**/*.{ts,tsx}'],
     plugins: {
-      'react-hooks': eslintPluginReactHooks,
-      'react-refresh': eslintPluginReactRefresh
+      'react-hooks': eslintPluginReactHooks as Record<string, unknown>,
+      'react-refresh': eslintPluginReactRefresh as Record<string, unknown>
     },
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
       ...eslintPluginReactRefresh.configs.vite.rules
     }
   },
-  eslintConfigPrettier
-)
+  eslintConfigPrettier as Linter.Config
+]
+
+export default config
