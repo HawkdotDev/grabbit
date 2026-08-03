@@ -1,0 +1,97 @@
+{
+  "name": "neobit",
+  "version": "1.0.0",
+  "description": "High-performance, feature-rich modern download manager built with Electron, React, and TypeScript.",
+  "main": "./out/main/index.js",
+  "author": {
+    "name": "HawkdotDev",
+    "url": "https://github.com/HawkdotDev"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/HawkdotDev/neobit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HawkdotDev/neobit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HawkdotDev/neobit/issues"
+  },
+  "keywords": [
+    "electron",
+    "download-manager",
+    "download-accelerator",
+    "react",
+    "typescript",
+    "vite",
+    "bittorrent",
+    "desktop-app",
+    "open-source"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  },
+  "packageManager": "bun@1.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "preview": "electron-vite preview",
+    "build": "bun run typecheck && electron-vite build",
+    "build:dir": "bun run build && electron-builder --dir",
+    "build:unpack": "bun run build && electron-builder --dir",
+    "build:win": "bun run build && electron-builder --win",
+    "build:mac": "bun run build && electron-builder --mac",
+    "build:linux": "bun run build && electron-builder --linux",
+    "build:all": "bun run build && electron-builder --win --mac --linux",
+    "typecheck": "bun run typecheck:node && bun run typecheck:web",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+    "lint": "eslint --cache .",
+    "lint:fix": "eslint --cache --fix .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "bun run typecheck && bun run lint && bun run format:check",
+    "clean": "node -e \"['out', 'dist'].forEach(d => require('fs').rmSync(d, { recursive: true, force: true }))\"",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
+  },
+  "browserslist": [
+    "Chrome >= 120",
+    "last 2 Electron versions"
+  ],
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0",
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
+    "@electron-toolkit/eslint-config-ts": "^3.1.0",
+    "@electron-toolkit/tsconfig": "^2.0.0",
+    "@types/node": "^22.19.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^5.0.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "prettier": "^3.7.4",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6"
+  }
+}
