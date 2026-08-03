@@ -1,92 +1,86 @@
 # Implementation Plan — neobit Download Manager
 
-> Full build plan for a cross-platform Electron download manager based on [features.md](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/features.md).
+> Comprehensive technical blueprint and implementation roadmap for **neobit** — a modern, high-performance, multithreaded desktop download manager and accelerator built with Electron, React, TypeScript, and Bun.
 
 ---
 
-## Architecture Overview
+## Architecture & Multithreading Overview
 
 ```mermaid
 graph TB
-    subgraph Renderer["Renderer Process (React + Vite)"]
-        UI[App Shell & Components]
-        State[DownloadManager State]
-        Charts[SpeedChart & ChunkProgress]
+    subgraph UI["Renderer Process (React 19 + Vite + Tailwind CSS v4)"]
+        Components[App Shell & Dashboard]
+        State[Download State & Bandwidth Tracker]
+        Visualizers[Chunk Visualizer & Speed Chart]
     end
 
-    subgraph Main["Electron Main Process"]
-        IPC[IPC Router & contextBridge]
-        Tray[System Tray & Notifications]
+    subgraph Main["Electron Main Process (TypeScript + Bun)"]
+        IPC[IPC Bridge & contextBridge]
+        Tray[System Tray & System Notifications]
         Protocol[neobit:// Protocol Handler]
-        NativeMsg[Browser Native Messaging Host]
+        NMH[Browser Native Messaging Host]
     end
 
-    subgraph Engine["Core Download Engine"]
-        Aria2[Aria2c RPC Daemon]
-        Chunk[HTTP Range Chunk Splitter]
-        Torrent[WebTorrent / libtorrent]
-        Media[yt-dlp + FFmpeg Wrappers]
-        Queue[Priority Queue Scheduler]
-        Limiter[Token Bucket Rate Limiter]
+    subgraph Workers["Multithreaded Worker Pool (Node worker_threads)"]
+        Pool[WorkerPool Manager]
+        ChunkWorker1[DownloadWorker #1: Segments 0..N]
+        ChunkWorker2[DownloadWorker #2: Segments N..M]
+        HashWorker[HashWorker: SHA-256 / MD5 Hashing]
+        TorrentWorker[TorrentWorker: BitTorrent & DHT]
+        MediaWorker[MediaWorker: yt-dlp & FFmpeg Pipelines]
     end
 
-    subgraph Storage["Persistence Layer"]
-        SQLite[SQLite via better-sqlite3]
-        Settings[Settings Store]
-        Logs[Download History & Logs]
+    subgraph Storage["Persistence & Storage Layer"]
+        SQLite[better-sqlite3 Storage Engine]
+        SparseFile[Direct Positioned Disk Write (pwrite)]
     end
 
-    subgraph Services["Background Services"]
-        Remote[WebSocket RPC Server]
-        Cloud[Cloud Sync Adapters]
-        PostProc[Post-Processing Pipeline]
-        Clipboard[Clipboard Monitor]
-    end
-
-    UI <-->|IPC| IPC
-    IPC <--> Engine
-    Engine <--> Storage
-    Main <--> Services
-    Engine --> PostProc
+    UI <-->|IPC SharedArrayBuffer| IPC
+    IPC <--> Pool
+    Pool <--> ChunkWorker1 & ChunkWorker2 & HashWorker & TorrentWorker & MediaWorker
+    ChunkWorker1 & ChunkWorker2 -->|Direct pwrite| SparseFile
+    Pool <--> SQLite
 ```
 
 ---
 
 ## Feature → Module Mapping & Status
 
-Each row maps a feature from [features.md](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/features.md) to the module that implements it. Status shows what exists today vs. what needs to be built.
+Each row maps a feature from [features.md](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/features.md) to the module implementing it.
 
-### Download Acceleration and Management
+### Download Acceleration and Management (Multithreaded Core)
 
-| Feature                       | Module                                                             | Status                                                                                                                                                                                                  |
-| :---------------------------- | :----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Split Downloads               | `src/engine/ChunkEngine.ts` — HTTP Range multi-connection splitter | 🟡 Simulated in [DownloadManager.ts](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/engine/DownloadManager.ts). Needs real HTTP Range implementation                                  |
-| Resume Interrupted Downloads  | `src/engine/ChunkEngine.ts` — ETag/byte-offset resume              | 🔴 Not yet built. Requires persisting chunk byte offsets to SQLite and re-issuing Range requests                                                                                                        |
-| Download Queue and Scheduling | `src/engine/DownloadManager.ts` — Priority queue scheduler         | 🟢 Built. Priority ordering (high/normal/low), max concurrent limit, auto-start queued tasks                                                                                                            |
-| Traffic Limit Control         | `src/engine/RateLimiter.ts` — Token bucket algorithm               | 🟡 Settings UI exists ([SettingsModal.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/renderer/components/SettingsModal.tsx)). Backend throttling logic not wired to real streams |
+| Feature                      | Module                                                                               | Status                                                                                                                                             |
+| :--------------------------- | :----------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Split Downloads              | `src/engine/workers/DownloadWorker.ts` — Multithreaded HTTP Range segment downloader | 🟡 Simulated in `DownloadManager.ts`. Upgrading to multithreaded worker pool with direct `pwrite` positioning                                      |
+| Resume Interrupted Downloads | `src/engine/ChunkEngine.ts` — ETag/byte-offset resume & worker state restore         | 🔴 Not yet built. Persisting chunk byte offsets to SQLite and re-issuing Range requests                                                            |
+| Multithreaded Worker Pool    | `src/engine/workers/WorkerPool.ts` — Node `worker_threads` thread manager            | 🔴 Not yet built. Manages dedicated threads per download segment to keep Main process loop unblocked                                               |
+| Parallel File Allocation     | `src/engine/DiskAllocator.ts` — Non-blocking sparse file pre-allocation              | 🔴 Not yet built. Pre-allocates disk files (`fallocate` / `SetEndOfFile`) to eliminate disk fragmentation and avoid concatenation delays           |
+| Download Queue & Scheduling  | `src/engine/DownloadManager.ts` — Priority queue scheduler                           | 🟢 Built. Priority ordering (high/normal/low), max concurrent limit, auto-start queued tasks                                                       |
+| Traffic Limit Control        | `src/engine/RateLimiter.ts` — Multithreaded token bucket algorithm                   | 🟡 Settings UI exists ([SettingsModal.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/App.tsx)) |
 
 ---
 
 ### Organization and Usability
 
-| Feature                       | Module                                                        | Status                                                                         |
-| :---------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------- |
-| Category Management           | `src/engine/CategoryManager.ts` — Extension → category rules  | 🟢 Built. Auto-categorizes by file extension into 7 categories                 |
-| File Naming Templates         | `src/engine/NamingTemplates.ts` — Pattern-based renaming      | 🔴 Not yet built. Needs template engine (`{year}/{category}/{filename}`)       |
-| Drag-and-Drop Functionality   | `src/renderer/components/DropZone.tsx` — HTML5 drag-drop zone | 🔴 Not yet built. Need `onDrop` handler to extract URLs/files from drag events |
-| Integration with Web Browsers | `src/main/browser-integration/` — Native Messaging Host       | 🔴 Not yet built. Requires Chrome/Firefox extension + NMH manifest installer   |
+| Feature                       | Module                                                        | Status                                                                    |
+| :---------------------------- | :------------------------------------------------------------ | :------------------------------------------------------------------------ |
+| Category Management           | `src/engine/CategoryManager.ts` — Extension → category rules  | 🟢 Built. Auto-categorizes by file extension into 7 categories            |
+| File Naming Templates         | `src/engine/NamingTemplates.ts` — Pattern-based renaming      | 🔴 Not yet built. Pattern engine (`{year}/{category}/{filename}`)         |
+| Drag-and-Drop Functionality   | `src/renderer/components/DropZone.tsx` — HTML5 drag-drop zone | 🔴 Not yet built. `onDrop` handler extracting URLs/files from drag events |
+| Integration with Web Browsers | `src/main/browser-integration/` — Native Messaging Host       | 🔴 Not yet built. Chrome/Firefox extension + NMH manifest installer       |
 
 ---
 
 ### Advanced Features
 
-| Feature                            | Module                                                         | Status                                                                                                                                                                                |
-| :--------------------------------- | :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Video Downloading                  | `src/engine/MediaEngine.ts` — yt-dlp child process wrapper     | 🔴 Not yet built. Bundle `yt-dlp` binary, parse format list, pipe progress events                                                                                                     |
-| BitTorrent Client Integration      | `src/engine/TorrentEngine.ts` — WebTorrent / libtorrent        | 🔴 Not yet built. Parse magnet URIs, display peer/seed counts, piece progress                                                                                                         |
-| File Conversion                    | `src/engine/MediaEngine.ts` — FFmpeg post-download transcoding | 🔴 Not yet built. Bundle `ffmpeg`, run remux/encode as post-processing step                                                                                                           |
-| Remote Access                      | `src/server/RemoteServer.ts` — WebSocket JSON-RPC server       | 🟡 Settings UI exists. Server not yet implemented                                                                                                                                     |
-| Security & Privacy (hash checking) | `src/engine/HashVerifier.ts` — SHA-256/MD5 calculator          | 🟡 UI modal exists ([DownloadCard.tsx](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/neobit/src/renderer/components/DownloadCard.tsx)). Needs real `crypto.createHash` stream |
+| Feature                         | Module                                                                        | Status                                                                                        |
+| :------------------------------ | :---------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| Multithreaded Hash Verification | `src/engine/workers/HashWorker.ts` — Parallel SHA-256 / SHA-512 / MD5 worker  | 🟡 UI modal exists. Moving hash calculations off the main thread to dedicated `HashWorker`    |
+| Video Downloading               | `src/engine/workers/MediaWorker.ts` — `yt-dlp` child process worker           | 🔴 Not yet built. Bundle `yt-dlp` binary, parse format list, pipe progress events             |
+| BitTorrent Client Integration   | `src/engine/workers/TorrentWorker.ts` — Multithreaded WebTorrent / libtorrent | 🔴 Not yet built. Parse magnet URIs, display peer/seed counts, piece progress off-main-thread |
+| File Conversion                 | `src/engine/workers/MediaWorker.ts` — FFmpeg post-download transcoding worker | 🔴 Not yet built. Bundle `ffmpeg`, run remux/encode as post-processing step                   |
+| Remote Access                   | `src/server/RemoteServer.ts` — WebSocket JSON-RPC server                      | 🟡 Settings UI exists. WebSocket server not yet implemented                                   |
 
 ---
 
@@ -110,38 +104,44 @@ Each row maps a feature from [features.md](file:///c:/Users/dwaip/OneDrive/Docum
 
 ---
 
-### Advanced Download Monitoring and Reporting
+### Advanced Download Monitoring & Reporting
 
-| Feature                      | Module                                                      | Status                                                            |
-| :--------------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------- |
-| Detailed Download Statistics | `src/renderer/components/StatsPanel.tsx` — Aggregate charts | 🟡 SpeedChart exists. Per-task & historical stats panel not built |
-| Bandwidth Usage Monitoring   | `src/engine/DownloadManager.ts` — Bandwidth history array   | 🟢 Built. Real-time bandwidth tracking with SVG chart             |
-| Download Logs and History    | `src/engine/Storage.ts` — SQLite history table + log viewer | 🔴 Not yet built. Using localStorage; needs SQLite migration      |
-
----
-
-### Security and Content Management
-
-| Feature           | Module                                                       | Status                                                            |
-| :---------------- | :----------------------------------------------------------- | :---------------------------------------------------------------- |
-| Malware Scanning  | `src/automation/PostProcessor.ts` — OS AV CLI trigger        | 🔴 Not yet built. Call `MpCmdRun.exe` (Windows) / `spctl` (macOS) |
-| Content Filtering | `src/engine/ContentFilter.ts` — URL/MIME blocklist           | 🔴 Not yet built                                                  |
-| Parental Controls | `src/engine/ContentFilter.ts` — Password-protected blocklist | 🔴 Not yet built                                                  |
+| Feature                      | Module                                                      | Status                                                       |
+| :--------------------------- | :---------------------------------------------------------- | :----------------------------------------------------------- |
+| Detailed Download Statistics | `src/renderer/components/StatsPanel.tsx` — Aggregate charts | 🟡 SpeedChart exists. Historical stats panel not built       |
+| Bandwidth Usage Monitoring   | `src/engine/DownloadManager.ts` — Bandwidth history array   | 🟢 Built. Real-time bandwidth tracking                       |
+| Download Logs and History    | `src/engine/Storage.ts` — SQLite history table + log viewer | 🔴 Not yet built. Using localStorage; needs SQLite migration |
 
 ---
 
-### Additional Considerations
+## Multithreaded Engine Architecture & Specs
 
-| Feature                | Module                                            | Status                                                               |
-| :--------------------- | :------------------------------------------------ | :------------------------------------------------------------------- |
-| User Interface         | Full React component suite                        | 🟢 Built. 9 components, IDE-inspired dark red theme                  |
-| Platform Compatibility | Electron + electron-builder                       | 🟢 Built. Windows NSIS, macOS DMG, Linux AppImage configs ready      |
-| Customization Options  | `src/renderer/components/SettingsModal.tsx`       | 🟢 Built. 4-tab settings panel (Engine, Network, Automation, Remote) |
-| API Integration        | `src/server/RemoteServer.ts` — WebSocket JSON-RPC | 🟡 Config UI exists. Server not implemented                          |
+### 1. `WorkerPool.ts` (Thread Pool Manager)
+
+- Spawns and manages a pool of worker threads (`worker_threads.Worker`).
+- Dynamically assigns segment download tasks to idle worker threads.
+- Implements lock-free atomic message channels (`MessageChannel`) for zero-copy data transfer between main process and worker threads.
+
+### 2. `DownloadWorker.ts` (Parallel Segment Streaming)
+
+- Each download task splits into $N$ connections (configurable 1–32 threads per file).
+- Each `DownloadWorker` executes independent `http.get` / `fetch` streams with `Range: bytes=X-Y`.
+- Writes chunks directly to disk using `fs.pwriteSync` / `fs.pwrite` at pre-calculated byte offsets in a pre-allocated file descriptor.
+- **Zero-Concatenation**: Eliminates costly post-download file merging overhead! When segment 1 and segment 2 finish, the target file is already 100% complete and intact.
+
+### 3. `DiskAllocator.ts` (Sparse File Pre-allocation)
+
+- Pre-allocates destination files instantly on initialization using native fast-allocation API (`posix_fallocate` / `SetEndOfFile`).
+- Prevents disk fragmentation on NVMe / SSD / HDD storage during simultaneous multi-connection writes.
+
+### 4. `HashWorker.ts` (Multithreaded Checksum Engine)
+
+- Offloads SHA-256, SHA-512, and MD5 calculations to background threads.
+- Uses `SharedArrayBuffer` memory buffers to stream file slices to `crypto.createHash` without copying memory buffers across threads.
 
 ---
 
-## Development Phases
+## Development Roadmap
 
 ```mermaid
 gantt
@@ -149,247 +149,66 @@ gantt
     dateFormat  YYYY-MM-DD
     axisFormat  %b %d
 
-    section Phase 1 - Foundation
-    Project scaffold & Electron shell       :done, p1a, 2026-08-03, 1d
-    UI component suite (9 components)       :done, p1b, 2026-08-03, 1d
-    Simulated download engine & state       :done, p1c, 2026-08-03, 1d
+    section Phase 1 - Foundation & UI
+    Project scaffold, Bun runtime & Electron shell  :done, p1a, 2026-08-03, 1d
+    Tailwind CSS v4 & Pure TypeScript Migration    :done, p1b, 2026-08-03, 1d
+    Simulated download engine & state UI            :done, p1c, 2026-08-03, 1d
 
-    section Phase 2 - Real Engine
-    HTTP Range chunk downloader             :p2a, after p1c, 4d
-    SQLite persistence (better-sqlite3)     :p2b, after p1c, 3d
-    Resume interrupted downloads            :p2c, after p2a, 2d
-    Token bucket rate limiter               :p2d, after p2a, 2d
+    section Phase 2 - Multithreaded Engine
+    WorkerPool & WorkerRPC infrastructure           :p2a, after p1c, 2d
+    Multithreaded DownloadWorker & Range Splitter   :p2b, after p2a, 3d
+    Direct Positioned Disk Writes (pwrite)          :p2c, after p2b, 2d
+    SQLite persistence (better-sqlite3)             :p2d, after p2b, 2d
+    Multithreaded HashWorker & Verification         :p2e, after p2c, 2d
 
-    section Phase 3 - Extended Protocols
-    BitTorrent engine (WebTorrent)          :p3a, after p2c, 4d
-    yt-dlp video extraction wrapper         :p3b, after p2c, 3d
-    FFmpeg file conversion                  :p3c, after p3b, 2d
+    section Phase 3 - Extended Protocols & Media
+    TorrentWorker (BitTorrent / WebTorrent)         :p3a, after p2e, 3d
+    MediaWorker (yt-dlp video downloader)           :p3b, after p3a, 3d
+    FFmpeg post-download transcoding worker          :p3c, after p3b, 2d
 
-    section Phase 4 - Browser & Ecosystem
-    Chrome/Firefox extension + NMH          :p4a, after p3a, 4d
-    Drag-and-drop URL/file support          :p4b, after p3a, 1d
-    File naming templates                   :p4c, after p3a, 1d
+    section Phase 4 - Browser & Integrations
+    Chrome/Firefox extension + Native Messaging Host:p4a, after p3a, 3d
+    Drag-and-drop file/URL handling                 :p4b, after p4a, 1d
 
-    section Phase 5 - Services
-    WebSocket RPC remote access server      :p5a, after p4a, 3d
-    Cloud sync adapters (GDrive/S3)         :p5b, after p5a, 3d
-    Post-processing pipeline                :p5c, after p4a, 2d
-    Malware scanning & content filter       :p5d, after p5c, 2d
+    section Phase 5 - Cloud & Services
+    WebSocket RPC Remote Server                     :p5a, after p4a, 3d
+    Cloud sync adapters (Google Drive / S3 / WebDAV):p5b, after p5a, 3d
+    Post-processing pipeline & AV scan trigger      :p5c, after p5b, 2d
 
-    section Phase 6 - Polish
-    Stats dashboard & history viewer        :p6a, after p5b, 2d
-    Parental controls                       :p6b, after p5d, 2d
-    E2E testing & packaging                 :p6c, after p6a, 3d
+    section Phase 6 - Polish & Release
+    Stats Dashboard & History Viewer                :p6a, after p5c, 2d
+    Cross-platform Packaging (NSIS, DMG, AppImage)  :p6b, after p6a, 2d
 ```
 
 ---
 
-## Phase 2 — Real Download Engine (Next Up)
+## Verification & Testing Strategy
 
-This is the critical phase that replaces the simulated engine with real network I/O.
-
-### [NEW] `src/engine/ChunkEngine.ts`
-
-Real HTTP Range multi-connection downloader:
-
-1. Send `HEAD` request → read `Accept-Ranges`, `Content-Length`, `ETag`
-2. Divide total bytes into N slices (configurable 1–32 connections)
-3. Spawn N parallel `fetch()` / `http.get()` streams with `Range: bytes=X-Y` headers
-4. Write each chunk to a `.part` file on disk via Node `fs.createWriteStream`
-5. Track per-chunk byte progress and speed, emit events to renderer via IPC
-6. On all chunks complete → concatenate `.part` files into final file
-7. Verify `ETag` or user-provided SHA-256 hash
-
-### [NEW] `src/engine/Storage.ts`
-
-Replace `localStorage` with `better-sqlite3`:
-
-- Table `downloads`: id, url, name, save_path, total_size, downloaded_size, status, category, priority, created_at, completed_at, etag, checksum
-- Table `chunks`: id, download_id, chunk_index, start_byte, end_byte, downloaded_bytes, status
-- Table `settings`: key-value store
-- Table `history`: completed download log with timestamps and speeds
-- Table `bandwidth_log`: timestamped speed samples for historical charts
-
-### [MODIFY] `src/engine/DownloadManager.ts`
-
-- Replace simulated `processEngineTick()` with real `ChunkEngine` event listeners
-- Replace `localStorage` calls with `Storage.ts` SQLite queries
-- Wire `RateLimiter.ts` token bucket to chunk download streams
-
-### [NEW] `src/engine/RateLimiter.ts`
-
-Token bucket rate limiter:
-
-- Configurable global ceiling (bytes/sec) and per-task ceiling
-- `consume(bytes)` → returns a Promise that resolves when tokens are available
-- Adaptive mode: detect system idle hours and allow full bandwidth
-
----
-
-## Phase 3 — Extended Protocols
-
-### [NEW] `src/engine/TorrentEngine.ts`
-
-- Use `webtorrent` npm package
-- Parse magnet URIs and `.torrent` files
-- Emit piece-level progress for chunk visualizer
-- Report peer count, seed count, upload speed
-- Support sequential downloading for media preview
-
-### [NEW] `src/engine/MediaEngine.ts`
-
-- Bundle `yt-dlp` and `ffmpeg` binaries in `resources/` (unpacked asar)
-- `extractFormats(url)` → spawn `yt-dlp --dump-json` → parse available formats
-- `download(url, format)` → spawn `yt-dlp -f <format> -o <path>` → pipe progress via stdout regex
-- `convert(inputPath, outputFormat)` → spawn `ffmpeg -i <input> <output>` → pipe progress
-
----
-
-## Phase 4 — Browser Integration
-
-### [NEW] `src/main/browser-integration/NativeMessagingHost.ts`
-
-- Register a Native Messaging Host manifest at OS-specific paths
-- Listen for JSON messages from browser extension via stdin
-- Forward intercepted download URLs to `DownloadManager.addDownload()`
-
-### [NEW] `extensions/chrome/`
-
-- Chrome Manifest V3 extension
-- Intercept `chrome.downloads.onDeterminingFilename` → redirect to neobit
-- Context menu "Download with neobit" on links and pages
-- Badge showing active download count
-
-### [NEW] `src/renderer/components/DropZone.tsx`
-
-- Wrap main content area in HTML5 drag-drop zone
-- Accept dragged URLs (text/uri-list) and `.torrent` files
-- Show visual overlay on drag-over, auto-open AddDownloadModal on drop
-
----
-
-## Phase 5 — Background Services
-
-### [NEW] `src/server/RemoteServer.ts`
-
-- Express or bare `ws` WebSocket server on configurable port (default 6800)
-- JSON-RPC 2.0 methods: `addUri`, `pause`, `resume`, `remove`, `tellStatus`, `getGlobalStat`
-- JWT bearer token authentication from `settings.remoteAccessKey`
-- Serves a minimal mobile-friendly web dashboard at `/`
-
-### [NEW] `src/automation/CloudSync.ts`
-
-- Adapter interface: `upload(localPath, remotePath): Promise<void>`
-- Google Drive adapter via `googleapis` SDK
-- S3-compatible adapter via `@aws-sdk/client-s3`
-- WebDAV adapter via `webdav` npm package
-- Triggered automatically on download completion if enabled
-
-### [NEW] `src/automation/PostProcessor.ts`
-
-- Pipeline: Download Complete → Hash Verify → AV Scan → Extract Archive → Cloud Upload → Notify
-- Archive extraction: `node-7z` for `.zip`, `.rar`, `.7z`, `.tar.gz`
-- AV scan: spawn `MpCmdRun.exe -Scan -ScanType 3 -File <path>` on Windows
-- User-defined shell scripts via `child_process.exec`
-
----
-
-## Phase 6 — Polish & Packaging
-
-### [NEW] `src/renderer/components/StatsPanel.tsx`
-
-- Historical bandwidth chart (hourly/daily/weekly)
-- Per-category download volume pie chart
-- Total data downloaded counter
-- Average speed and completion rate metrics
-
-### [MODIFY] `src/renderer/components/SettingsModal.tsx`
-
-- Add Parental Controls tab: password-protected URL/keyword blocklist
-- Add Content Filtering tab: MIME type and domain blocklists
-- Add Customization tab: theme color picker, font size, layout density
-
-### Packaging & Distribution
+### Automated Test Suite
 
 ```bash
-# Windows installer (NSIS)
-bun run electron:build
+# Typecheck, Lint, and Format Verification
+bun run check
 
-# macOS DMG
-bun run build && npx electron-builder --mac --x64
+# Multithreaded WorkerPool unit tests
+bun test src/engine/workers/__tests__/WorkerPool.test.ts
 
-# Linux AppImage
-bun run build && npx electron-builder --linux --x64
-```
+# Multithreaded Positioned Write (pwrite) segment tests
+bun test src/engine/workers/__tests__/DownloadWorker.test.ts
 
----
+# Multithreaded Hash Verification tests
+bun test src/engine/workers/__tests__/HashWorker.test.ts
 
-## Verification Plan
-
-### Automated Tests
-
-```bash
-# Unit tests for chunk byte-range math
-bun test src/engine/__tests__/ChunkEngine.test.ts
-
-# SQLite CRUD operations
+# SQLite Storage persistence tests
 bun test src/engine/__tests__/Storage.test.ts
-
-# Rate limiter token consumption
-bun test src/engine/__tests__/RateLimiter.test.ts
-
-# IPC contract tests
-bun test src/main/__tests__/ipc.test.ts
 ```
 
-### Manual Verification
+### Manual Verification Matrix
 
-| Test Case                       | How to Verify                                                                |
-| :------------------------------ | :--------------------------------------------------------------------------- |
-| Multi-connection split download | Download a 1GB+ test file, verify N `.part` files created, merged correctly  |
-| Resume after disconnect         | Kill network mid-download, reconnect, verify resumes from last byte offset   |
-| Rate limiting                   | Set 500 KB/s limit, verify download speed stays within ±10% of limit         |
-| BitTorrent                      | Add a magnet link, verify peer discovery and piece download                  |
-| Video extraction                | Paste a YouTube URL, verify format selection and download                    |
-| Browser extension               | Install Chrome extension, click a download link, verify it routes to neobit  |
-| Remote access                   | Connect from mobile browser to `ws://localhost:6800`, add a download         |
-| Production packaging            | Build installer, install on clean Windows machine, verify full functionality |
-
----
-
-## Current Project Structure
-
-```
-neobit/
-├── index.html                          # Vite entry HTML
-├── package.json                        # ESM, Electron, electron-builder config
-├── vite.config.ts                      # Vite + React plugin
-├── tailwind.config.js                  # Red accent design tokens
-├── tsconfig.json                       # TypeScript config
-├── public/
-│   └── icon.png                        # App icon (tray, window, installer)
-├── src/
-│   ├── main/
-│   │   ├── main.ts                     # Electron main process
-│   │   └── preload.ts                  # contextBridge API
-│   ├── engine/
-│   │   ├── types.ts                    # Data models & interfaces
-│   │   ├── CategoryManager.ts          # Extension → category rules
-│   │   └── DownloadManager.ts          # Task scheduler & state (simulated)
-│   └── renderer/
-│       ├── main.tsx                    # React entry point
-│       ├── App.tsx                     # Root component
-│       ├── index.css                   # Tailwind + custom styles
-│       └── components/
-│           ├── Sidebar.tsx             # Explorer tree + filters
-│           ├── Header.tsx              # Toolbar + speed badges
-│           ├── DownloadList.tsx         # Task list container
-│           ├── DownloadCard.tsx         # Individual task card
-│           ├── ChunkProgress.tsx        # Chunk segment visualizer
-│           ├── SpeedChart.tsx           # Real-time SVG bandwidth graph
-│           ├── EngineTerminal.tsx       # Bottom terminal drawer
-│           ├── AddDownloadModal.tsx     # New download dialog
-│           └── SettingsModal.tsx        # 4-tab preferences
-├── dist/                               # Vite production build output
-└── dist-electron/                      # Compiled Electron main/preload (.cjs)
-```
+| Test Case                           | Verification Procedure                                                                                         |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| **Multithreaded 32-Chunk Split**    | Download a 5GB test file across 32 worker threads; verify CPU load is distributed and file writes cleanly.     |
+| **Zero-Concatenation Verification** | Verify file is written directly at offset positions without creating `.part0`, `.part1` temp files to merge.   |
+| **Non-blocking UI Test**            | Verify UI maintains 60 FPS scrolling and real-time bandwidth graph while 10 threads write to disk.             |
+| **Multi-thread Hash Check**         | Run SHA-256 verification on a 10GB file; verify main thread remains 100% responsive while HashWorker computes. |
+| **Resume Interrupted Download**     | Sever connection mid-download, reconnect, verify byte ranges resume from exact unwritten offsets.              |
