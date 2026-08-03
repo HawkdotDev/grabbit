@@ -102,7 +102,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 
           {/* Save Directory */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+            <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
               <Folder className="h-3.5 w-3.5 text-slate-400" />
               Save Path
             </label>
@@ -117,7 +117,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
           {/* Thread Count & Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
                 <span className="flex items-center gap-1">
                   <Sliders className="h-3.5 w-3.5 text-cyan-400" />
                   Thread Count

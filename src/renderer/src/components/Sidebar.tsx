@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div>
         <div className="p-5 flex items-center justify-between border-b border-slate-800/80">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
+            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
               <Download className="h-5 w-5 text-white" />
             </div>
             <div>

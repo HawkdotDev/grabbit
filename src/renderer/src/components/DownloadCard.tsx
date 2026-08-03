@@ -211,7 +211,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                   ? 'bg-rose-500'
                   : download.status === 'paused'
                     ? 'bg-amber-500'
-                    : 'bg-gradient-to-r from-cyan-500 to-blue-600'
+                    : 'bg-linear-to-r from-cyan-500 to-blue-600'
             }`}
             style={{ width: `${pct}%` }}
           />
