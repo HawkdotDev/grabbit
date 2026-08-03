@@ -89,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'downloading',
       label: 'Downloading',
-      icon: <Activity className="h-3.5 w-3.5 text-[#e44232]" />
+      icon: <Activity className="h-3.5 w-3.5 text-[#009669]" />
     },
     {
       id: 'seeding',
@@ -152,20 +152,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       className="bg-[#1e1e1e] flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none"
     >
       <div className="space-y-3">
-        {/* Divided Top Action Buttons (Non-task related: Settings & Analytics) */}
+        {/* Divided Top Action Buttons */}
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenSettingsModal}
             className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-slate-200 border border-white/5 rounded-none font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
             title="Open Preferences & Engine Settings"
           >
-            <Sliders className="h-3.5 w-3.5 text-[#e44232]" />
+            <Sliders className="h-3.5 w-3.5 text-[#009669]" />
             <span>Settings</span>
           </button>
 
           <button
             onClick={onToggleAnalytics}
-            className="flex-1 py-1.5 px-2 bg-[#381c1c] hover:bg-[#482424] active:scale-[0.98] text-[#e44232] border border-[#e44232]/30 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="flex-1 py-1.5 px-2 bg-[#063e2c] hover:bg-[#064e37] active:scale-[0.98] text-[#009669] border border-[#009669]/30 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
             title="Toggle Bandwidth & Engine Diagnostics"
           >
             <Activity className="h-3.5 w-3.5" />
@@ -198,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => setActiveStatusFilter(st.id)}
                     className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
                       isActive
-                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        ? 'bg-[#063e2c] text-[#009669] font-semibold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -239,7 +239,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => setActiveCategory(cat.id)}
                     className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
                       isActive
-                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        ? 'bg-[#063e2c] text-[#009669] font-semibold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -283,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => setActiveTag(tg.id)}
                     className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
                       isActive
-                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        ? 'bg-[#063e2c] text-[#009669] font-semibold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -329,12 +329,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => setActiveTrackerFilter(tr.id)}
                     className={`w-full flex items-center justify-between px-2 py-1.5 transition cursor-pointer text-xs font-medium rounded-none ${
                       isActive
-                        ? 'bg-[#381c1c] text-[#e44232] font-semibold'
+                        ? 'bg-[#063e2c] text-[#009669] font-semibold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Globe className="h-3.5 w-3.5 text-[#e44232]" />
+                      <Globe className="h-3.5 w-3.5 text-[#009669]" />
                       <span>{tr.label}</span>
                     </div>
                     <span className="font-mono text-[11px] text-slate-400">

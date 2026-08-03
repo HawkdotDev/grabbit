@@ -9,13 +9,13 @@ interface HashModalProps {
   onVerify: (
     id: string,
     expectedHash: string,
-    algo: 'sha256' | 'md5' | 'sha512'
+    algo: 'md5' | 'sha256' | 'sha512'
   ) => Promise<{ matches: boolean; actualHash: string }>
 }
 
 export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose, onVerify }) => {
+  const [algo, setAlgo] = useState<'md5' | 'sha256' | 'sha512'>('sha256')
   const [expectedHash, setExpectedHash] = useState('')
-  const [algo, setAlgo] = useState<'sha256' | 'md5' | 'sha512'>('sha256')
   const [isVerifying, setIsVerifying] = useState(false)
   const [result, setResult] = useState<{ matches: boolean; actualHash: string } | null>(null)
 
@@ -23,14 +23,16 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
 
   const handleVerify = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
+    if (!expectedHash.trim()) return
+
     setIsVerifying(true)
     setResult(null)
 
     try {
-      const res = await onVerify(download.id, expectedHash, algo)
+      const res = await onVerify(download.id, expectedHash.trim(), algo)
       setResult(res)
-    } catch (err) {
-      console.error(err)
+    } catch {
+      setResult({ matches: false, actualHash: 'Error calculating hash' })
     } finally {
       setIsVerifying(false)
     }
@@ -38,15 +40,15 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
-      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in duration-200">
+      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="p-5 border-b border-[#2e2e2e] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#381c1c] text-[#e44232] rounded-none border border-[#e44232]/20">
+            <div className="p-2 bg-[#063e2c] text-[#009669] rounded-none border border-[#009669]/20">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">Cryptographic Hash Check</h2>
+              <h2 className="text-base font-bold text-slate-100">Checksum Integrity Verifier</h2>
               <p className="text-xs text-slate-400 truncate max-w-xs">{download.name}</p>
             </div>
           </div>
@@ -60,23 +62,28 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
 
         {/* Form Body */}
         <form onSubmit={handleVerify} className="p-6 space-y-4">
-          <div className="grid grid-cols-3 gap-3">
-            {(['sha256', 'md5', 'sha512'] as const).map((a) => (
-              <button
-                key={a}
-                type="button"
-                onClick={() => setAlgo(a)}
-                className={`py-2 rounded-none text-xs font-mono font-bold uppercase transition cursor-pointer border ${
-                  algo === a
-                    ? 'bg-[#381c1c] text-[#e44232] border-[#e44232]/40'
-                    : 'bg-[#141414] text-slate-400 border-[#2e2e2e] hover:text-slate-200'
-                }`}
-              >
-                {a}
-              </button>
-            ))}
+          {/* Algorithm Selection */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">Algorithm</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['sha256', 'sha512', 'md5'] as const).map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => setAlgo(a)}
+                  className={`py-2 px-3 text-xs font-mono font-bold border transition cursor-pointer rounded-none uppercase ${
+                    algo === a
+                      ? 'bg-[#063e2c] text-[#009669] border-[#009669]/40'
+                      : 'bg-[#141414] text-slate-400 border-[#2e2e2e] hover:text-slate-200'
+                  }`}
+                >
+                  {a}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* Expected Hash */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
               Expected Checksum Hash
@@ -86,35 +93,30 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
               required
               value={expectedHash}
               onChange={(e) => setExpectedHash(e.target.value)}
-              placeholder="Paste SHA-256 / MD5 hash..."
-              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
+              placeholder="e.g. e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
             />
           </div>
 
-          {/* Result Panel */}
+          {/* Verification Result Banner */}
           {result && (
             <div
-              className={`p-4 border font-mono text-xs space-y-1.5 rounded-none ${
+              className={`p-3 border rounded-none flex items-start gap-2.5 ${
                 result.matches
                   ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
                   : 'bg-rose-950/60 border-rose-800 text-rose-300'
               }`}
             >
-              <div className="flex items-center gap-2 font-bold">
-                {result.matches ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                    <span>HASH MATCHED — File Verified Intact</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="h-4 w-4 text-rose-400" />
-                    <span>HASH MISMATCH — Checksum Failed</span>
-                  </>
-                )}
-              </div>
-              <div className="text-[11px] text-slate-400 break-all">
-                Actual Hash: {result.actualHash}
+              {result.matches ? (
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
+              ) : (
+                <AlertTriangle className="h-5 w-5 shrink-0 text-rose-400" />
+              )}
+              <div className="space-y-1 font-mono text-[11px]">
+                <div className="font-bold">
+                  {result.matches ? 'Checksum Match Verified!' : 'Checksum Mismatch Detected'}
+                </div>
+                <div>Calculated: {result.actualHash}</div>
               </div>
             </div>
           )}
@@ -130,11 +132,11 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
             </button>
             <button
               type="submit"
-              disabled={isVerifying}
-              className="px-5 py-2 text-xs font-bold text-white bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 rounded-none shadow-lg shadow-[#e44232]/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              disabled={isVerifying || !expectedHash.trim()}
+              className="px-5 py-2 text-xs font-bold text-white bg-[#009669] hover:bg-[#059669] active:scale-95 rounded-none shadow-lg shadow-[#009669]/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isVerifying && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span>{isVerifying ? 'Calculating...' : 'Verify Hash'}</span>
+              <span>Verify Integrity</span>
             </button>
           </div>
         </form>

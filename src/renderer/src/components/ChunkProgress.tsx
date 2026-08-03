@@ -20,7 +20,7 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
   return (
     <div className="mt-3 p-3 bg-[#141414] border border-[#2e2e2e] space-y-2 font-mono rounded-none">
       <div className="flex items-center justify-between text-[11px] text-slate-400">
-        <span className="text-[#e44232] font-bold">
+        <span className="text-[#009669] font-bold">
           Multi-Thread Chunk Split ({chunks.length} Threads)
         </span>
         <span>Parallel Positioned Writes (pwrite)</span>
@@ -35,7 +35,7 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
           if (chunk.status === 'completed')
             statusBg = 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
           if (chunk.status === 'downloading')
-            statusBg = 'bg-[#381c1c] border-[#e44232]/40 text-[#e44232]'
+            statusBg = 'bg-[#063e2c] border-[#009669]/40 text-[#009669]'
           if (chunk.status === 'paused')
             statusBg = 'bg-amber-950/60 border-amber-800 text-amber-400'
           if (chunk.status === 'error') statusBg = 'bg-rose-950/60 border-rose-800 text-rose-400'
@@ -47,7 +47,7 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
             >
               {/* Internal progress bar */}
               <div
-                className="absolute left-0 top-0 bottom-0 bg-[#e44232]/20 transition-all duration-300 rounded-none"
+                className="absolute left-0 top-0 bottom-0 bg-[#009669]/20 transition-all duration-300 rounded-none"
                 style={{ width: `${pct}%` }}
               />
 

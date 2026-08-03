@@ -33,7 +33,7 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = ({ downloads, glo
       {/* Left Node Status */}
       <div className="flex items-center gap-4">
         <span className="flex items-center gap-1.5 text-slate-300">
-          <span className="h-2 w-2 bg-emerald-500 rounded-none animate-pulse" />
+          <span className="h-2 w-2 bg-[#009669] rounded-none animate-pulse" />
           <span>DHT: 89 nodes</span>
         </span>
         <span className="text-slate-500">|</span>
@@ -44,7 +44,7 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = ({ downloads, glo
 
       {/* Right Global Speed & Traffic Badges */}
       <div className="flex items-center gap-5">
-        <span className="flex items-center gap-1 text-[#e44232] font-semibold">
+        <span className="flex items-center gap-1 text-[#009669] font-semibold">
           <Activity className="h-3 w-3" />
           <span>
             D: {formatSpeed(globalSpeed)} ({formatBytes(totalDownloaded)})

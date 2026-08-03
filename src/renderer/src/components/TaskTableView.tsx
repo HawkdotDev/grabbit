@@ -199,7 +199,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = ({
                   onClick={() => onSelect(d.id)}
                   className={`transition cursor-pointer ${
                     isSelected
-                      ? 'bg-[#381c1c] text-white font-semibold'
+                      ? 'bg-[#063e2c] text-white font-semibold'
                       : 'hover:bg-white/5 text-slate-300'
                   }`}
                 >
@@ -226,7 +226,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = ({
                                 ? 'bg-rose-600'
                                 : d.status === 'paused'
                                   ? 'bg-amber-600'
-                                  : 'bg-[#e44232]'
+                                  : 'bg-[#009669]'
                           }`}
                           style={{ width: `${pct}%` }}
                         />
@@ -244,7 +244,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = ({
                         d.status === 'completed' || d.status === 'seeding'
                           ? 'text-emerald-400 font-bold'
                           : d.status === 'downloading'
-                            ? 'text-[#e44232] font-bold'
+                            ? 'text-[#009669] font-bold'
                             : d.status === 'error'
                               ? 'text-rose-400'
                               : 'text-amber-400'
@@ -294,7 +294,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = ({
                             e.stopPropagation()
                             onResume(d.id)
                           }}
-                          className="p-1 text-[#e44232] hover:bg-white/10 rounded-none cursor-pointer"
+                          className="p-1 text-[#009669] hover:bg-white/10 rounded-none cursor-pointer"
                           title="Resume"
                         >
                           <Play className="h-3.5 w-3.5" />

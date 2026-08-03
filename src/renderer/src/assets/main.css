@@ -6,9 +6,9 @@
   --color-ide-surface: #1e1e1e;
   --color-ide-card: #252525;
   --color-ide-border: #2e2e2e;
-  --color-coral-accent: #e44232;
-  --color-coral-bright: #ff4d3d;
-  --color-coral-tint: #381c1c;
+  --color-theme-accent: #009669;
+  --color-theme-bright: #059669;
+  --color-theme-tint: #063e2c;
 }
 
 .style-drag {
@@ -35,7 +35,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #e44232;
+  background: #009669;
 }
 
 ::-webkit-scrollbar-corner {

@@ -257,7 +257,7 @@ export function App(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#141414] text-slate-100 font-sans antialiased selection:bg-[#e44232] selection:text-white rounded-none">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#141414] text-slate-100 font-sans antialiased selection:bg-[#009669] selection:text-white rounded-none">
       {/* Top Window Bar & File Menu Toolbar */}
       <TopBar
         onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -293,7 +293,7 @@ export function App(): React.JSX.Element {
         {/* Vertical Resize Handle between Sidebar and Workspace */}
         <div
           onMouseDown={handleSidebarMouseDown}
-          className="w-[2px] cursor-col-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
+          className="w-[2px] cursor-col-resize hover:bg-[#009669] active:bg-[#059669] bg-[#2e2e2e] transition shrink-0 z-30"
           title="Drag to resize sidebar"
         />
 
@@ -315,7 +315,7 @@ export function App(): React.JSX.Element {
           {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
           <div
             onMouseDown={handleInspectorMouseDown}
-            className="h-[2px] cursor-row-resize hover:bg-[#e44232] active:bg-[#ff4d3d] bg-[#2e2e2e] transition shrink-0 z-30"
+            className="h-[2px] cursor-row-resize hover:bg-[#009669] active:bg-[#059669] bg-[#2e2e2e] transition shrink-0 z-30"
             title="Drag to resize inspector pane"
           />
 

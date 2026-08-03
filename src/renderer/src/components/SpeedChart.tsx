@@ -40,7 +40,7 @@ export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
     <div className="bg-[#1e1e1e] border border-[#2e2e2e] p-4 shadow-md mb-4 text-xs font-sans rounded-none">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 bg-[#e44232] animate-ping rounded-none" />
+          <span className="h-2.5 w-2.5 bg-[#009669] animate-ping rounded-none" />
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-200">
             Real-time Bandwidth Usage
           </h3>
@@ -49,7 +49,7 @@ export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
           <span className="text-slate-400">
             Peak: <strong className="text-slate-200">{formatSpeed(maxSpeed)}</strong>
           </span>
-          <span className="text-[#e44232] font-bold">Current: {formatSpeed(currentSpeed)}</span>
+          <span className="text-[#009669] font-bold">Current: {formatSpeed(currentSpeed)}</span>
         </div>
       </div>
 
@@ -60,19 +60,19 @@ export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
           preserveAspectRatio="none"
         >
           <defs>
-            <linearGradient id="coralGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#e44232" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#e44232" stopOpacity="0.0" />
+            <linearGradient id="emeraldGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#009669" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#009669" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
           {/* Area under curve */}
-          <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#coralGrad)" />
+          <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#emeraldGrad)" />
 
           {/* Line path */}
           <polyline
             fill="none"
-            stroke="#e44232"
+            stroke="#009669"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"

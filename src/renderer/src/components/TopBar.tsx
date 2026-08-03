@@ -73,13 +73,13 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header className="bg-[#1e1e1e] border-b border-[#2e2e2e] flex flex-col select-none font-sans rounded-none">
-      {/* Upper Window Title & Menu Bar Row (qBittorrent style File Edit View Tools Help) */}
+      {/* Upper Window Title & Menu Bar Row */}
       <div className="h-10 px-3 flex items-center justify-between border-b border-[#292929] style-drag">
         {/* Left App Logo & Menu Items */}
         <div className="flex items-center gap-4 style-no-drag">
           <div className="flex items-center gap-2 font-bold text-xs text-white">
-            <span className="h-2.5 w-2.5 bg-[#e44232] rounded-none animate-pulse" />
-            <span className="text-[#e44232]">Neobit</span>
+            <span className="h-2.5 w-2.5 bg-[#009669] rounded-none animate-pulse" />
+            <span className="text-[#009669]">Neobit</span>
             <span className="text-slate-400 font-mono text-[11px]">
               [D: {formatSpeed(globalSpeed)}, U: 0 B/s]
             </span>
@@ -104,7 +104,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                         onOpenAddModal()
                         setActiveMenu(null)
                       }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-[#381c1c] hover:text-[#e44232] text-xs flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 hover:bg-[#063e2c] hover:text-[#009669] text-xs flex items-center gap-2"
                     >
                       <Plus className="h-3.5 w-3.5" /> Add New Torrent/URL
                     </button>
@@ -113,7 +113,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                         onOpenSettingsModal()
                         setActiveMenu(null)
                       }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-[#381c1c] hover:text-[#e44232] text-xs flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 hover:bg-[#063e2c] hover:text-[#009669] text-xs flex items-center gap-2"
                     >
                       <Sliders className="h-3.5 w-3.5" /> Options &amp; Settings
                     </button>
@@ -126,8 +126,8 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Status & Frameless Window Controls */}
         <div className="flex items-center gap-3 style-no-drag">
-          <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 text-xs font-semibold text-[#e44232] border border-white/5 rounded-none">
-            <Zap className="h-3.5 w-3.5 fill-[#e44232]/20" />
+          <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 text-xs font-semibold text-[#009669] border border-white/5 rounded-none">
+            <Zap className="h-3.5 w-3.5 fill-[#009669]/20" />
             <span>Neobit v1.0.0</span>
           </div>
 
@@ -168,7 +168,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="flex items-center gap-2 overflow-x-auto py-1">
           <button
             onClick={onOpenAddModal}
-            className="px-3 py-1 bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer rounded-none"
+            className="px-3 py-1 bg-[#009669] hover:bg-[#059669] active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer rounded-none"
             title="Add New Download"
           >
             <Plus className="h-4 w-4 stroke-[2.5]" />
@@ -207,7 +207,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold border border-white/5 flex items-center gap-1.5 transition cursor-pointer rounded-none"
             title="Options & Preferences"
           >
-            <Sliders className="h-3.5 w-3.5 text-[#e44232]" />
+            <Sliders className="h-3.5 w-3.5 text-[#009669]" />
             <span>Options</span>
           </button>
         </div>
@@ -221,12 +221,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter torrents/files..."
-              className="bg-[#1e1e1e] text-slate-100 placeholder-slate-500 text-xs pl-8 pr-3 py-1 border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-sans w-52 rounded-none"
+              className="bg-[#1e1e1e] text-slate-100 placeholder-slate-500 text-xs pl-8 pr-3 py-1 border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-sans w-52 rounded-none"
             />
           </div>
 
           <div className="flex items-center gap-1 bg-[#1e1e1e] border border-[#2e2e2e] px-2 py-1 text-xs text-slate-300 rounded-none">
-            <Filter className="h-3.5 w-3.5 text-[#e44232]" />
+            <Filter className="h-3.5 w-3.5 text-[#009669]" />
             <span className="text-[11px] text-slate-400">Filter by:</span>
             <select
               value={filterBy}

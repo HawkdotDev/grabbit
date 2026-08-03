@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { EngineSettings } from '../../../engine/types'
-import { X, Sliders, Wifi, Bot, Server } from 'lucide-react'
+import { X, Sliders, Folder, Network, Cpu, Bell, Laptop } from 'lucide-react'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -15,25 +15,48 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   settings,
   onSave
 }) => {
-  const [activeTab, setActiveTab] = useState<'engine' | 'network' | 'automation' | 'remote'>(
-    'engine'
-  )
-  const [formData, setFormData] = useState<EngineSettings>({ ...settings })
+  const [activeTab, setActiveTab] = useState<'engine' | 'network' | 'general'>('engine')
+
+  const [maxConcurrent, setMaxConcurrent] = useState(settings.maxConcurrentDownloads)
+  const [defaultThreads, setDefaultThreads] = useState(settings.defaultThreadCount)
+  const [maxGlobalSpeed, setMaxGlobalSpeed] = useState(settings.maxGlobalSpeedLimitKbps)
+  const [savePath, setSavePath] = useState(settings.defaultSavePath)
+  const [autoCategorize, setAutoCategorize] = useState(settings.autoCategorize)
+  const [enableNotifications, setEnableNotifications] = useState(settings.enableNotifications)
+  const [startOnBoot, setStartOnBoot] = useState(settings.startOnBoot)
 
   if (!isOpen) return null
 
   const handleSave = (e: React.FormEvent): void => {
     e.preventDefault()
-    onSave(formData)
+    onSave({
+      maxConcurrentDownloads: maxConcurrent,
+      defaultThreadCount: defaultThreads,
+      maxGlobalSpeedLimitKbps: maxGlobalSpeed,
+      defaultSavePath: savePath,
+      autoCategorize,
+      enableNotifications,
+      startOnBoot
+    })
     onClose()
   }
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
-      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in duration-200">
+      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="p-5 border-b border-[#2e2e2e] flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-100">Preferences &amp; Engine Settings</h2>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-[#063e2c] text-[#009669] rounded-none border border-[#009669]/20">
+              <Sliders className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-100">
+                Preferences &amp; Engine Settings
+              </h2>
+              <p className="text-xs text-slate-400">Configure core download parameters &amp; RPC</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-none transition cursor-pointer"
@@ -43,82 +66,63 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-[#2e2e2e] bg-[#141414] px-4 pt-2">
+        <div className="flex border-b border-[#2e2e2e] bg-[#141414]">
           {[
-            { id: 'engine', label: 'Engine', icon: Sliders },
-            { id: 'network', label: 'Network & Bandwidth', icon: Wifi },
-            { id: 'automation', label: 'Automation', icon: Bot },
-            { id: 'remote', label: 'Remote RPC', icon: Server }
-          ].map((tab) => {
-            const Icon = tab.icon
-            const isActive = activeTab === tab.id
+            { id: 'engine', label: 'Engine & Threads', icon: Cpu },
+            { id: 'network', label: 'Bandwidth & RPC', icon: Network },
+            { id: 'general', label: 'General & Storage', icon: Laptop }
+          ].map((t) => {
+            const Icon = t.icon
+            const isActive = activeTab === t.id
             return (
               <button
-                key={tab.id}
-                onClick={() =>
-                  setActiveTab(tab.id as 'engine' | 'network' | 'automation' | 'remote')
-                }
-                className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition cursor-pointer ${
+                key={t.id}
+                onClick={() => setActiveTab(t.id as 'engine' | 'network' | 'general')}
+                className={`flex-1 py-3 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition cursor-pointer rounded-none ${
                   isActive
-                    ? 'border-[#e44232] text-[#e44232] font-bold'
+                    ? 'border-[#009669] text-[#009669] font-bold'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Icon className="h-4 w-4" />
-                <span>{tab.label}</span>
+                <span>{t.label}</span>
               </button>
             )
           })}
         </div>
 
-        {/* Tab Body */}
-        <form onSubmit={handleSave} className="p-6 space-y-4">
+        {/* Settings Body */}
+        <form onSubmit={handleSave} className="p-6 space-y-5">
           {activeTab === 'engine' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+                  <span>Default Thread Count per Download</span>
+                  <span className="font-mono text-[#009669] font-bold">
+                    {defaultThreads} Threads
+                  </span>
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="32"
+                  value={defaultThreads}
+                  onChange={(e) => setDefaultThreads(parseInt(e.target.value, 10))}
+                  className="w-full accent-[#009669] cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   Max Concurrent Downloads
                 </label>
                 <input
                   type="number"
                   min="1"
                   max="20"
-                  value={formData.maxConcurrentDownloads}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      maxConcurrentDownloads: parseInt(e.target.value, 10)
-                    })
-                  }
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Default Thread Count per File
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="32"
-                  value={formData.defaultThreadCount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, defaultThreadCount: parseInt(e.target.value, 10) })
-                  }
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Default Save Path
-                </label>
-                <input
-                  type="text"
-                  value={formData.defaultSavePath}
-                  onChange={(e) => setFormData({ ...formData, defaultSavePath: e.target.value })}
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
+                  value={maxConcurrent}
+                  onChange={(e) => setMaxConcurrent(parseInt(e.target.value, 10))}
+                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
                 />
               </div>
             </div>
@@ -127,67 +131,76 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'network' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Global Bandwidth Speed Limit (KB/s) — 0 = Unlimited
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Global Speed Limit (KB/s) [0 = Unlimited]
                 </label>
                 <input
                   type="number"
                   min="0"
-                  value={formData.maxGlobalSpeedLimitKbps}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      maxGlobalSpeedLimitKbps: parseInt(e.target.value, 10) || 0
-                    })
-                  }
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#e44232] font-mono"
+                  step="100"
+                  value={maxGlobalSpeed}
+                  onChange={(e) => setMaxGlobalSpeed(parseInt(e.target.value, 10))}
+                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
                 />
               </div>
             </div>
           )}
 
-          {activeTab === 'automation' && (
-            <div className="space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer">
+          {activeTab === 'general' && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+                  <Folder className="h-3.5 w-3.5 text-slate-400" />
+                  Default Save Path
+                </label>
                 <input
-                  type="checkbox"
-                  checked={formData.autoCategorize}
-                  onChange={(e) => setFormData({ ...formData, autoCategorize: e.target.checked })}
-                  className="h-4 w-4 accent-[#e44232] rounded-none"
+                  type="text"
+                  value={savePath}
+                  onChange={(e) => setSavePath(e.target.value)}
+                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
                 />
-                <span className="text-xs text-slate-300 font-medium">
-                  Auto-categorize downloads by file extension
-                </span>
-              </label>
+              </div>
 
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.enableNotifications}
-                  onChange={(e) =>
-                    setFormData({ ...formData, enableNotifications: e.target.checked })
-                  }
-                  className="h-4 w-4 accent-[#e44232] rounded-none"
-                />
-                <span className="text-xs text-slate-300 font-medium">
-                  Show system notification when a download completes
-                </span>
-              </label>
-            </div>
-          )}
+              <div className="space-y-3 pt-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoCategorize}
+                    onChange={(e) => setAutoCategorize(e.target.checked)}
+                    className="h-4 w-4 accent-[#009669] rounded-none"
+                  />
+                  <span className="text-xs text-slate-300">
+                    Auto-categorize downloads by extension
+                  </span>
+                </label>
 
-          {activeTab === 'remote' && (
-            <div className="space-y-3 text-xs text-slate-400">
-              <p>WebSocket JSON-RPC Server interface configured at port 6800.</p>
-              <div className="p-3 bg-[#141414] border border-[#2e2e2e] font-mono text-[11px] space-y-1 rounded-none">
-                <div>Status: Available</div>
-                <div>RPC Port: 6800</div>
-                <div>Token: neobit_secret_key</div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={enableNotifications}
+                    onChange={(e) => setEnableNotifications(e.target.checked)}
+                    className="h-4 w-4 accent-[#009669] rounded-none"
+                  />
+                  <span className="text-xs text-slate-300 flex items-center gap-1.5">
+                    <Bell className="h-3.5 w-3.5 text-slate-400" />
+                    Show system notification on completion
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={startOnBoot}
+                    onChange={(e) => setStartOnBoot(e.target.checked)}
+                    className="h-4 w-4 accent-[#009669] rounded-none"
+                  />
+                  <span className="text-xs text-slate-300">Start Neobit on system boot</span>
+                </label>
               </div>
             </div>
           )}
 
-          {/* Buttons */}
+          {/* Footer Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2e2e2e]">
             <button
               type="button"
@@ -198,9 +211,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-[#e44232] hover:bg-[#ff4d3d] active:scale-95 rounded-none shadow-lg shadow-[#e44232]/20 transition cursor-pointer"
+              className="px-5 py-2 text-xs font-bold text-white bg-[#009669] hover:bg-[#059669] active:scale-95 rounded-none shadow-lg shadow-[#009669]/20 transition cursor-pointer"
             >
-              Save Settings
+              Save Preferences
             </button>
           </div>
         </form>

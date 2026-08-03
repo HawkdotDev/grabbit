@@ -49,7 +49,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
       style={{ height }}
       className="bg-[#1e1e1e] border-t border-[#2e2e2e] flex flex-col font-sans text-xs select-none shrink-0"
     >
-      {/* Bottom Tab Bar (qBittorrent style pill tabs at bottom) */}
+      {/* Bottom Tab Bar */}
       <div className="h-9 px-3 bg-[#141414] border-b border-[#292929] flex items-center justify-between">
         <div className="flex items-center gap-1">
           {tabs.map((t) => {
@@ -65,7 +65,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
                 }
                 className={`px-3 py-1 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer rounded-none border-b-2 ${
                   isActive
-                    ? 'border-[#e44232] text-[#e44232] bg-[#381c1c] font-bold'
+                    ? 'border-[#009669] text-[#009669] bg-[#063e2c] font-bold'
                     : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 }`}
               >
@@ -95,7 +95,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
             {activeTab === 'general' && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-sans text-xs">
                 <div className="space-y-2 bg-[#1e1e1e] p-3 border border-[#2e2e2e] rounded-none">
-                  <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#e44232]">
+                  <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#009669]">
                     Transfer Information
                   </div>
                   <div className="flex justify-between font-mono">
@@ -117,7 +117,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
                 </div>
 
                 <div className="space-y-2 bg-[#1e1e1e] p-3 border border-[#2e2e2e] rounded-none">
-                  <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#e44232]">
+                  <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#009669]">
                     Connection &amp; Speed
                   </div>
                   <div className="flex justify-between font-mono">
@@ -141,7 +141,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
                 </div>
 
                 <div className="space-y-2 bg-[#1e1e1e] p-3 border border-[#2e2e2e] rounded-none">
-                  <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#e44232]">
+                  <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#009669]">
                     File Diagnostics
                   </div>
                   <div className="flex justify-between font-mono">
@@ -152,7 +152,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
                   </div>
                   <div className="flex justify-between font-mono">
                     <span className="text-slate-400">Info Hash:</span>
-                    <span className="truncate max-w-[140px] text-[#e44232]">
+                    <span className="truncate max-w-[140px] text-[#009669]">
                       {download.infoHash || download.checksum || 'N/A'}
                     </span>
                   </div>
@@ -220,7 +220,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = ({
             {activeTab === 'sources' && (
               <div className="space-y-2 font-mono">
                 <div className="p-2.5 bg-[#1e1e1e] border border-[#2e2e2e] flex items-center justify-between">
-                  <span className="text-[#e44232] font-semibold">{download.url}</span>
+                  <span className="text-[#009669] font-semibold">{download.url}</span>
                   <span className="text-emerald-400 font-bold">Primary Range Source OK</span>
                 </div>
               </div>
