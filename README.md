@@ -55,20 +55,20 @@ Designed with an emerald green (`#009669`) theme and dark matte aesthetic, Grabb
 
 | Layer                         | Technology                                                                                                                                                                                                                |
 | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Desktop Framework**         | [Electron v35](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L47)                                                                                                             |
-| **Frontend Framework**        | [React v19](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L40)                                                                                                                |
-| **Language**                  | [TypeScript v5.8](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L61)                                                                                                          |
-| **Styling**                   | [Tailwind CSS v4](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L37) (Vanilla CSS theme tokens)                                                                               |
-| **Build & Bundler**           | [electron-vite](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L53) + [Vite v6](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L63) |
-| **Runtime & Package Manager** | [Bun](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L32)                                                                                                                      |
-| **Icons**                     | [Lucide React](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/package.json#L39)                                                                                                             |
+| **Desktop Framework**         | [Electron v35](package.json)                                                                                                                                 |
+| **Frontend Framework**        | [React v19](package.json)                                                                                                                                    |
+| **Language**                  | [TypeScript v5.8](package.json)                                                                                                                              |
+| **Styling**                   | [Tailwind CSS v4](package.json) (Vanilla CSS theme tokens)                                                                                                   |
+| **Build & Bundler**           | [electron-vite](package.json) + [Vite v6](package.json)                                                                                                      |
+| **Runtime & Package Manager** | [Bun](package.json)                                                                                                                                          |
+| **Icons** font                | [Lucide React](package.json)                                                                                                                                 |
 
 ---
 
 ## 📂 Project Architecture
 
 ```
-neobit/
+grabbit/
 ├── src/
 │   ├── engine/                   # Core Download Engine Architecture
 │   │   ├── ChunkEngine.ts        # Parallel HTTP range downloader & worker threads
