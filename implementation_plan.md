@@ -53,6 +53,7 @@ graph TB
 ### 1. Real Multi-Threaded HTTP Range Downloader & Direct `pwrite` Disk Writer
 
 #### Scope & Architecture:
+
 - Upgrade `src/engine/ChunkEngine.ts` to execute real HTTP `Range: bytes=X-Y` requests for each chunk.
 - Open file handles using `fs.openSync(path, 'r+')` and write incoming chunk stream buffers directly using `fs.writeSync(fd, buffer, 0, buffer.length, currentOffset)`.
 - **Zero Concatenation**: Eliminates intermediate segment files (`.part0`, `.part1`). Files are written at exact byte offsets in real time.
@@ -62,6 +63,7 @@ graph TB
 ### 2. Bandwidth Governor & Token-Bucket RateLimiter Integration
 
 #### Scope & Architecture:
+
 - Connect `src/engine/RateLimiter.ts` to `ChunkEngine` stream throttlers.
 - When `maxGlobalSpeedLimitKbps` is configured in `SettingsModal.tsx`, throttle chunk stream chunks via `RateLimiter.removeTokens(bytes)`.
 
@@ -70,6 +72,7 @@ graph TB
 ### 3. OS Desktop Notifications & Auto-Start Configuration
 
 #### Scope & Architecture:
+
 - Trigger Electron `Notification` API in `src/main/index.ts` whenever a task finishes (`onDownloadCompleted`) or fails (`onDownloadError`).
 - Implement `app.setLoginItemSettings({ openAtLogin: startOnBoot })` for Windows startup toggle in `SettingsModal`.
 
@@ -78,6 +81,7 @@ graph TB
 ### 4. Clipboard Auto-Detection & Quick Add Banner
 
 #### Scope & Architecture:
+
 - Add clipboard polling listener in `useDownloads.ts` using `navigator.clipboard.readText()`.
 - When an HTTP file link (`http://.../file.zip`, `https://.../app.exe`) or `.torrent` URL is detected, show a top banner/toast offering 1-click **Add Download**.
 
@@ -86,6 +90,7 @@ graph TB
 ### 5. Import & Export Download Queue State
 
 #### Scope & Architecture:
+
 - Add **Export Queue State** to `src/renderer/src/components/topbar/MenuBar.tsx` (saves active queue as `grabbit_queue.json`).
 - Add **Import Queue State** to parse and populate saved tasks into the download engine.
 
@@ -94,8 +99,10 @@ graph TB
 ## 🧪 Verification Plan
 
 ### Automated Verification:
+
 - Run `bun run typecheck` to verify zero compilation or interface mismatch errors.
 - Run `bun run format` to ensure clean code formatting.
 
 ### Manual Verification:
+
 - Add real test download URLs (e.g. Ubuntu ISO / test files) and verify multi-threaded chunk downloading, pause/resume, and OS desktop notifications.

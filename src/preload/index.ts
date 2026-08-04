@@ -21,6 +21,7 @@ const api = {
   pauseDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:pause', id),
   resumeDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:resume', id),
   cancelDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:cancel', id),
+  getDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
   getAllDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
 
   verifyHash: (args: {
@@ -35,6 +36,11 @@ const api = {
     ipcRenderer.invoke('settings:update', settings),
 
   getSpeedHistory: (): Promise<SpeedSample[]> => ipcRenderer.invoke('stats:getHistory'),
+
+  openFileLocation: (path: string): Promise<boolean> =>
+    ipcRenderer.invoke('system:openFileLocation', path),
+  copyToClipboard: (text: string): Promise<boolean> =>
+    ipcRenderer.invoke('system:copyToClipboard', text),
 
   // Window controls
   minimizeWindow: (): Promise<boolean> => ipcRenderer.invoke('window:minimize'),

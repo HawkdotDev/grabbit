@@ -53,15 +53,15 @@ Designed with an emerald green (`#009669`) theme and dark matte aesthetic, Grabb
 
 ## 🛠️ Technology Stack
 
-| Layer                         | Technology                                                                                                                                                                                                                |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Desktop Framework**         | [Electron v35](package.json)                                                                                                                                 |
-| **Frontend Framework**        | [React v19](package.json)                                                                                                                                    |
-| **Language**                  | [TypeScript v5.8](package.json)                                                                                                                              |
-| **Styling**                   | [Tailwind CSS v4](package.json) (Vanilla CSS theme tokens)                                                                                                   |
-| **Build & Bundler**           | [electron-vite](package.json) + [Vite v6](package.json)                                                                                                      |
-| **Runtime & Package Manager** | [Bun](package.json)                                                                                                                                          |
-| **Icons** font                | [Lucide React](package.json)                                                                                                                                 |
+| Layer                         | Technology                                                 |
+| :---------------------------- | :--------------------------------------------------------- |
+| **Desktop Framework**         | [Electron v35](package.json)                               |
+| **Frontend Framework**        | [React v19](package.json)                                  |
+| **Language**                  | [TypeScript v5.8](package.json)                            |
+| **Styling**                   | [Tailwind CSS v4](package.json) (Vanilla CSS theme tokens) |
+| **Build & Bundler**           | [electron-vite](package.json) + [Vite v6](package.json)    |
+| **Runtime & Package Manager** | [Bun](package.json)                                        |
+| **Icons** font                | [Lucide React](package.json)                               |
 
 ---
 

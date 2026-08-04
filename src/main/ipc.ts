@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, Notification, shell, app, clipboard } from 'electron'
 import { DownloadManager } from '../engine/DownloadManager'
 import { DownloadCategory, DownloadPriority, EngineSettings } from '../engine/types'
 
@@ -60,7 +60,38 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
   ipcMain.handle('settings:update', (_, newSettings: Partial<EngineSettings>) => {
     downloadManager.updateSettings(newSettings)
-    return downloadManager.getSettings()
+    const settings = downloadManager.getSettings()
+
+    // Handle Start on Boot configuration
+    if (typeof newSettings.startOnBoot === 'boolean') {
+      try {
+        app.setLoginItemSettings({
+          openAtLogin: newSettings.startOnBoot,
+          openAsHidden: false
+        })
+      } catch (err) {
+        console.error('Failed to update login item settings:', err)
+      }
+    }
+
+    return settings
+  })
+
+  // System Utility IPC
+  ipcMain.handle('system:openFileLocation', (_, path: string) => {
+    if (path) {
+      shell.showItemInFolder(path)
+      return true
+    }
+    return false
+  })
+
+  ipcMain.handle('system:copyToClipboard', (_, text: string) => {
+    if (text) {
+      clipboard.writeText(text)
+      return true
+    }
+    return false
   })
 
   // Stats handler
@@ -126,6 +157,17 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
   downloadManager.on('downloadCompleted', (download) => {
     lastProgressEmit.delete(download.id)
+
+    // Trigger Desktop Notification if enabled in settings
+    const settings = downloadManager.getSettings()
+    if (settings.enableNotifications && Notification.isSupported()) {
+      new Notification({
+        title: 'Download Finished',
+        body: `"${download.name}" has completed downloading.`,
+        silent: false
+      }).show()
+    }
+
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onCompleted', download)
     })
