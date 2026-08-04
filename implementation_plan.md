@@ -19,7 +19,6 @@ graph TB
         LocalMesh["LAN Local P2P Mesh Chunk Sharing (mDNS / UDP)"]
         RemoteWebUI["Remote Control Web UI & WebSocket Gateway"]
         AutoPostProcess["Post-Processing AV Virus Scanner & Auto-Unpack"]
-        CloudSync["Cloud Storage Auto-Sync (S3 / WebDAV / Google Drive)"]
         HlsStream["HLS (.m3u8) & MPEG-DASH Stream Downloader"]
     end
 
@@ -70,10 +69,7 @@ graph TB
 - **Antivirus VirusTotal / Defender Integration**: Automatically triggers background security scans on finished downloads and displays a green **"Verified Safe"** shield badge or malware alert.
 - **Auto-Unpack Archives**: Automatically extracts `.zip`, `.rar`, `.7z`, and `.tar.gz` archives upon download completion.
 
-### 5. ☁️ Cloud Storage Auto-Sync
-- **S3 / WebDAV / Google Drive Adapters**: Automatically uploads completed downloads to cloud storage buckets or NAS devices.
-
-### 6. 🎬 HLS (`.m3u8`) & MPEG-DASH Stream Downloader
+### 5. 🎬 HLS (`.m3u8`) & MPEG-DASH Stream Downloader
 - Segmented media stream parser to download encrypted or chunked HLS/DASH video streams.
 
 ---
