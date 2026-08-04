@@ -1,15 +1,17 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { app } from 'electron'
 import { DownloadItem, EngineSettings, SpeedSample } from './types'
 
-function getElectronApp(): any {
+function getAppPath(name: 'userData' | 'downloads'): string {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { app } = require('electron')
-    return app
+    if (app && typeof app.getPath === 'function') {
+      return app.getPath(name)
+    }
   } catch {
-    return null
+    // Fallback when executed outside Electron environment
   }
+  return name === 'userData' ? process.cwd() : path.join(process.cwd(), 'downloads')
 }
 
 export class Storage {
@@ -21,15 +23,7 @@ export class Storage {
   private static pendingDownloads?: DownloadItem[]
 
   public static init(): void {
-    let userData = process.cwd()
-    try {
-      const app = getElectronApp()
-      if (app && typeof app.getPath === 'function') {
-        userData = app.getPath('userData')
-      }
-    } catch {
-      userData = process.cwd()
-    }
+    const userData = getAppPath('userData')
     this.storageDir = path.join(userData, 'grabbit_data')
     if (!fs.existsSync(this.storageDir)) {
       fs.mkdirSync(this.storageDir, { recursive: true })
@@ -90,15 +84,11 @@ export class Storage {
   }
 
   public static loadSettings(): EngineSettings {
-    const app = getElectronApp()
     const defaultSettings: EngineSettings = {
       maxConcurrentDownloads: 5,
       defaultThreadCount: 8,
       maxGlobalSpeedLimitKbps: 0,
-      defaultSavePath:
-        app && typeof app.getPath === 'function'
-          ? app.getPath('downloads')
-          : path.join(process.cwd(), 'downloads'),
+      defaultSavePath: getAppPath('downloads'),
       autoCategorize: true,
       enableNotifications: true,
       startOnBoot: false,
