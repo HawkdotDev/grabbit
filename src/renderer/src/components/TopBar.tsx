@@ -80,9 +80,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <div className="flex items-center gap-2 font-bold text-xs text-white">
             <span className="h-2.5 w-2.5 bg-[#009669] rounded-none animate-pulse" />
             <span className="text-[#009669]">Neobit</span>
-            <span className="text-slate-400 font-mono text-[11px]">
-              [D: {formatSpeed(globalSpeed)}, U: 0 B/s]
-            </span>
+            <span className="text-slate-400 font-mono text-[11px]">v0.0.1</span>
           </div>
 
           <div className="h-4 w-px bg-[#2e2e2e]" />
@@ -126,9 +124,9 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Right Status & Frameless Window Controls */}
         <div className="flex items-center gap-3 style-no-drag">
-          <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 text-xs font-semibold text-[#009669] border border-white/5 rounded-none">
+          <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 text-xs font-semibold text-[#009669] border border-white/5 rounded-none font-mono">
             <Zap className="h-3.5 w-3.5 fill-[#009669]/20" />
-            <span>Neobit v0.0.1</span>
+            <span>[D: {formatSpeed(globalSpeed)}, U: 0 B/s]</span>
           </div>
 
           <div className="h-4 w-px bg-[#2e2e2e]" />
