@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { DownloadItem } from '../../../engine/types'
-import { TaskTableHeader, SortField } from './tasktable/TaskTableHeader'
-import { TaskTableRow } from './tasktable/TaskTableRow'
+import { DownloadItem } from '../../../../engine/types'
+import { TaskTableHeader, SortField } from './TaskTableHeader'
+import { TaskTableRow } from './TaskTableRow'
 
 interface TaskTableViewProps {
   downloads: DownloadItem[]

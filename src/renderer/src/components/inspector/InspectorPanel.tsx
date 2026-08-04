@@ -1,7 +1,7 @@
 import React from 'react'
-import { DownloadItem, SpeedSample } from '../../../engine/types'
+import { DownloadItem, SpeedSample } from '../../../../engine/types'
 import { ChunkProgress } from './ChunkProgress'
-import { SpeedChart } from './SpeedChart'
+import { SpeedChart } from '../common/SpeedChart'
 import { FileText, RefreshCw, Zap, Sliders } from 'lucide-react'
 
 interface InspectorPanelProps {

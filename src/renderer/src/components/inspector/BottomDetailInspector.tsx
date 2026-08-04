@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { DownloadItem, SpeedSample } from '../../../engine/types'
+import { DownloadItem, SpeedSample } from '../../../../engine/types'
 import { ChunkProgress } from './ChunkProgress'
-import { GeneralTab } from './inspector/GeneralTab'
-import { TrackersTab } from './inspector/TrackersTab'
-import { ContentFilesTab } from './inspector/ContentFilesTab'
-import { HttpSourcesTab } from './inspector/HttpSourcesTab'
+import { GeneralTab } from './GeneralTab'
+import { TrackersTab } from './TrackersTab'
+import { ContentFilesTab } from './ContentFilesTab'
+import { HttpSourcesTab } from './HttpSourcesTab'
 import { Info, Globe, Users, Link, FileText } from 'lucide-react'
 
 interface BottomDetailInspectorProps {

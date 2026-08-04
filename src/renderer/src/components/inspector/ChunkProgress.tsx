@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChunkInfo } from '../../../engine/types'
+import { ChunkInfo } from '../../../../engine/types'
 
 interface ChunkProgressProps {
   chunks: ChunkInfo[]

@@ -1,5 +1,5 @@
 import React from 'react'
-import { DownloadItem } from '../../../engine/types'
+import { DownloadItem } from '../../../../engine/types'
 import {
   Play,
   Pause,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { EngineSettings } from '../../../engine/types'
+import { EngineSettings } from '../../../../engine/types'
 import { X, Sliders, Folder, Network, Cpu, Bell, Laptop } from 'lucide-react'
 
 interface SettingsModalProps {

@@ -1,10 +1,10 @@
 import React from 'react'
-import { AppLogo } from './topbar/AppLogo'
-import { MenuBar } from './topbar/MenuBar'
-import { HeaderActions } from './topbar/HeaderActions'
-import { WindowControls } from './topbar/WindowControls'
-import { QuickActionGroup } from './topbar/QuickActionGroup'
-import { SearchFilterBar } from './topbar/SearchFilterBar'
+import { AppLogo } from './AppLogo'
+import { MenuBar } from './MenuBar'
+import { HeaderActions } from './HeaderActions'
+import { WindowControls } from './WindowControls'
+import { QuickActionGroup } from './QuickActionGroup'
+import { SearchFilterBar } from './SearchFilterBar'
 
 interface TopBarProps {
   onOpenAddModal: (mode?: 'link' | 'file') => void

@@ -1,6 +1,6 @@
 import React from 'react'
 import { DownloadItem, SpeedSample } from '../../../engine/types'
-import { HomeDashboard } from './HomeDashboard'
+import { HomeDashboard } from './home/HomeDashboard'
 
 interface AnalyticsViewProps {
   downloads: DownloadItem[]

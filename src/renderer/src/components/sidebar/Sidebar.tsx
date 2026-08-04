@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { DownloadCategory, DownloadItem, StatusFilter } from '../../../engine/types'
+import { DownloadCategory, DownloadItem, StatusFilter } from '../../../../engine/types'
 import {
   Inbox,
   Folder,
@@ -18,8 +18,8 @@ import {
   Activity,
   Search
 } from 'lucide-react'
-import { SidebarSection } from './sidebar/SidebarSection'
-import { SidebarFilterItem } from './sidebar/SidebarFilterItem'
+import { SidebarSection } from './SidebarSection'
+import { SidebarFilterItem } from './SidebarFilterItem'
 
 interface SidebarProps {
   width?: number

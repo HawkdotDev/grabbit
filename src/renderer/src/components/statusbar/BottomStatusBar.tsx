@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { DownloadItem } from '../../../engine/types'
+import { DownloadItem } from '../../../../engine/types'
 import { Activity, ShieldCheck } from 'lucide-react'
 
 interface BottomStatusBarProps {

@@ -4,17 +4,18 @@ import { useDownloads } from './hooks/useDownloads'
 import { useFilteredDownloads } from './hooks/useFilteredDownloads'
 import { useResizablePanes } from './hooks/useResizablePanes'
 
-import { TopBar } from './components/TopBar'
-import { Sidebar } from './components/Sidebar'
-import { TaskTableView } from './components/TaskTableView'
-import { BottomDetailInspector } from './components/BottomDetailInspector'
-import { BottomStatusBar } from './components/BottomStatusBar'
-import { AddDownloadModal } from './components/AddDownloadModal'
-import { SettingsModal } from './components/SettingsModal'
-import { HashModal } from './components/HashModal'
-
-import { AnalyticsView } from './components/AnalyticsView'
-import { NetworkView } from './components/NetworkView'
+import {
+  TopBar,
+  Sidebar,
+  TaskTableView,
+  BottomDetailInspector,
+  BottomStatusBar,
+  AddDownloadModal,
+  SettingsModal,
+  HashModal,
+  AnalyticsView,
+  NetworkView
+} from './components'
 
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook

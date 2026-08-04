@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { DownloadCategory, DownloadPriority } from '../../../engine/types'
+import { DownloadCategory, DownloadPriority } from '../../../../engine/types'
 import { X, Download, Sliders, Folder, Link as LinkIcon, FileUp, FolderOpen } from 'lucide-react'
 
 interface AddDownloadModalProps {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { DownloadItem } from '../../../engine/types'
+import { DownloadItem } from '../../../../engine/types'
 import { X, ShieldCheck, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react'
 
 interface HashModalProps {
