@@ -1,6 +1,6 @@
 <div align="center">
 
-  <h1>⚡ Grabbit</h1>
+  <h1>Grabbit</h1>
 
   <p><strong>High-Performance, Hyper-Modular Electron Download Manager &amp; Network Telemetry Engine</strong></p>
 
@@ -25,7 +25,7 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 
 **Grabbit** is a next-generation desktop download manager and accelerator built for speed, density, and efficiency. Combining raw multi-threaded HTTP Range chunking with a sharp, zero-border-radius qBittorrent-inspired desktop interface, Grabbit offers real-time diagnostics, thread visualizers, checksum verification, remote JSON-RPC control, browser extension integration, and dynamic pane customization.
 
@@ -33,26 +33,26 @@ Designed with an emerald green (`#009669`) theme, dark matte aesthetic, and prem
 
 ---
 
-## 🔥 Key Features
+## Key Features
 
-- **🚀 Multi-Threaded Range Chunking**: Splits file downloads across up to 32 parallel worker threads using direct positioned disk writes (`pwrite`).
-- **🎨 Sora & Inter Typography**: Custom typography system pairing Sora (display & headings) with Inter (UI text & data tables).
-- **📊 qBittorrent Data Grid Layout**: Sortable data table displaying live down/up speeds, ETA, seed/peer counts, file size, progress bars, and info hashes.
-- **📈 Network Telemetry Spline Graph**: Smooth Bezier curve graph with live hover tooltips, bar/curve toggle modes, and peak throughput tracking.
-- **📋 Clipboard Link Auto-Detection**: Auto-scans system clipboard for downloadable URLs or Magnet links and displays a 1-click **Quick Add** banner toast.
-- **💾 Queue State Export & Import**: Native OS file dialog interface to save active download queues to `grabbit_queue.json` and restore tasks.
-- **🌐 Browser Native Messaging Integration**: Built-in stdio host communicating with Chrome, Firefox, and Edge extensions via Windows Registry key `com.grabbit.host`.
-- **📱 Remote Control JSON-RPC Gateway**: Embedded HTTP/JSON-RPC server running at `http://127.0.0.1:6800/` for mobile or external web UI management.
-- **🧲 BitTorrent & Magnet Link Parser**: Extracts infohashes, tracker endpoints, and file lists from `magnet:?` URIs.
-- **🎥 Video Downloader Pipeline**: Integrates `yt-dlp` executable for format resolution extraction and streaming pipelines.
-- **🧠 Adaptive QoS Latency Governor**: Monitors network ping and automatically throttles download bandwidth during gaming or video calls.
-- **🔔 Native OS Desktop Notifications**: Triggers native desktop notifications upon download completion or error.
-- **📁 Multi-Tree Filtering Sidebar**: Filter tasks instantly by **Status** (_Downloading, Seeding, Completed, Running, Stopped, Stalled, Checking, Errored_), **Categories**, **Tags**, and **Trackers**.
-- **🛡️ Checksum Verification**: Built-in SHA-256, SHA-512, and MD5 file integrity validation.
+- **Multi-Threaded Range Chunking**: Splits file downloads across up to 32 parallel worker threads using direct positioned disk writes (`pwrite`).
+- **Sora & Inter Typography**: Custom typography system pairing Sora (display & headings) with Inter (UI text & data tables).
+- **qBittorrent Data Grid Layout**: Sortable data table displaying live down/up speeds, ETA, seed/peer counts, file size, progress bars, and info hashes.
+- **Network Telemetry Spline Graph**: Smooth Bezier curve graph with live hover tooltips, bar/curve toggle modes, and peak throughput tracking.
+- **Clipboard Link Auto-Detection**: Auto-scans system clipboard for downloadable URLs or Magnet links and displays a 1-click **Quick Add** banner toast.
+- **Queue State Export & Import**: Native OS file dialog interface to save active download queues to `grabbit_queue.json` and restore tasks.
+- **Browser Native Messaging Integration**: Built-in stdio host communicating with Chrome, Firefox, and Edge extensions via Windows Registry key `com.grabbit.host`.
+- **Remote Control JSON-RPC Gateway**: Embedded HTTP/JSON-RPC server running at `http://127.0.0.1:6800/` for mobile or external web UI management.
+- **BitTorrent & Magnet Link Parser**: Extracts infohashes, tracker endpoints, and file lists from `magnet:?` URIs.
+- **Video Downloader Pipeline**: Integrates `yt-dlp` executable for format resolution extraction and streaming pipelines.
+- **Adaptive QoS Latency Governor**: Monitors network ping and automatically throttles download bandwidth during gaming or video calls.
+- **Native OS Desktop Notifications**: Triggers native desktop notifications upon download completion or error.
+- **Multi-Tree Filtering Sidebar**: Filter tasks instantly by **Status** (_Downloading, Seeding, Completed, Running, Stopped, Stalled, Checking, Errored_), **Categories**, **Tags**, and **Trackers**.
+- **Checksum Verification**: Built-in SHA-256, SHA-512, and MD5 file integrity validation.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer                         | Technology                                                 |
 | :---------------------------- | :--------------------------------------------------------- |
@@ -67,7 +67,7 @@ Designed with an emerald green (`#009669`) theme, dark matte aesthetic, and prem
 
 ---
 
-## 📂 Domain-Driven Architecture
+## Domain-Driven Architecture
 
 ```
 grabbit/
@@ -125,7 +125,7 @@ grabbit/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -153,7 +153,7 @@ Ensure you have **[Bun](https://bun.sh)** installed on your machine.
 
 ---
 
-## ⚙️ Building & Packaging
+## Building & Packaging
 
 To compile and package the desktop application for production:
 
@@ -170,8 +170,8 @@ The output executables will be generated inside the `dist/` directory.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **Apache-2.0 License** - see the [LICENSE](LICENSE) file for details.
 
-Developed with ❤️ by **[HawkdotDev](https://github.com/HawkdotDev)**.
+Developed by **[HawkdotDev](https://github.com/HawkdotDev)**.
