@@ -1,12 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import {
-  DownloadCategory,
-  DownloadItem,
-  DownloadPriority,
-  EngineSettings,
-  SpeedSample,
-  StatusFilter
-} from '../../engine/types'
+import { useState, useEffect } from 'react'
+import { EngineSettings, DownloadItem } from '../../engine/types'
+import { useDownloads } from './hooks/useDownloads'
+import { useFilteredDownloads } from './hooks/useFilteredDownloads'
+import { useResizablePanes } from './hooks/useResizablePanes'
+
 import { TopBar } from './components/TopBar'
 import { Sidebar } from './components/Sidebar'
 import { TaskTableView } from './components/TaskTableView'
@@ -17,23 +14,44 @@ import { SettingsModal } from './components/SettingsModal'
 import { HashModal } from './components/HashModal'
 
 export function App(): React.JSX.Element {
-  const [downloads, setDownloads] = useState<DownloadItem[]>([])
-  const [activeStatusFilter, setActiveStatusFilter] = useState<StatusFilter>('all')
-  const [activeCategory, setActiveCategory] = useState<DownloadCategory>('all')
-  const [activeTag, setActiveTag] = useState<string>('all')
-  const [activeTrackerFilter, setActiveTrackerFilter] = useState<string>('all')
+  // 1. Download State & Handlers Hook
+  const {
+    downloads,
+    setSelectedId,
+    selectedDownload,
+    speedHistory,
+    globalSpeed,
+    handleAddDownload,
+    handlePause,
+    handleResume,
+    handleCancel,
+    handlePauseAll,
+    handleResumeAll,
+    handleClearCompleted
+  } = useDownloads()
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterBy, setFilterBy] = useState<'name' | 'category' | 'tag'>('name')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // 2. Filter State Hook
+  const {
+    activeStatusFilter,
+    setActiveStatusFilter,
+    activeCategory,
+    setActiveCategory,
+    activeTag,
+    setActiveTag,
+    activeTrackerFilter,
+    setActiveTrackerFilter,
+    searchQuery,
+    setSearchQuery,
+    filterBy,
+    setFilterBy,
+    filteredDownloads
+  } = useFilteredDownloads(downloads)
 
-  // Resizable Pane Sizes
-  const [sidebarWidth, setSidebarWidth] = useState(240)
-  const [inspectorHeight, setInspectorHeight] = useState(240)
-  const [isDraggingSidebar, setIsDraggingSidebar] = useState(false)
-  const [isDraggingInspector, setIsDraggingInspector] = useState(false)
+  // 3. Resizable Panes Hook
+  const { sidebarWidth, inspectorHeight, handleSidebarMouseDown, handleInspectorMouseDown } =
+    useResizablePanes(240, 240)
 
-  const [speedHistory, setSpeedHistory] = useState<SpeedSample[]>([])
+  // Engine Settings & Modal State
   const [settings, setSettings] = useState<EngineSettings>({
     maxConcurrentDownloads: 5,
     defaultThreadCount: 8,
@@ -49,205 +67,13 @@ export function App(): React.JSX.Element {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
 
-  // Sidebar drag handler
-  const handleSidebarMouseDown = (e: React.MouseEvent): void => {
-    e.preventDefault()
-    setIsDraggingSidebar(true)
-  }
-
-  // Inspector drag handler
-  const handleInspectorMouseDown = (e: React.MouseEvent): void => {
-    e.preventDefault()
-    setIsDraggingInspector(true)
-  }
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent): void => {
-      if (isDraggingSidebar) {
-        const newWidth = Math.min(500, Math.max(160, e.clientX))
-        setSidebarWidth(newWidth)
-      }
-      if (isDraggingInspector) {
-        const newHeight = Math.min(600, Math.max(100, window.innerHeight - e.clientY - 28))
-        setInspectorHeight(newHeight)
-      }
-    },
-    [isDraggingSidebar, isDraggingInspector]
-  )
-
-  const handleMouseUp = useCallback((): void => {
-    setIsDraggingSidebar(false)
-    setIsDraggingInspector(false)
-  }, [])
-
-  useEffect(() => {
-    if (isDraggingSidebar || isDraggingInspector) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-    } else {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isDraggingSidebar, isDraggingInspector, handleMouseMove, handleMouseUp])
-
-  // Fetch initial state & setup event listeners
   useEffect(() => {
     if (window.api) {
-      window.api.getAllDownloads().then((data) => {
-        const list = data || []
-        setDownloads(list)
-        if (list.length > 0 && !selectedId) {
-          const first = list[0]
-          if (first) setSelectedId(first.id)
-        }
-      })
-
       window.api.getSettings().then((s) => {
         if (s) setSettings(s)
       })
-      window.api.getSpeedHistory().then((h) => setSpeedHistory(h || []))
-
-      const unsubProgress = window.api.onDownloadProgress((updated) => {
-        setDownloads((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
-      })
-
-      const unsubAdded = window.api.onDownloadAdded((newDl) => {
-        setDownloads((prev) => [newDl, ...prev.filter((d) => d.id !== newDl.id)])
-        setSelectedId(newDl.id)
-      })
-
-      const unsubUpdated = window.api.onDownloadUpdated((updated) => {
-        setDownloads((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
-      })
-
-      const unsubCompleted = window.api.onDownloadCompleted((updated) => {
-        setDownloads((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
-      })
-
-      const unsubRemoved = window.api.onDownloadRemoved((id) => {
-        setDownloads((prev) => prev.filter((d) => d.id !== id))
-      })
-
-      const unsubStats = window.api.onStatsTick((sample) => {
-        setSpeedHistory((prev) => [...prev.slice(-59), sample])
-      })
-
-      return () => {
-        unsubProgress()
-        unsubAdded()
-        unsubUpdated()
-        unsubCompleted()
-        unsubRemoved()
-        unsubStats()
-      }
     }
-    return undefined
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // Calculate total global speed
-  const globalSpeed = useMemo(() => {
-    return downloads
-      .filter((d) => d.status === 'downloading')
-      .reduce((acc, d) => acc + (d.speed || 0), 0)
-  }, [downloads])
-
-  // Filter downloads by STATUS, CATEGORIES, TAGS, TRACKERS, and SEARCH
-  const filteredDownloads = useMemo(() => {
-    return downloads.filter((d) => {
-      // Status Filter
-      if (activeStatusFilter === 'downloading' && d.status !== 'downloading') return false
-      if (activeStatusFilter === 'seeding' && d.status !== 'seeding') return false
-      if (activeStatusFilter === 'completed' && d.status !== 'completed') return false
-      if (activeStatusFilter === 'running' && d.status !== 'downloading' && d.status !== 'seeding')
-        return false
-      if (activeStatusFilter === 'stopped' && d.status !== 'paused' && d.status !== 'queued')
-        return false
-      if (activeStatusFilter === 'active' && d.speed === 0 && (d.upSpeed || 0) === 0) return false
-      if (activeStatusFilter === 'inactive' && (d.speed > 0 || (d.upSpeed || 0) > 0)) return false
-      if (activeStatusFilter === 'stalled' && d.status !== 'stalled') return false
-      if (activeStatusFilter === 'checking' && d.status !== 'checking') return false
-      if (activeStatusFilter === 'errored' && d.status !== 'error') return false
-
-      // Category Filter
-      if (activeCategory !== 'all' && d.category !== activeCategory) return false
-
-      // Tag Filter
-      if (activeTag === 'untagged' && d.tags && d.tags.length > 0) return false
-      if (
-        activeTag !== 'all' &&
-        activeTag !== 'untagged' &&
-        (!d.tags || !d.tags.includes(activeTag))
-      )
-        return false
-
-      // Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase()
-        if (
-          filterBy === 'name' &&
-          !d.name.toLowerCase().includes(q) &&
-          !d.url.toLowerCase().includes(q)
-        )
-          return false
-        if (filterBy === 'category' && !d.category.toLowerCase().includes(q)) return false
-        if (filterBy === 'tag' && (!d.tags || !d.tags.some((t) => t.toLowerCase().includes(q))))
-          return false
-      }
-
-      return true
-    })
-  }, [downloads, activeStatusFilter, activeCategory, activeTag, searchQuery, filterBy])
-
-  const selectedDownload = useMemo((): DownloadItem | null => {
-    return downloads.find((d) => d.id === selectedId) ?? downloads[0] ?? null
-  }, [downloads, selectedId])
-
-  // Handlers
-  const handleAddDownload = async (args: {
-    url: string
-    filename?: string
-    savePath?: string
-    category?: DownloadCategory
-    priority?: DownloadPriority
-    threadCount?: number
-  }): Promise<void> => {
-    if (window.api) {
-      await window.api.addDownload(args)
-    }
-  }
-
-  const handlePause = (id: string): void => {
-    window.api?.pauseDownload(id)
-  }
-  const handleResume = (id: string): void => {
-    window.api?.resumeDownload(id)
-  }
-  const handleCancel = (id: string): void => {
-    window.api?.cancelDownload(id)
-  }
-
-  const handlePauseAll = (): void => {
-    downloads
-      .filter((d) => d.status === 'downloading')
-      .forEach((d) => window.api?.pauseDownload(d.id))
-  }
-
-  const handleResumeAll = (): void => {
-    downloads
-      .filter((d) => d.status === 'paused' || d.status === 'error')
-      .forEach((d) => window.api?.resumeDownload(d.id))
-  }
-
-  const handleClearCompleted = (): void => {
-    downloads
-      .filter((d) => d.status === 'completed')
-      .forEach((d) => window.api?.cancelDownload(d.id))
-  }
 
   const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
     if (window.api) {
