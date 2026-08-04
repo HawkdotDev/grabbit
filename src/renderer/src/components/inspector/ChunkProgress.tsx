@@ -43,11 +43,11 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
           return (
             <div
               key={chunk.id}
-              className={`relative overflow-hidden p-1.5 border text-[10px] flex flex-col justify-between rounded-none ${statusBg}`}
+              className={`relative overflow-hidden p-1.5 border text-[10px] flex flex-col justify-between rounded-none smooth-transition ${statusBg}`}
             >
               {/* Internal progress bar */}
               <div
-                className="absolute left-0 top-0 bottom-0 bg-theme-accent/20 transition-all duration-300 rounded-none"
+                className="absolute left-0 top-0 bottom-0 bg-theme-accent/20 smooth-gpu transition-all duration-300 ease-out rounded-none"
                 style={{ width: `${pct}%` }}
               />
 

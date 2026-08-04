@@ -11,14 +11,14 @@ export const ProgressBarCell: React.FC<ProgressBarCellProps> = React.memo(({ pct
     <div className="flex items-center gap-2">
       <div className="flex-1 h-3.5 bg-ide-surface border border-ide-border relative overflow-hidden rounded-none">
         <div
-          className={`h-full transition-all duration-300 ${
+          className={`h-full smooth-gpu transition-all duration-300 ease-out ${
             status === 'completed' || status === 'seeding'
               ? 'bg-emerald-600'
               : status === 'error'
                 ? 'bg-rose-600'
                 : status === 'paused'
                   ? 'bg-amber-600'
-                  : 'bg-theme-accent'
+                  : 'bg-theme-accent progress-active'
           }`}
           style={{ width: `${pct}%` }}
         />

@@ -11,7 +11,17 @@
   --color-theme-tint: #063e2c;
 }
 
-/* Apply Sora/Inter globally to all elements */
+/* Apply Sora/Inter globally to all elements with smooth scrolling */
+html,
+body {
+  scroll-behavior: smooth;
+  background-color: #141414;
+  color: #e5e5e5;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 *,
 *::before,
 *::after {
@@ -23,6 +33,17 @@
     'Segoe UI',
     Roboto,
     sans-serif;
+}
+
+/* GPU Hardware Acceleration & Smooth Transitions */
+.smooth-gpu {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.smooth-transition {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .style-drag {
@@ -46,6 +67,7 @@
 ::-webkit-scrollbar-thumb {
   background: #2e2e2e;
   border-radius: 0px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -54,4 +76,21 @@
 
 ::-webkit-scrollbar-corner {
   background: #141414;
+}
+
+/* Smooth Progress Fill Pulse Animation */
+@keyframes progressPulse {
+  0% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+
+.progress-active {
+  animation: progressPulse 2s infinite ease-in-out;
 }
