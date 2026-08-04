@@ -5,7 +5,8 @@
     "eslint.config.ts",
     "src/main/**/*",
     "src/preload/**/*",
-    "src/engine/**/*"
+    "src/engine/**/*",
+    "src/server/**/*"
   ],
   "compilerOptions": {
     "composite": true,

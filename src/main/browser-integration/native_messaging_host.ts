@@ -27,12 +27,14 @@ export function startNativeMessagingHost(downloadManager: DownloadManager): void
   })
 }
 
-function handleExtensionMessage(message: any, downloadManager: DownloadManager): void {
-  if (message && message.action === 'add_download' && message.url) {
-    downloadManager.addDownload(message.url, {
-      filename: message.filename,
-      savePath: message.savePath,
-      category: message.category
+function handleExtensionMessage(
+  message: Record<string, unknown>,
+  downloadManager: DownloadManager
+): void {
+  if (message && message['action'] === 'add_download' && typeof message['url'] === 'string') {
+    downloadManager.addDownload(message['url'], {
+      filename: typeof message['filename'] === 'string' ? message['filename'] : undefined,
+      savePath: typeof message['savePath'] === 'string' ? message['savePath'] : undefined
     })
     sendNativeMessage({ status: 'ok', message: 'Download queued in Grabbit' })
   }

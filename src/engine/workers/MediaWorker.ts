@@ -37,12 +37,14 @@ export class MediaWorker {
 
         try {
           const info = JSON.parse(stdout)
-          const formats: MediaFormat[] = (info.formats || []).map((f: any) => ({
-            formatId: f.format_id || 'default',
-            extension: f.ext || 'mp4',
-            resolution: f.resolution || `${f.width}x${f.height}` || 'Unknown',
-            filesize: f.filesize || f.filesize_approx,
-            note: f.format_note || ''
+          const formats: MediaFormat[] = (info.formats || []).map((f: Record<string, unknown>) => ({
+            formatId: String(f['format_id'] || 'default'),
+            extension: String(f['ext'] || 'mp4'),
+            resolution: String(
+              f['resolution'] || `${f['width'] || ''}x${f['height'] || ''}` || 'Unknown'
+            ),
+            filesize: typeof f['filesize'] === 'number' ? f['filesize'] : undefined,
+            note: String(f['format_note'] || '')
           }))
 
           resolve(
