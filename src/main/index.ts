@@ -48,7 +48,7 @@ if (is.dev) {
 
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.neobit.app')
+  electronApp.setAppUserModelId('com.grabbit.app')
 
   // Initialize download manager engine and setup IPC
   downloadManager = new DownloadManager()

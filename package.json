@@ -1,5 +1,5 @@
 {
-  "name": "neobit",
+  "name": "grabbit",
   "version": "0.0.2",
   "description": "High-performance, feature-rich modern download manager built with Electron, React, and TypeScript.",
   "main": "./out/main/index.js",
@@ -8,13 +8,13 @@
     "url": "https://github.com/HawkdotDev"
   },
   "license": "Apache-2.0",
-  "homepage": "https://github.com/HawkdotDev/neobit#readme",
+  "homepage": "https://github.com/HawkdotDev/grabbit#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HawkdotDev/neobit.git"
+    "url": "git+https://github.com/HawkdotDev/grabbit.git"
   },
   "bugs": {
-    "url": "https://github.com/HawkdotDev/neobit/issues"
+    "url": "https://github.com/HawkdotDev/grabbit/issues"
   },
   "keywords": [
     "electron",

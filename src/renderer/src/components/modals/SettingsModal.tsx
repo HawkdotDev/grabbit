@@ -194,7 +194,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onChange={(e) => setStartOnBoot(e.target.checked)}
                     className="h-4 w-4 accent-theme-accent rounded-none"
                   />
-                  <span className="text-xs text-slate-300">Start Neobit on system boot</span>
+                  <span className="text-xs text-slate-300">Start Grabbit on system boot</span>
                 </label>
               </div>
             </div>

@@ -135,9 +135,9 @@ export class DownloadManager extends EventEmitter {
       seedsCount: 12,
       peersCount: 45,
       infoHash: 'e44232' + Math.random().toString(16).substring(2, 14),
-      tags: ['neobit', category],
+      tags: ['grabbit', category],
       trackers: [
-        { url: 'udp://tracker.neobit.io:6969/announce', status: 'working', peers: 45 },
+        { url: 'udp://tracker.grabbit.io:6969/announce', status: 'working', peers: 45 },
         { url: 'https://tracker.openbittorrent.com:443/announce', status: 'working', peers: 12 }
       ],
       files: [{ path: filename, size: totalSize, downloaded: 0, priority: 'normal' }]

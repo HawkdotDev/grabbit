@@ -10,7 +10,7 @@ export const TrackersTab: React.FC<TrackersTabProps> = ({ download }) => {
   const [activeSubTab, setActiveSubTab] = useState<'all' | 'trackerless' | 'working'>('all')
 
   const defaultTrackers = [
-    { url: 'udp://tracker.neobit.io:6969/announce', status: 'working', peers: 45 },
+    { url: 'udp://tracker.grabbit.io:6969/announce', status: 'working', peers: 45 },
     { url: 'https://tracker.openbittorrent.com:443/announce', status: 'working', peers: 12 },
     { url: 'udp://tracker.opentrackr.org:1337/announce', status: 'working', peers: 88 },
     { url: 'udp://tracker.coppersurfer.tk:6969/announce', status: 'disabled', peers: 0 }

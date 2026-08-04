@@ -26,7 +26,7 @@ export class ChunkEngine {
 
         const req = client.request(
           downloadUrl,
-          { method: 'HEAD', headers: { 'User-Agent': 'neobit/1.0' } },
+          { method: 'HEAD', headers: { 'User-Agent': 'grabbit/1.0' } },
           (res) => {
             const contentLength = parseInt(res.headers['content-length'] || '0', 10)
             const acceptRanges = res.headers['accept-ranges'] === 'bytes'
@@ -151,7 +151,7 @@ export class ChunkEngine {
         const endByte = chunk.endByte
 
         const headers: Record<string, string> = {
-          'User-Agent': 'neobit/1.0'
+          'User-Agent': 'grabbit/1.0'
         }
 
         if (download.totalSize > 0) {

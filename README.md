@@ -1,14 +1,14 @@
 <div align="center">
 
-  <h1>⚡ Neobit</h1>
+  <h1>⚡ Grabbit</h1>
 
-  <p><strong>A high-performance, multi-threaded download manager and accelerator with an ultra-sleek qBittorrent-inspired interface.</strong></p>
+  <p><strong>High-Performance, Hyper-Modular Electron Download Manager &amp; Network Telemetry Engine</strong></p>
 
   <p>
-    <a href="https://github.com/HawkdotDev/neobit/blob/main/LICENSE">
+    <a href="https://github.com/HawkdotDev/grabbit/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/License-Apache_2.0-009669.svg?style=for-the-badge" alt="License" />
     </a>
-    <a href="https://github.com/HawkdotDev/neobit/releases">
+    <a href="https://github.com/HawkdotDev/grabbit/releases">
       <img src="https://img.shields.io/badge/Version-0.0.2-009669.svg?style=for-the-badge" alt="Version" />
     </a>
     <a href="https://electronjs.org">
@@ -17,19 +17,19 @@
     <a href="https://react.dev">
       <img src="https://img.shields.io/badge/React-v19-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black" alt="React" />
     </a>
-    <a href="https://bun.sh">
-      <img src="https://img.shields.io/badge/Bun-Fast-fbf0df.svg?style=for-the-badge&logo=bun&logoColor=black" alt="Bun" />
+    <a href="https://tailwindcss.com">
+      <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8.svg?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind" />
     </a>
   </p>
 </div>
 
 ---
 
-## ✨ Overview
+## 🚀 Overview
 
-**Neobit** is a next-generation download manager built for speed, density, and efficiency. Combining raw multi-threaded HTTP Range chunking with a sharp, zero-border-radius qBittorrent-inspired desktop interface, Neobit offers real-time diagnostics, thread visualizers, checksum verification, and dynamic pane customization.
+**Grabbit** is a next-generation download manager built for speed, density, and efficiency. Combining raw multi-threaded HTTP Range chunking with a sharp, zero-border-radius qBittorrent-inspired desktop interface, Grabbit offers real-time diagnostics, thread visualizers, checksum verification, and dynamic pane customization.
 
-Designed with an emerald green (`#009669`) theme and dark matte aesthetic, Neobit delivers a desktop experience tailored for power users.
+Designed with an emerald green (`#009669`) theme and dark matte aesthetic, Grabbit delivers a desktop experience tailored for power users.
 
 ---
 
@@ -124,8 +124,8 @@ Ensure you have **[Bun](https://bun.sh)** installed on your machine.
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/HawkdotDev/neobit.git
-   cd neobit
+   git clone https://github.com/HawkdotDev/grabbit.git
+   cd grabbit
    ```
 
 2. **Install dependencies**:

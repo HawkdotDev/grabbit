@@ -1,18 +1,21 @@
-appId: com.neobit.app
-productName: neobit
+appId: com.grabbit.app
+productName: Grabbit
 directories:
+  output: dist
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.ts,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/*'
+  - 'out/**/*'
+  - '!out/main/index.js.map'
+  - '!out/preload/index.js.map'
+  - '!out/renderer/index.js.map'
 asarUnpack:
   - resources/**
 win:
-  executableName: neobit
+  target:
+    - nsis
+    - portable
+  executableName: grabbit
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

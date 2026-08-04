@@ -255,7 +255,7 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
             {[
               { id: 'all', label: 'All' },
               { id: 'untagged', label: 'Untagged' },
-              { id: 'neobit', label: 'neobit' }
+              { id: 'grabbit', label: 'grabbit' }
             ].map((tg) => (
               <SidebarFilterItem
                 key={tg.id}

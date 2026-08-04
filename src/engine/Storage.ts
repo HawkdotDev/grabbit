@@ -13,7 +13,7 @@ export class Storage {
 
   public static init(): void {
     const userData = app ? app.getPath('userData') : process.cwd()
-    this.storageDir = path.join(userData, 'neobit_data')
+    this.storageDir = path.join(userData, 'grabbit_data')
     if (!fs.existsSync(this.storageDir)) {
       fs.mkdirSync(this.storageDir, { recursive: true })
     }
