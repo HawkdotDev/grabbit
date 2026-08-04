@@ -4,8 +4,11 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { DownloadManager } from '../engine/DownloadManager'
 import { setupIPC } from './ipc'
+import { RemoteServer } from '../server/RemoteServer'
+import { registerWindowsNativeMessagingHost } from './browser-integration/native_messaging_host'
 
 let downloadManager: DownloadManager | null = null
+let remoteServer: RemoteServer | null = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -54,6 +57,13 @@ app.whenReady().then(() => {
   downloadManager = new DownloadManager()
   setupIPC(downloadManager)
 
+  // Start Remote Control JSON-RPC Gateway
+  remoteServer = new RemoteServer(downloadManager)
+  remoteServer.start(6800)
+
+  // Register Native Messaging Host
+  registerWindowsNativeMessagingHost()
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
@@ -68,6 +78,7 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  if (remoteServer) remoteServer.stop()
   if (downloadManager) downloadManager.destroy()
   if (process.platform !== 'darwin') {
     app.quit()
