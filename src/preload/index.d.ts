@@ -25,6 +25,8 @@ export interface GrabbitAPI {
   pauseAll: () => Promise<boolean>
   resumeAll: () => Promise<boolean>
   clearCompleted: () => Promise<boolean>
+  exportQueue: () => Promise<boolean>
+  importQueue: () => Promise<number>
 
   // Category & Filter IPC
   getCategories: () => Promise<Record<DownloadCategory, string[]>>

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { EngineSettings, DownloadItem } from '../../engine/types'
 import { useDownloads } from './hooks/useDownloads'
 import { useFilteredDownloads } from './hooks/useFilteredDownloads'
 import { useResizablePanes } from './hooks/useResizablePanes'
+import { useClipboardDetector } from './hooks/useClipboardDetector'
 
 import {
   TopBar,
@@ -14,7 +15,8 @@ import {
   SettingsModal,
   HashModal,
   AnalyticsView,
-  NetworkView
+  NetworkView,
+  ClipboardBanner
 } from './components'
 
 export function App(): React.JSX.Element {
@@ -31,7 +33,8 @@ export function App(): React.JSX.Element {
     handleCancel,
     handlePauseAll,
     handleResumeAll,
-    handleClearCompleted
+    handleClearCompleted,
+    handleVerifyHash
   } = useDownloads()
 
   // 2. Filter State Hook
@@ -51,72 +54,81 @@ export function App(): React.JSX.Element {
 
   // 3. Resizable Panes Hook
   const { sidebarWidth, inspectorHeight, handleSidebarMouseDown, handleInspectorMouseDown } =
-    useResizablePanes(240, 240)
+    useResizablePanes(230, 240)
 
-  // Engine Settings & Modal State
-  const [settings, setSettings] = useState<EngineSettings>({
-    maxConcurrentDownloads: 5,
-    defaultThreadCount: 8,
-    maxGlobalSpeedLimitKbps: 0,
-    defaultSavePath: 'C:\\Users\\Downloads',
-    autoCategorize: true,
-    enableNotifications: true,
-    startOnBoot: false,
-    theme: 'dark'
-  })
-
+  // 4. Navigation & Modals State
   const [activeMainView, setActiveMainView] = useState<'home' | 'analytics' | 'network'>('home')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [addModalInitialMode, setAddModalInitialMode] = useState<'link' | 'file'>('link')
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
 
-  const handleOpenAddModal = (mode: 'link' | 'file' = 'link'): void => {
-    setAddModalInitialMode(mode)
-    setIsAddModalOpen(true)
-  }
+  // 5. Clipboard Detector Hook
+  const { detectedLink, dismiss, clear } = useClipboardDetector()
+
+  // 6. Settings State
+  const [settings, setSettings] = useState<EngineSettings>({
+    defaultSavePath: 'C:\\Downloads\\Grabbit',
+    maxConcurrentDownloads: 5,
+    defaultThreadCount: 8,
+    maxGlobalSpeedLimitKbps: 0,
+    autoCategorize: true,
+    enableNotifications: true,
+    theme: 'dark',
+    startOnBoot: false
+  })
 
   useEffect(() => {
-    if (window.api) {
+    if (window.api && window.api.getSettings) {
       window.api.getSettings().then((s) => {
         if (s) setSettings(s)
       })
     }
   }, [])
 
-  const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
-    if (window.api) {
+  const handleSaveSettings = async (newSettings: Partial<EngineSettings>) => {
+    if (window.api && window.api.updateSettings) {
       const updated = await window.api.updateSettings(newSettings)
-      setSettings(updated)
+      if (updated) setSettings(updated)
     }
+    setIsSettingsModalOpen(false)
+  }
+
+  const handleAddFromClipboard = (url: string) => {
+    handleAddDownload({ url })
+    clear()
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans antialiased selection:bg-theme-accent selection:text-white rounded-none">
-      {/* Top Window Bar & File Menu Toolbar */}
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans select-none border border-ide-border rounded-none">
+      {/* Top Application Header & Navigation Toolbar */}
       <TopBar
-        onOpenAddModal={handleOpenAddModal}
-        onPauseAll={handlePauseAll}
-        onResumeAll={handleResumeAll}
-        onClearCompleted={handleClearCompleted}
-        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
-        activeView={activeMainView}
-        setActiveView={setActiveMainView}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         filterBy={filterBy}
         setFilterBy={setFilterBy}
-        globalSpeed={globalSpeed}
+        activeView={activeMainView}
+        setActiveView={setActiveMainView}
+        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onResumeAll={handleResumeAll}
+        onPauseAll={handlePauseAll}
+        onClearCompleted={handleClearCompleted}
       />
 
-      {/* Main View Area: Home vs Network vs Analytics (Tasks Workspace) */}
+      {/* Clipboard Link Auto-Detector Banner */}
+      <ClipboardBanner
+        detectedLink={detectedLink}
+        onAdd={handleAddFromClipboard}
+        onDismiss={dismiss}
+      />
+
+      {/* Main Workspace Body */}
       {activeMainView === 'home' ? (
         <AnalyticsView
           downloads={downloads}
           speedHistory={speedHistory}
           globalSpeed={globalSpeed}
-          onOpenAddModal={handleOpenAddModal}
-          onNavigateToTasks={() => setActiveMainView('analytics')}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
           onSelectDownload={(id) => setSelectedId(id)}
           onPause={handlePause}
           onResume={handleResume}
@@ -179,17 +191,15 @@ export function App(): React.JSX.Element {
         </div>
       )}
 
-      {/* Bottom Status Bar */}
+      {/* Persistent Bottom Telemetry Status Bar */}
       <BottomStatusBar downloads={downloads} globalSpeed={globalSpeed} />
 
-      {/* Modals */}
+      {/* Floating Action Modals */}
       <AddDownloadModal
-        key={`${isAddModalOpen}-${addModalInitialMode}`}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddDownload}
         defaultSavePath={settings.defaultSavePath}
-        initialMode={addModalInitialMode}
       />
 
       <SettingsModal
@@ -200,12 +210,10 @@ export function App(): React.JSX.Element {
       />
 
       <HashModal
-        download={hashModalDownload}
-        isOpen={hashModalDownload !== null}
+        isOpen={!!hashModalDownload}
         onClose={() => setHashModalDownload(null)}
-        onVerify={async (id, expectedHash, algo) => {
-          return await window.api.verifyHash({ id, expectedHash, algo })
-        }}
+        download={hashModalDownload}
+        onVerify={(id, expectedHash, algo) => handleVerifyHash(id, expectedHash, algo)}
       />
     </div>
   )

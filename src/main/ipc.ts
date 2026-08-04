@@ -1,4 +1,5 @@
-import { ipcMain, BrowserWindow, Notification, shell, app, clipboard } from 'electron'
+import { ipcMain, BrowserWindow, Notification, shell, app, clipboard, dialog } from 'electron'
+import * as fs from 'fs'
 import { DownloadManager } from '../engine/DownloadManager'
 import { DownloadCategory, DownloadPriority, EngineSettings } from '../engine/types'
 
@@ -52,6 +53,56 @@ export function setupIPC(downloadManager: DownloadManager): void {
       return await downloadManager.verifyDownloadHash(args.id, args.expectedHash, args.algo)
     }
   )
+
+  // Export / Import Queue State IPC
+  ipcMain.handle('download:exportQueue', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return false
+    const { filePath } = await dialog.showSaveDialog(win, {
+      title: 'Export Grabbit Queue State',
+      defaultPath: 'grabbit_queue.json',
+      filters: [{ name: 'JSON Queue File', extensions: ['json'] }]
+    })
+    if (filePath) {
+      const downloads = downloadManager.getDownloads()
+      fs.writeFileSync(filePath, JSON.stringify(downloads, null, 2), 'utf-8')
+      return true
+    }
+    return false
+  })
+
+  ipcMain.handle('download:importQueue', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return 0
+    const { filePaths } = await dialog.showOpenDialog(win, {
+      title: 'Import Grabbit Queue State',
+      filters: [{ name: 'JSON Queue File', extensions: ['json'] }],
+      properties: ['openFile']
+    })
+    if (filePaths && filePaths[0]) {
+      try {
+        const content = fs.readFileSync(filePaths[0], 'utf-8')
+        const items = JSON.parse(content)
+        if (Array.isArray(items)) {
+          let importedCount = 0
+          for (const item of items) {
+            if (item && item.url) {
+              await downloadManager.addDownload(item.url, {
+                filename: item.name,
+                category: item.category,
+                priority: item.priority
+              })
+              importedCount++
+            }
+          }
+          return importedCount
+        }
+      } catch (err) {
+        console.error('Failed to import queue file:', err)
+      }
+    }
+    return 0
+  })
 
   // Settings handlers
   ipcMain.handle('settings:get', () => {

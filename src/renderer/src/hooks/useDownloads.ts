@@ -124,6 +124,20 @@ export function useDownloads() {
     })
   }, [])
 
+  const handleVerifyHash = useCallback(
+    async (
+      id: string,
+      expectedHash: string,
+      algo: 'md5' | 'sha256' | 'sha512'
+    ): Promise<{ matches: boolean; actualHash: string }> => {
+      if (window.api && window.api.verifyHash) {
+        return await window.api.verifyHash({ id, expectedHash, algo })
+      }
+      return { matches: false, actualHash: '' }
+    },
+    []
+  )
+
   return {
     downloads,
     selectedId,
@@ -137,6 +151,7 @@ export function useDownloads() {
     handleCancel,
     handlePauseAll,
     handleResumeAll,
-    handleClearCompleted
+    handleClearCompleted,
+    handleVerifyHash
   }
 }

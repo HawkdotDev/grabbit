@@ -21,6 +21,8 @@ const api = {
   pauseDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:pause', id),
   resumeDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:resume', id),
   cancelDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:cancel', id),
+  exportQueue: (): Promise<boolean> => ipcRenderer.invoke('download:exportQueue'),
+  importQueue: (): Promise<number> => ipcRenderer.invoke('download:importQueue'),
   getDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
   getAllDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
 

@@ -1,2 +1,2 @@
-export { NotificationPanel } from './NotificationPanel'
-export type { NotificationItem } from './NotificationPanel'
+export * from './NotificationPanel'
+export * from './ClipboardBanner'
