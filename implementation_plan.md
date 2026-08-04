@@ -1,30 +1,29 @@
 # Implementation Plan — Grabbit Download Manager
 
-> Focused technical blueprint and implementation roadmap of **remaining features** for **Grabbit**.
+> Focused technical blueprint and implementation roadmap of **remaining & advanced features** for **Grabbit**.
 
 ---
 
-## 🗺️ Remaining Roadmap
+## 🗺️ Remaining & Advanced Feature Roadmap
 
 ```mermaid
 graph TB
-    subgraph Phase1["🌐 Phase 1: Browser Native Messaging Integration"]
-        NMH["Native Messaging Host (Chrome / Firefox)"]
-        ExtensionInstaller["Windows Registry Host Installer"]
-    end
-
-    subgraph Phase2["🧲 Phase 2: BitTorrent & Magnet Link Engine"]
+    subgraph Core["🌐 Core Remaining Features"]
+        NMH["Native Messaging Host (Chrome / Firefox Extension)"]
         MagnetWorker["BitTorrent / Magnet Link Parser (TorrentWorker)"]
-        TrackerDiscovery["DHT & Tracker Peer Discovery"]
+        YtDlpWorker["Video Downloader Wrapper (MediaWorker + yt-dlp)"]
     end
 
-    subgraph Phase3["🎥 Phase 3: Video Downloader Pipeline"]
-        YtDlpWorker["Video Format Extractor Wrapper (MediaWorker + yt-dlp)"]
-        StreamPipeline["Video/Audio Transcoding & Merge Pipeline"]
+    subgraph Advanced["🚀 Advanced Next-Gen Enhancements"]
+        AdaptiveQoS["Adaptive AI QoS & Ping-Aware Speed Governor"]
+        LocalMesh["LAN Local P2P Mesh Chunk Sharing (mDNS / UDP)"]
+        RemoteWebUI["Remote Control Web UI & WebSocket Gateway"]
+        AutoPostProcess["Post-Processing AV Virus Scanner & Auto-Unpack"]
+        CloudSync["Cloud Storage Auto-Sync (S3 / WebDAV / Google Drive)"]
+        HlsStream["HLS (.m3u8) & MPEG-DASH Stream Downloader"]
     end
 
-    Phase1 --> Phase2
-    Phase2 --> Phase3
+    Core --> Advanced
 ```
 
 ---
@@ -52,6 +51,30 @@ graph TB
 #### Scope:
 - Create wrapper in `src/engine/MediaWorker.ts` around `yt-dlp` executable.
 - Parse video resolutions/codecs and pipe video streaming progress into Grabbit task table.
+
+---
+
+## 🚀 Advanced Next-Generation Ideas for Grabbit
+
+### 1. 🧠 Adaptive QoS & Ping-Aware Speed Governor
+- **Game / Stream Auto-Detection**: Monitors active network ping or running foreground games/VoIP calls (Discord, Zoom) and automatically throttles download speeds to protect latency, then restores maximum speed when idle.
+- **Off-Peak Night Scheduler**: Automatically schedules large downloads (e.g. 50GB ISOs) to run during off-peak hours (e.g., 2 AM – 6 AM).
+
+### 2. ⚡ Local LAN P2P Mesh Chunk Sharing
+- **mDNS / UDP Peer Discovery**: If multiple devices on the same Wi-Fi network are downloading the same file, Grabbit nodes discover each other over LAN and exchange chunks at local 1Gbps speeds without downloading from the internet twice.
+
+### 3. 📱 Remote Control Web UI & Mobile Gateway
+- **Embedded WebSocket / JSON-RPC Server**: Embedded HTTPS server (`http://localhost:6800`) allowing secure remote task management from mobile phones or external browsers via PIN authentication.
+
+### 4. 🛡️ Post-Processing AV Scanning & Archive Auto-Extract
+- **Antivirus VirusTotal / Defender Integration**: Automatically triggers background security scans on finished downloads and displays a green **"Verified Safe"** shield badge or malware alert.
+- **Auto-Unpack Archives**: Automatically extracts `.zip`, `.rar`, `.7z`, and `.tar.gz` archives upon download completion.
+
+### 5. ☁️ Cloud Storage Auto-Sync
+- **S3 / WebDAV / Google Drive Adapters**: Automatically uploads completed downloads to cloud storage buckets or NAS devices.
+
+### 6. 🎬 HLS (`.m3u8`) & MPEG-DASH Stream Downloader
+- Segmented media stream parser to download encrypted or chunked HLS/DASH video streams.
 
 ---
 
