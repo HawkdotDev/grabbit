@@ -98,11 +98,18 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return win?.isMaximized() ?? false
   })
 
-  // Event forwarders from engine to renderer
+  // Event forwarders from engine to renderer with progress throttling (~100ms)
+  const lastProgressEmit = new Map<string, number>()
+
   downloadManager.on('progress', (download) => {
-    BrowserWindow.getAllWindows().forEach((win) => {
-      win.webContents.send('download:onProgress', download)
-    })
+    const now = Date.now()
+    const last = lastProgressEmit.get(download.id) || 0
+    if (now - last >= 100) {
+      lastProgressEmit.set(download.id, now)
+      BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send('download:onProgress', download)
+      })
+    }
   })
 
   downloadManager.on('downloadAdded', (download) => {
@@ -118,12 +125,14 @@ export function setupIPC(downloadManager: DownloadManager): void {
   })
 
   downloadManager.on('downloadCompleted', (download) => {
+    lastProgressEmit.delete(download.id)
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onCompleted', download)
     })
   })
 
   downloadManager.on('downloadRemoved', (id) => {
+    lastProgressEmit.delete(id)
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onRemoved', id)
     })

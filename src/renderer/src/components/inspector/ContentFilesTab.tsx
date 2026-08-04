@@ -18,8 +18,8 @@ export const ContentFilesTab: React.FC<ContentFilesTabProps> = ({ download }) =>
 
   return (
     <div className="w-full">
-      <table className="w-full text-left font-mono border border-[#2e2e2e]">
-        <thead className="bg-[#1e1e1e] border-b border-[#2e2e2e] text-slate-300">
+      <table className="w-full text-left font-mono border border-ide-border">
+        <thead className="bg-ide-surface border-b border-ide-border text-slate-300">
           <tr>
             <th className="p-2 border-r border-[#292929]">Path / File Name</th>
             <th className="p-2 border-r border-[#292929] w-24 text-right">Size</th>

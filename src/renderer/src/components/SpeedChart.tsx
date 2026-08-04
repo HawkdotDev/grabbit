@@ -8,7 +8,7 @@ interface SpeedChartProps {
 export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
   if (!history || history.length < 2) {
     return (
-      <div className="h-28 bg-[#1e1e1e] border border-[#2e2e2e] p-4 flex items-center justify-center text-xs font-mono text-slate-500 rounded-none">
+      <div className="h-28 bg-ide-surface border border-ide-border p-4 flex items-center justify-center text-xs font-mono text-slate-500 rounded-none">
         Collecting real-time bandwidth metrics...
       </div>
     )
@@ -37,10 +37,10 @@ export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
   const currentSpeed = history[history.length - 1]?.downloadSpeed || 0
 
   return (
-    <div className="bg-[#1e1e1e] border border-[#2e2e2e] p-4 shadow-md mb-4 text-xs font-sans rounded-none">
+    <div className="bg-ide-surface border border-ide-border p-4 shadow-md mb-4 text-xs font-sans rounded-none">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 bg-[#009669] animate-ping rounded-none" />
+          <span className="h-2.5 w-2.5 bg-theme-accent animate-ping rounded-none" />
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-200">
             Real-time Bandwidth Usage
           </h3>
@@ -49,11 +49,11 @@ export const SpeedChart: React.FC<SpeedChartProps> = ({ history }) => {
           <span className="text-slate-400">
             Peak: <strong className="text-slate-200">{formatSpeed(maxSpeed)}</strong>
           </span>
-          <span className="text-[#009669] font-bold">Current: {formatSpeed(currentSpeed)}</span>
+          <span className="text-theme-accent font-bold">Current: {formatSpeed(currentSpeed)}</span>
         </div>
       </div>
 
-      <div className="relative w-full h-20 overflow-hidden bg-[#141414] p-2 border border-[#2e2e2e] rounded-none">
+      <div className="relative w-full h-20 overflow-hidden bg-ide-bg p-2 border border-ide-border rounded-none">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-full preserve-3d"

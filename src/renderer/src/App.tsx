@@ -38,8 +38,6 @@ export function App(): React.JSX.Element {
     setActiveCategory,
     activeTag,
     setActiveTag,
-    activeTrackerFilter,
-    setActiveTrackerFilter,
     searchQuery,
     setSearchQuery,
     filterBy,
@@ -64,8 +62,14 @@ export function App(): React.JSX.Element {
   })
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [addModalInitialMode, setAddModalInitialMode] = useState<'link' | 'file'>('link')
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
+
+  const handleOpenAddModal = (mode: 'link' | 'file' = 'link'): void => {
+    setAddModalInitialMode(mode)
+    setIsAddModalOpen(true)
+  }
 
   useEffect(() => {
     if (window.api) {
@@ -83,10 +87,10 @@ export function App(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#141414] text-slate-100 font-sans antialiased selection:bg-[#009669] selection:text-white rounded-none">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans antialiased selection:bg-theme-accent selection:text-white rounded-none">
       {/* Top Window Bar & File Menu Toolbar */}
       <TopBar
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenAddModal={handleOpenAddModal}
         onPauseAll={handlePauseAll}
         onResumeAll={handleResumeAll}
         onClearCompleted={handleClearCompleted}
@@ -109,8 +113,6 @@ export function App(): React.JSX.Element {
           setActiveCategory={setActiveCategory}
           activeTag={activeTag}
           setActiveTag={setActiveTag}
-          activeTrackerFilter={activeTrackerFilter}
-          setActiveTrackerFilter={setActiveTrackerFilter}
           downloads={downloads}
           onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
           onToggleAnalytics={() => setIsSettingsModalOpen(true)}
@@ -119,14 +121,14 @@ export function App(): React.JSX.Element {
         {/* Vertical Resize Handle between Sidebar and Workspace */}
         <div
           onMouseDown={handleSidebarMouseDown}
-          className="w-[2px] cursor-col-resize hover:bg-[#009669] active:bg-[#059669] bg-[#2e2e2e] transition shrink-0 z-30"
+          className="w-0.5 cursor-col-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
           title="Drag to resize sidebar"
         />
 
         {/* Center Task Workspace Split (Table on Top, Detail Inspector on Bottom) */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
           {/* Upper Main Task Data Table */}
-          <main className="flex-1 min-h-0 overflow-hidden p-0 bg-[#141414]">
+          <main className="flex-1 min-h-0 overflow-hidden p-0 bg-ide-bg">
             <TaskTableView
               downloads={filteredDownloads}
               selectedId={selectedDownload?.id || null}
@@ -141,7 +143,7 @@ export function App(): React.JSX.Element {
           {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
           <div
             onMouseDown={handleInspectorMouseDown}
-            className="h-[2px] cursor-row-resize hover:bg-[#009669] active:bg-[#059669] bg-[#2e2e2e] transition shrink-0 z-30"
+            className="h-0.5 cursor-row-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
             title="Drag to resize inspector pane"
           />
 
@@ -159,10 +161,12 @@ export function App(): React.JSX.Element {
 
       {/* Modals */}
       <AddDownloadModal
+        key={`${isAddModalOpen}-${addModalInitialMode}`}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddDownload}
         defaultSavePath={settings.defaultSavePath}
+        initialMode={addModalInitialMode}
       />
 
       <SettingsModal

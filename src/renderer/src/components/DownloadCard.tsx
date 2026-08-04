@@ -93,8 +93,8 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
       onClick={() => onSelect(download.id)}
       className={`p-4 border transition duration-150 cursor-pointer select-none font-sans text-xs rounded-none ${
         isSelected
-          ? 'bg-[#1e1e1e] border-[#009669] shadow-lg shadow-[#009669]/5'
-          : 'bg-[#141414] border-[#2e2e2e] hover:border-slate-700 hover:bg-[#181818]'
+          ? 'bg-ide-surface border-theme-accent shadow-lg shadow-theme-accent/5'
+          : 'bg-ide-bg border-ide-border hover:border-slate-700 hover:bg-[#181818]'
       }`}
     >
       <div className="flex items-start justify-between gap-4 mb-3">
@@ -132,7 +132,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                 e.stopPropagation()
                 onResume(download.id)
               }}
-              className="p-2 bg-[#063e2c] hover:bg-[#064e37] text-[#009669] rounded-none border border-[#009669]/30 transition cursor-pointer"
+              className="p-2 bg-theme-tint hover:bg-[#064e37] text-theme-accent rounded-none border border-theme-accent/30 transition cursor-pointer"
               title="Resume Download"
             >
               <Play className="h-4 w-4" />
@@ -144,7 +144,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
               e.stopPropagation()
               onOpenHashModal(download)
             }}
-            className="p-2 bg-white/5 hover:bg-white/10 text-[#009669] rounded-none border border-white/5 transition cursor-pointer"
+            className="p-2 bg-white/5 hover:bg-white/10 text-theme-accent rounded-none border border-white/5 transition cursor-pointer"
             title="Verify Checksum / Hash"
           >
             <Sliders className="h-4 w-4" />
@@ -167,8 +167,8 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
       <div className="flex items-center justify-between text-xs font-mono mb-2">
         <div className="flex items-center gap-3">
           {download.status === 'downloading' && (
-            <span className="flex items-center gap-1.5 text-[#009669] font-semibold">
-              <span className="h-2 w-2 bg-[#009669] animate-ping rounded-none" />
+            <span className="flex items-center gap-1.5 text-theme-accent font-semibold">
+              <span className="h-2 w-2 bg-theme-accent animate-ping rounded-none" />
               <span>{formatSpeed(download.speed)}</span>
             </span>
           )}
@@ -200,13 +200,13 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
           {download.status === 'downloading' ? (
             formatEta(download.eta)
           ) : (
-            <span className="ml-2 font-bold text-[#009669]">{pct}%</span>
+            <span className="ml-2 font-bold text-theme-accent">{pct}%</span>
           )}
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-2 bg-[#1e1e1e] border border-[#2e2e2e] relative overflow-hidden rounded-none">
+      <div className="w-full h-2 bg-ide-surface border border-ide-border relative overflow-hidden rounded-none">
         <div
           className={`h-full transition-all duration-300 rounded-none ${
             download.status === 'completed'
@@ -215,14 +215,14 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                 ? 'bg-rose-500'
                 : download.status === 'paused'
                   ? 'bg-amber-500'
-                  : 'bg-[#009669]'
+                  : 'bg-theme-accent'
           }`}
           style={{ width: `${pct}%` }}
         />
       </div>
 
       {/* Storage Path Footer */}
-      <div className="flex items-center justify-between mt-3 text-[11px] font-mono border-t border-[#2e2e2e] pt-2">
+      <div className="flex items-center justify-between mt-3 text-[11px] font-mono border-t border-ide-border pt-2">
         <div className="text-slate-400 truncate max-w-xs" title={download.savePath}>
           Path: <span className="text-slate-300">{download.savePath}</span>
         </div>
@@ -231,7 +231,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
             e.stopPropagation()
             onOpenHashModal(download)
           }}
-          className="flex items-center gap-1 text-slate-400 hover:text-[#009669] transition cursor-pointer font-medium"
+          className="flex items-center gap-1 text-slate-400 hover:text-theme-accent transition cursor-pointer font-medium"
         >
           <span>Verify Integrity</span>
         </button>

@@ -26,10 +26,10 @@ export const WindowControls: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center gap-0.5 style-no-drag">
+    <div className="flex items-center gap-1 style-no-drag">
       <button
         onClick={handleMinimize}
-        className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
+        className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
         title="Minimize Window"
       >
         <Minus className="h-3.5 w-3.5" />
@@ -37,15 +37,15 @@ export const WindowControls: React.FC = () => {
 
       <button
         onClick={handleMaximize}
-        className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
+        className="px-3 py-2.25 text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
         title={isMaximized ? 'Restore Window' : 'Maximize Window'}
       >
-        {isMaximized ? <Copy className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+        {isMaximized ? <Copy className="h-3 w-3" /> : <Square className="h-3.5 w-3.5" />}
       </button>
 
       <button
         onClick={handleClose}
-        className="p-1.5 text-slate-400 hover:text-white hover:bg-rose-600 rounded-none transition cursor-pointer"
+        className="p-2 text-slate-400 hover:text-white hover:bg-rose-600 rounded-none transition cursor-pointer"
         title="Close Application"
       >
         <X className="h-3.5 w-3.5" />

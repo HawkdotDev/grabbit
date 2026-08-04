@@ -13,14 +13,16 @@ import { DiskAllocator } from './DiskAllocator'
 import { RateLimiter } from './RateLimiter'
 import { Storage } from './Storage'
 import { HashVerifier } from './HashVerifier'
+import { DownloadQueueManager } from './DownloadQueueManager'
+import { StatsCollector } from './StatsCollector'
 
 export class DownloadManager extends EventEmitter {
   private downloads: Map<string, DownloadItem> = new Map()
   private settings: EngineSettings
   private chunkEngine: ChunkEngine
   private rateLimiter: RateLimiter
-  private speedHistory: SpeedSample[] = []
-  private tickerTimer?: NodeJS.Timeout
+  private queueManager: DownloadQueueManager
+  private statsCollector: StatsCollector
 
   constructor() {
     super()
@@ -28,12 +30,14 @@ export class DownloadManager extends EventEmitter {
     this.settings = Storage.loadSettings()
     this.chunkEngine = new ChunkEngine()
     this.rateLimiter = new RateLimiter(this.settings.maxGlobalSpeedLimitKbps)
-    this.speedHistory = Storage.loadSpeedHistory()
+    this.queueManager = new DownloadQueueManager(this.settings.maxConcurrentDownloads)
+
+    const savedHistory = Storage.loadSpeedHistory()
+    this.statsCollector = new StatsCollector(savedHistory)
 
     // Restore saved downloads from storage
     const saved = Storage.loadDownloads()
     saved.forEach((d) => {
-      // If was downloading when closed, mark as paused
       if (d.status === 'downloading') {
         d.status = 'paused'
         d.speed = 0
@@ -41,7 +45,11 @@ export class DownloadManager extends EventEmitter {
       this.downloads.set(d.id, d)
     })
 
-    this.startStatsTicker()
+    this.statsCollector.on('tick', (sample: SpeedSample) => {
+      Storage.saveSpeedHistory(this.statsCollector.getHistory())
+      this.emit('statsTick', sample)
+    })
+    this.statsCollector.start(() => Array.from(this.downloads.values()))
   }
 
   public getDownloads(): DownloadItem[] {
@@ -57,12 +65,15 @@ export class DownloadManager extends EventEmitter {
     if (newSettings.maxGlobalSpeedLimitKbps !== undefined) {
       this.rateLimiter.setLimitKbps(newSettings.maxGlobalSpeedLimitKbps)
     }
+    if (newSettings.maxConcurrentDownloads !== undefined) {
+      this.queueManager.setMaxConcurrentDownloads(newSettings.maxConcurrentDownloads)
+    }
     Storage.saveSettings(this.settings)
     this.emit('settingsUpdated', this.settings)
   }
 
   public getSpeedHistory(): SpeedSample[] {
-    return [...this.speedHistory]
+    return this.statsCollector.getHistory()
   }
 
   public async addDownload(
@@ -133,12 +144,10 @@ export class DownloadManager extends EventEmitter {
     }
 
     this.downloads.set(download.id, download)
-    this.saveState()
+    this.saveStateImmediate()
     this.emit('downloadAdded', download)
 
-    // Trigger process queue
     this.processQueue()
-
     return download
   }
 
@@ -147,24 +156,23 @@ export class DownloadManager extends EventEmitter {
     if (!download) return
 
     download.status = 'downloading'
-    this.saveState()
+    this.saveStateImmediate()
     this.emit('downloadUpdated', download)
 
     this.chunkEngine.startChunkDownload(
       download,
       this.rateLimiter,
       (event) => {
-        // Update chunk byte progress
         const d = this.downloads.get(event.downloadId)
         if (!d) return
 
-        // Recalculate total downloaded size and overall speed
         d.downloadedSize = d.chunks.reduce((acc, c) => acc + c.downloadedBytes, 0)
         d.speed = d.chunks.reduce((acc, c) => acc + c.speed, 0)
 
         const remainingBytes = Math.max(0, d.totalSize - d.downloadedSize)
         d.eta = d.speed > 0 ? Math.ceil(remainingBytes / d.speed) : 0
 
+        this.saveStateDebounced()
         this.emit('progress', d)
       },
       () => {
@@ -178,7 +186,8 @@ export class DownloadManager extends EventEmitter {
           d.eta = 0
           d.completedAt = Date.now()
           d.downloadedSize = d.totalSize
-          this.saveState()
+          DiskAllocator.closeFile(d.savePath)
+          this.saveStateImmediate()
           this.emit('downloadCompleted', d)
           this.processQueue()
         }
@@ -189,7 +198,8 @@ export class DownloadManager extends EventEmitter {
         d.status = 'error'
         d.error = err.message
         d.speed = 0
-        this.saveState()
+        DiskAllocator.closeFile(d.savePath)
+        this.saveStateImmediate()
         this.emit('downloadUpdated', d)
         this.processQueue()
       }
@@ -201,12 +211,13 @@ export class DownloadManager extends EventEmitter {
     if (!d || d.status !== 'downloading') return
 
     this.chunkEngine.cancelDownload(id)
+    DiskAllocator.closeFile(d.savePath)
     d.status = 'paused'
     d.speed = 0
     d.chunks.forEach((c) => {
       if (c.status === 'downloading') c.status = 'paused'
     })
-    this.saveState()
+    this.saveStateImmediate()
     this.emit('downloadUpdated', d)
     this.processQueue()
   }
@@ -216,7 +227,7 @@ export class DownloadManager extends EventEmitter {
     if (!d || (d.status !== 'paused' && d.status !== 'error')) return
 
     d.status = 'queued'
-    this.saveState()
+    this.saveStateImmediate()
     this.emit('downloadUpdated', d)
     this.processQueue()
   }
@@ -226,8 +237,9 @@ export class DownloadManager extends EventEmitter {
     if (!d) return
 
     this.chunkEngine.cancelDownload(id)
+    DiskAllocator.closeFile(d.savePath)
     this.downloads.delete(id)
-    this.saveState()
+    this.saveStateImmediate()
     this.emit('downloadRemoved', id)
     this.processQueue()
   }
@@ -243,56 +255,26 @@ export class DownloadManager extends EventEmitter {
     const actualHash = await HashVerifier.calculateHash(d.savePath, algo)
     const matches = actualHash.toLowerCase().trim() === expectedHash.toLowerCase().trim()
     d.checksum = actualHash
-    this.saveState()
+    this.saveStateImmediate()
 
     return { matches, actualHash }
   }
 
   private processQueue(): void {
-    const activeCount = Array.from(this.downloads.values()).filter(
-      (d) => d.status === 'downloading'
-    ).length
-
-    if (activeCount >= this.settings.maxConcurrentDownloads) return
-
-    const queued = Array.from(this.downloads.values())
-      .filter((d) => d.status === 'queued')
-      .sort((a, b) => {
-        const priorityWeight = { high: 3, normal: 2, low: 1 }
-        return priorityWeight[b.priority] - priorityWeight[a.priority]
-      })
-
-    const slotsAvailable = this.settings.maxConcurrentDownloads - activeCount
-    const toStart = queued.slice(0, slotsAvailable)
-
+    const toStart = this.queueManager.getNextQueuedDownloads(this.downloads)
     toStart.forEach((d) => this.startDownload(d.id))
   }
 
-  private saveState(): void {
+  private saveStateImmediate(): void {
     Storage.saveDownloads(Array.from(this.downloads.values()))
   }
 
-  private startStatsTicker(): void {
-    this.tickerTimer = setInterval(() => {
-      const activeDownloads = Array.from(this.downloads.values()).filter(
-        (d) => d.status === 'downloading'
-      )
-      const totalSpeed = activeDownloads.reduce((acc, d) => acc + d.speed, 0)
-
-      const sample: SpeedSample = {
-        timestamp: Date.now(),
-        downloadSpeed: totalSpeed,
-        uploadSpeed: 0
-      }
-
-      this.speedHistory.push(sample)
-      if (this.speedHistory.length > 60) this.speedHistory.shift()
-      Storage.saveSpeedHistory(this.speedHistory)
-      this.emit('statsTick', sample)
-    }, 1000)
+  private saveStateDebounced(): void {
+    Storage.saveDownloadsDebounced(Array.from(this.downloads.values()))
   }
 
   public destroy(): void {
-    if (this.tickerTimer) clearInterval(this.tickerTimer)
+    this.statsCollector.stop()
+    DiskAllocator.closeAll()
   }
 }

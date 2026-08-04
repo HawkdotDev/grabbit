@@ -6,7 +6,6 @@ export function useFilteredDownloads(downloads: DownloadItem[]) {
   const [activeStatusFilter, setActiveStatusFilter] = useState<StatusFilter>('all')
   const [activeCategory, setActiveCategory] = useState<DownloadCategory>('all')
   const [activeTag, setActiveTag] = useState<string>('all')
-  const [activeTrackerFilter, setActiveTrackerFilter] = useState<string>('all')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [filterBy, setFilterBy] = useState<'name' | 'category' | 'tag'>('name')
@@ -64,8 +63,6 @@ export function useFilteredDownloads(downloads: DownloadItem[]) {
     setActiveCategory,
     activeTag,
     setActiveTag,
-    activeTrackerFilter,
-    setActiveTrackerFilter,
     searchQuery,
     setSearchQuery,
     filterBy,

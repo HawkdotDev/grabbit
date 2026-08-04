@@ -43,11 +43,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
-      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-[#2e2e2e] flex items-center justify-between">
+        <div className="p-5 border-b border-ide-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#063e2c] text-[#009669] rounded-none border border-[#009669]/20">
+            <div className="p-2 bg-theme-tint text-theme-accent rounded-none border border-theme-accent/20">
               <Sliders className="h-5 w-5" />
             </div>
             <div>
@@ -66,7 +66,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-[#2e2e2e] bg-[#141414]">
+        <div className="flex border-b border-ide-border bg-ide-bg">
           {[
             { id: 'engine', label: 'Engine & Threads', icon: Cpu },
             { id: 'network', label: 'Bandwidth & RPC', icon: Network },
@@ -80,7 +80,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => setActiveTab(t.id as 'engine' | 'network' | 'general')}
                 className={`flex-1 py-3 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition cursor-pointer rounded-none ${
                   isActive
-                    ? 'border-[#009669] text-[#009669] font-bold'
+                    ? 'border-theme-accent text-theme-accent font-bold'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -98,7 +98,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div>
                 <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
                   <span>Default Thread Count per Download</span>
-                  <span className="font-mono text-[#009669] font-bold">
+                  <span className="font-mono text-theme-accent font-bold">
                     {defaultThreads} Threads
                   </span>
                 </label>
@@ -108,7 +108,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   max="32"
                   value={defaultThreads}
                   onChange={(e) => setDefaultThreads(parseInt(e.target.value, 10))}
-                  className="w-full accent-[#009669] cursor-pointer"
+                  className="w-full accent-theme-accent cursor-pointer"
                 />
               </div>
 
@@ -122,7 +122,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   max="20"
                   value={maxConcurrent}
                   onChange={(e) => setMaxConcurrent(parseInt(e.target.value, 10))}
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
+                  className="w-full bg-ide-bg text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono"
                 />
               </div>
             </div>
@@ -140,7 +140,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   step="100"
                   value={maxGlobalSpeed}
                   onChange={(e) => setMaxGlobalSpeed(parseInt(e.target.value, 10))}
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
+                  className="w-full bg-ide-bg text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono"
                 />
               </div>
             </div>
@@ -157,7 +157,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   type="text"
                   value={savePath}
                   onChange={(e) => setSavePath(e.target.value)}
-                  className="w-full bg-[#141414] text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
+                  className="w-full bg-ide-bg text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono"
                 />
               </div>
 
@@ -167,7 +167,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="checkbox"
                     checked={autoCategorize}
                     onChange={(e) => setAutoCategorize(e.target.checked)}
-                    className="h-4 w-4 accent-[#009669] rounded-none"
+                    className="h-4 w-4 accent-theme-accent rounded-none"
                   />
                   <span className="text-xs text-slate-300">
                     Auto-categorize downloads by extension
@@ -179,7 +179,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="checkbox"
                     checked={enableNotifications}
                     onChange={(e) => setEnableNotifications(e.target.checked)}
-                    className="h-4 w-4 accent-[#009669] rounded-none"
+                    className="h-4 w-4 accent-theme-accent rounded-none"
                   />
                   <span className="text-xs text-slate-300 flex items-center gap-1.5">
                     <Bell className="h-3.5 w-3.5 text-slate-400" />
@@ -192,7 +192,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     type="checkbox"
                     checked={startOnBoot}
                     onChange={(e) => setStartOnBoot(e.target.checked)}
-                    className="h-4 w-4 accent-[#009669] rounded-none"
+                    className="h-4 w-4 accent-theme-accent rounded-none"
                   />
                   <span className="text-xs text-slate-300">Start Neobit on system boot</span>
                 </label>
@@ -201,7 +201,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2e2e2e]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-ide-border">
             <button
               type="button"
               onClick={onClose}
@@ -211,7 +211,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-[#009669] hover:bg-[#059669] active:scale-95 rounded-none shadow-lg shadow-[#009669]/20 transition cursor-pointer"
+              className="px-5 py-2 text-xs font-bold text-white bg-theme-accent hover:bg-theme-bright active:scale-95 rounded-none shadow-lg shadow-theme-accent/20 transition cursor-pointer"
             >
               Save Preferences
             </button>

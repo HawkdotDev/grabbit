@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   DownloadItem,
   DownloadCategory,
@@ -73,48 +73,56 @@ export function useDownloads() {
     return downloads.find((d) => d.id === selectedId) ?? downloads[0] ?? null
   }, [downloads, selectedId])
 
-  const handleAddDownload = async (args: {
-    url: string
-    filename?: string
-    savePath?: string
-    category?: DownloadCategory
-    priority?: DownloadPriority
-    threadCount?: number
-  }): Promise<void> => {
-    if (window.api) {
-      await window.api.addDownload(args)
-    }
-  }
+  const handleAddDownload = useCallback(
+    async (args: {
+      url: string
+      filename?: string
+      savePath?: string
+      category?: DownloadCategory
+      priority?: DownloadPriority
+      threadCount?: number
+    }): Promise<void> => {
+      if (window.api) {
+        await window.api.addDownload(args)
+      }
+    },
+    []
+  )
 
-  const handlePause = (id: string): void => {
+  const handlePause = useCallback((id: string): void => {
     window.api?.pauseDownload(id)
-  }
+  }, [])
 
-  const handleResume = (id: string): void => {
+  const handleResume = useCallback((id: string): void => {
     window.api?.resumeDownload(id)
-  }
+  }, [])
 
-  const handleCancel = (id: string): void => {
+  const handleCancel = useCallback((id: string): void => {
     window.api?.cancelDownload(id)
-  }
+  }, [])
 
-  const handlePauseAll = (): void => {
-    downloads
-      .filter((d) => d.status === 'downloading')
-      .forEach((d) => window.api?.pauseDownload(d.id))
-  }
+  const handlePauseAll = useCallback((): void => {
+    setDownloads((prev) => {
+      prev.filter((d) => d.status === 'downloading').forEach((d) => window.api?.pauseDownload(d.id))
+      return prev
+    })
+  }, [])
 
-  const handleResumeAll = (): void => {
-    downloads
-      .filter((d) => d.status === 'paused' || d.status === 'error')
-      .forEach((d) => window.api?.resumeDownload(d.id))
-  }
+  const handleResumeAll = useCallback((): void => {
+    setDownloads((prev) => {
+      prev
+        .filter((d) => d.status === 'paused' || d.status === 'error')
+        .forEach((d) => window.api?.resumeDownload(d.id))
+      return prev
+    })
+  }, [])
 
-  const handleClearCompleted = (): void => {
-    downloads
-      .filter((d) => d.status === 'completed')
-      .forEach((d) => window.api?.cancelDownload(d.id))
-  }
+  const handleClearCompleted = useCallback((): void => {
+    setDownloads((prev) => {
+      prev.filter((d) => d.status === 'completed').forEach((d) => window.api?.cancelDownload(d.id))
+      return prev
+    })
+  }, [])
 
   return {
     downloads,

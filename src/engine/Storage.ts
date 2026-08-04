@@ -8,6 +8,8 @@ export class Storage {
   private static downloadsFile: string
   private static settingsFile: string
   private static historyFile: string
+  private static saveTimeout?: NodeJS.Timeout
+  private static pendingDownloads?: DownloadItem[]
 
   public static init(): void {
     const userData = app ? app.getPath('userData') : process.cwd()
@@ -33,12 +35,41 @@ export class Storage {
     return []
   }
 
-  public static saveDownloads(downloads: DownloadItem[]): void {
-    try {
-      fs.writeFileSync(this.downloadsFile, JSON.stringify(downloads, null, 2), 'utf8')
-    } catch (err) {
-      console.error('Failed to save downloads to storage:', err)
+  /**
+   * Save downloads immediately asynchronously.
+   */
+  public static async saveDownloads(downloads: DownloadItem[]): Promise<void> {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout)
+      this.saveTimeout = undefined
     }
+    this.pendingDownloads = undefined
+    try {
+      await fs.promises.writeFile(this.downloadsFile, JSON.stringify(downloads, null, 2), 'utf8')
+    } catch (err) {
+      console.error('Failed to save downloads asynchronously:', err)
+    }
+  }
+
+  /**
+   * Debounced save for high-frequency progress ticks.
+   */
+  public static saveDownloadsDebounced(downloads: DownloadItem[], delayMs: number = 1000): void {
+    this.pendingDownloads = downloads
+    if (this.saveTimeout) return
+
+    this.saveTimeout = setTimeout(() => {
+      this.saveTimeout = undefined
+      if (this.pendingDownloads) {
+        const data = this.pendingDownloads
+        this.pendingDownloads = undefined
+        fs.promises
+          .writeFile(this.downloadsFile, JSON.stringify(data, null, 2), 'utf8')
+          .catch((err) => {
+            console.error('Failed to save debounced downloads:', err)
+          })
+      }
+    }, delayMs)
   }
 
   public static loadSettings(): EngineSettings {
@@ -64,9 +95,9 @@ export class Storage {
     return defaultSettings
   }
 
-  public static saveSettings(settings: EngineSettings): void {
+  public static async saveSettings(settings: EngineSettings): Promise<void> {
     try {
-      fs.writeFileSync(this.settingsFile, JSON.stringify(settings, null, 2), 'utf8')
+      await fs.promises.writeFile(this.settingsFile, JSON.stringify(settings, null, 2), 'utf8')
     } catch (err) {
       console.error('Failed to save settings:', err)
     }
@@ -84,11 +115,10 @@ export class Storage {
     return []
   }
 
-  public static saveSpeedHistory(samples: SpeedSample[]): void {
+  public static async saveSpeedHistory(samples: SpeedSample[]): Promise<void> {
     try {
-      // Keep max 60 samples
       const slice = samples.slice(-60)
-      fs.writeFileSync(this.historyFile, JSON.stringify(slice, null, 2), 'utf8')
+      await fs.promises.writeFile(this.historyFile, JSON.stringify(slice, null, 2), 'utf8')
     } catch (err) {
       console.error('Failed to save speed history:', err)
     }

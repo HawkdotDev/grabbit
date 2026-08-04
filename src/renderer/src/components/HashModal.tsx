@@ -40,11 +40,11 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
-      <div className="bg-[#1e1e1e] border border-[#2e2e2e] rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-ide-surface border border-ide-border rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-[#2e2e2e] flex items-center justify-between">
+        <div className="p-5 border-b border-ide-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#063e2c] text-[#009669] rounded-none border border-[#009669]/20">
+            <div className="p-2 bg-theme-tint text-theme-accent rounded-none border border-theme-accent/20">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
@@ -73,8 +73,8 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
                   onClick={() => setAlgo(a)}
                   className={`py-2 px-3 text-xs font-mono font-bold border transition cursor-pointer rounded-none uppercase ${
                     algo === a
-                      ? 'bg-[#063e2c] text-[#009669] border-[#009669]/40'
-                      : 'bg-[#141414] text-slate-400 border-[#2e2e2e] hover:text-slate-200'
+                      ? 'bg-theme-tint text-theme-accent border-theme-accent/40'
+                      : 'bg-ide-bg text-slate-400 border-ide-border hover:text-slate-200'
                   }`}
                 >
                   {a}
@@ -94,7 +94,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
               value={expectedHash}
               onChange={(e) => setExpectedHash(e.target.value)}
               placeholder="e.g. e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-              className="w-full bg-[#141414] text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-none border border-[#2e2e2e] focus:outline-none focus:border-[#009669] font-mono"
+              className="w-full bg-ide-bg text-slate-100 placeholder-slate-600 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono"
             />
           </div>
 
@@ -122,7 +122,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
           )}
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2e2e2e]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-ide-border">
             <button
               type="button"
               onClick={onClose}
@@ -133,7 +133,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
             <button
               type="submit"
               disabled={isVerifying || !expectedHash.trim()}
-              className="px-5 py-2 text-xs font-bold text-white bg-[#009669] hover:bg-[#059669] active:scale-95 rounded-none shadow-lg shadow-[#009669]/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-bold text-white bg-theme-accent hover:bg-theme-bright active:scale-95 rounded-none shadow-lg shadow-theme-accent/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isVerifying && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>Verify Integrity</span>

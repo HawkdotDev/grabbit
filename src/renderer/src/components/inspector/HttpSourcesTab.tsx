@@ -8,8 +8,8 @@ interface HttpSourcesTabProps {
 export const HttpSourcesTab: React.FC<HttpSourcesTabProps> = ({ download }) => {
   return (
     <div className="space-y-2 font-mono">
-      <div className="p-2.5 bg-[#1e1e1e] border border-[#2e2e2e] flex items-center justify-between">
-        <span className="text-[#009669] font-semibold">{download.url}</span>
+      <div className="p-2.5 bg-ide-surface border border-ide-border flex items-center justify-between">
+        <span className="text-theme-accent font-semibold">{download.url}</span>
         <span className="text-emerald-400 font-bold">Primary Range Source OK</span>
       </div>
     </div>

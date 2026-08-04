@@ -9,8 +9,8 @@ interface GeneralTabProps {
 export const GeneralTab: React.FC<GeneralTabProps> = ({ download }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-sans text-xs">
-      <div className="space-y-2 bg-[#1e1e1e] p-3 border border-[#2e2e2e] rounded-none">
-        <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#009669]">
+      <div className="space-y-2 bg-ide-surface p-3 border border-ide-border rounded-none">
+        <div className="font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-theme-accent">
           Transfer Information
         </div>
         <div className="flex justify-between font-mono">
@@ -31,8 +31,8 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({ download }) => {
         </div>
       </div>
 
-      <div className="space-y-2 bg-[#1e1e1e] p-3 border border-[#2e2e2e] rounded-none">
-        <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#009669]">
+      <div className="space-y-2 bg-ide-surface p-3 border border-ide-border rounded-none">
+        <div className="font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-theme-accent">
           Connection &amp; Speed
         </div>
         <div className="flex justify-between font-mono">
@@ -55,19 +55,19 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({ download }) => {
         </div>
       </div>
 
-      <div className="space-y-2 bg-[#1e1e1e] p-3 border border-[#2e2e2e] rounded-none">
-        <div className="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-[#009669]">
+      <div className="space-y-2 bg-ide-surface p-3 border border-ide-border rounded-none">
+        <div className="font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-theme-accent">
           File Diagnostics
         </div>
         <div className="flex justify-between font-mono">
           <span className="text-slate-400">Save Path:</span>
-          <span className="truncate max-w-[140px]" title={download.savePath}>
+          <span className="truncate max-w-35" title={download.savePath}>
             {download.savePath}
           </span>
         </div>
         <div className="flex justify-between font-mono">
           <span className="text-slate-400">Info Hash:</span>
-          <span className="truncate max-w-[140px] text-[#009669]">
+          <span className="truncate max-w-35 text-theme-accent">
             {download.infoHash || download.checksum || 'N/A'}
           </span>
         </div>
