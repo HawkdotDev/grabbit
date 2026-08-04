@@ -12,8 +12,8 @@ interface TopBarProps {
   onResumeAll: () => void
   onClearCompleted: () => void
   onOpenSettingsModal: () => void
-  activeView: 'home' | 'analytics'
-  setActiveView: (view: 'home' | 'analytics') => void
+  activeView: 'home' | 'analytics' | 'network'
+  setActiveView: (view: 'home' | 'analytics' | 'network') => void
   searchQuery: string
   setSearchQuery: (q: string) => void
   filterBy: 'name' | 'category' | 'tag'

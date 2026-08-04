@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
 import { DownloadItem, SpeedSample } from '../../../engine/types'
 import { ChunkProgress } from './ChunkProgress'
-import { SpeedChart } from './SpeedChart'
 import { GeneralTab } from './inspector/GeneralTab'
 import { TrackersTab } from './inspector/TrackersTab'
 import { ContentFilesTab } from './inspector/ContentFilesTab'
 import { HttpSourcesTab } from './inspector/HttpSourcesTab'
-import { Info, Globe, Users, Link, FileText, Activity } from 'lucide-react'
+import { Info, Globe, Users, Link, FileText } from 'lucide-react'
 
 interface BottomDetailInspectorProps {
   height?: number
@@ -15,9 +14,9 @@ interface BottomDetailInspectorProps {
 }
 
 export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React.memo(
-  ({ height = 240, download, speedHistory }) => {
+  ({ height = 240, download }) => {
     const [activeTab, setActiveTab] = useState<
-      'general' | 'trackers' | 'peers' | 'sources' | 'content' | 'speed'
+      'general' | 'trackers' | 'peers' | 'sources' | 'content'
     >('general')
 
     const tabs = [
@@ -25,8 +24,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React
       { id: 'trackers', label: 'Trackers', icon: Globe },
       { id: 'peers', label: 'Peers / Threads', icon: Users },
       { id: 'sources', label: 'HTTP Sources', icon: Link },
-      { id: 'content', label: 'Content / Files', icon: FileText },
-      { id: 'speed', label: 'Bandwidth Speed', icon: Activity }
+      { id: 'content', label: 'Content / Files', icon: FileText }
     ]
 
     return (
@@ -44,9 +42,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React
                 <button
                   key={t.id}
                   onClick={() =>
-                    setActiveTab(
-                      t.id as 'general' | 'trackers' | 'peers' | 'sources' | 'content' | 'speed'
-                    )
+                    setActiveTab(t.id as 'general' | 'trackers' | 'peers' | 'sources' | 'content')
                   }
                   className={`px-3 py-1 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer rounded-none border-b-2 ${
                     isActive
@@ -84,7 +80,6 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React
               )}
               {activeTab === 'sources' && <HttpSourcesTab download={download} />}
               {activeTab === 'content' && <ContentFilesTab download={download} />}
-              {activeTab === 'speed' && <SpeedChart history={speedHistory} />}
             </>
           )}
         </div>

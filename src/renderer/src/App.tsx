@@ -14,6 +14,7 @@ import { SettingsModal } from './components/SettingsModal'
 import { HashModal } from './components/HashModal'
 
 import { AnalyticsView } from './components/AnalyticsView'
+import { NetworkView } from './components/NetworkView'
 
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook
@@ -63,7 +64,7 @@ export function App(): React.JSX.Element {
     theme: 'dark'
   })
 
-  const [activeMainView, setActiveMainView] = useState<'home' | 'analytics'>('home')
+  const [activeMainView, setActiveMainView] = useState<'home' | 'analytics' | 'network'>('home')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [addModalInitialMode, setAddModalInitialMode] = useState<'link' | 'file'>('link')
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
@@ -107,13 +108,21 @@ export function App(): React.JSX.Element {
         globalSpeed={globalSpeed}
       />
 
-      {/* Main View Area: Home (Analytics Dashboard Overview) vs Analytics (Tasks Workspace) */}
+      {/* Main View Area: Home vs Network vs Analytics (Tasks Workspace) */}
       {activeMainView === 'home' ? (
         <AnalyticsView
           downloads={downloads}
           speedHistory={speedHistory}
           globalSpeed={globalSpeed}
+          onOpenAddModal={handleOpenAddModal}
+          onNavigateToTasks={() => setActiveMainView('analytics')}
+          onSelectDownload={(id) => setSelectedId(id)}
+          onPause={handlePause}
+          onResume={handleResume}
+          onCancel={handleCancel}
         />
+      ) : activeMainView === 'network' ? (
+        <NetworkView downloads={downloads} speedHistory={speedHistory} globalSpeed={globalSpeed} />
       ) : (
         <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
           {/* Left Resizable Sidebar Filter Tree */}

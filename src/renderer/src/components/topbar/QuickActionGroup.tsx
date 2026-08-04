@@ -1,16 +1,16 @@
 import React from 'react'
-import { Home, Activity, Trash2 } from 'lucide-react'
+import { Home, Activity, Network } from 'lucide-react'
 import { AddDropdown } from './AddDropdown'
 
 interface QuickActionGroupProps {
   onOpenAddModal: (mode?: 'link' | 'file') => void
-  onClearCompleted: () => void
-  activeView: 'home' | 'analytics'
-  setActiveView: (view: 'home' | 'analytics') => void
+  onClearCompleted?: () => void
+  activeView: 'home' | 'analytics' | 'network'
+  setActiveView: (view: 'home' | 'analytics' | 'network') => void
 }
 
 export const QuickActionGroup: React.FC<QuickActionGroupProps> = React.memo(
-  ({ onOpenAddModal, onClearCompleted, activeView, setActiveView }) => {
+  ({ onOpenAddModal, activeView, setActiveView }) => {
     return (
       <div className="flex items-center gap-2 py-1">
         <AddDropdown onOpenAddModal={onOpenAddModal} />
@@ -22,7 +22,7 @@ export const QuickActionGroup: React.FC<QuickActionGroupProps> = React.memo(
               ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-sm'
               : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/5'
           }`}
-          title="Switch to Home View (Tasks Workspace)"
+          title="Switch to Home Dashboard"
         >
           <Home className="h-3.5 w-3.5" />
           <span>Home</span>
@@ -35,19 +35,23 @@ export const QuickActionGroup: React.FC<QuickActionGroupProps> = React.memo(
               ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-sm'
               : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/5'
           }`}
-          title="Switch to Engine Analytics & Diagnostics View"
+          title="Switch to Downloads & Tasks Workspace"
         >
           <Activity className="h-3.5 w-3.5" />
-          <span>Analytics</span>
+          <span>Tasks</span>
         </button>
 
         <button
-          onClick={onClearCompleted}
-          className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/5 flex items-center gap-1.5 transition cursor-pointer rounded-none"
-          title="Remove Finished Tasks"
+          onClick={() => setActiveView('network')}
+          className={`px-2.5 py-1 text-xs font-semibold border flex items-center gap-1.5 transition cursor-pointer rounded-none ${
+            activeView === 'network'
+              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-sm'
+              : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/5'
+          }`}
+          title="Switch to Network Telemetry & Throughput Graph"
         >
-          <Trash2 className="h-3.5 w-3.5 text-slate-400" />
-          <span>Clear Finished</span>
+          <Network className="h-3.5 w-3.5" />
+          <span>Network</span>
         </button>
       </div>
     )

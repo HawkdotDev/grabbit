@@ -9,7 +9,7 @@
       <img src="https://img.shields.io/badge/License-Apache_2.0-009669.svg?style=for-the-badge" alt="License" />
     </a>
     <a href="https://github.com/HawkdotDev/neobit/releases">
-      <img src="https://img.shields.io/badge/Version-0.0.1-009669.svg?style=for-the-badge" alt="Version" />
+      <img src="https://img.shields.io/badge/Version-0.0.2-009669.svg?style=for-the-badge" alt="Version" />
     </a>
     <a href="https://electronjs.org">
       <img src="https://img.shields.io/badge/Electron-v35-47848F.svg?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
