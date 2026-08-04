@@ -1,6 +1,6 @@
 {
   "name": "neobit",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "High-performance, feature-rich modern download manager built with Electron, React, and TypeScript.",
   "main": "./out/main/index.js",
   "author": {

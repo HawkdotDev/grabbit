@@ -128,7 +128,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div className="flex items-center gap-3 style-no-drag">
           <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 text-xs font-semibold text-[#009669] border border-white/5 rounded-none">
             <Zap className="h-3.5 w-3.5 fill-[#009669]/20" />
-            <span>Neobit v1.0.0</span>
+            <span>Neobit v0.0.1</span>
           </div>
 
           <div className="h-4 w-px bg-[#2e2e2e]" />
