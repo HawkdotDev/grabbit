@@ -42,46 +42,46 @@ export const TrackersTab: React.FC<TrackersTabProps> = ({ download }) => {
   return (
     <div className="w-full space-y-2 font-sans text-xs select-none">
       {/* Sub-tabs Header Bar */}
-      <div className="flex items-center gap-2 rounded-none">
+      <div className="flex items-center gap-1.5 rounded-none">
         <button
           onClick={() => setActiveSubTab('all')}
-          className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-2 transition cursor-pointer rounded-none border ${
+          className={`px-2.5 py-1 text-[11px] font-semibold flex items-center gap-1.5 transition cursor-pointer rounded-none border ${
             activeSubTab === 'all'
-              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-md'
+              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-sm'
               : 'bg-ide-bg text-slate-300 border-ide-border hover:bg-white/10 hover:text-white'
           }`}
         >
-          <Globe className="h-4 w-4" />
+          <Globe className="h-3.5 w-3.5" />
           <span>All Trackers</span>
-          <span className="px-1.5 py-0.2 bg-black/30 font-mono text-[10px]">{trackers.length}</span>
+          <span className="px-1.5 py-0.2 bg-black/30 font-mono text-[9px]">{trackers.length}</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('trackerless')}
-          className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-2 transition cursor-pointer rounded-none border ${
+          className={`px-2.5 py-1 text-[11px] font-semibold flex items-center gap-1.5 transition cursor-pointer rounded-none border ${
             activeSubTab === 'trackerless'
-              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-md'
+              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-sm'
               : 'bg-ide-bg text-slate-300 border-ide-border hover:bg-white/10 hover:text-white'
           }`}
         >
-          <Radio className="h-4 w-4 text-cyan-400" />
+          <Radio className="h-3.5 w-3.5 text-cyan-400" />
           <span>Trackerless (DHT/PeX)</span>
-          <span className="px-1.5 py-0.2 bg-black/30 font-mono text-[10px]">
+          <span className="px-1.5 py-0.2 bg-black/30 font-mono text-[9px]">
             {trackerlessServices.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('working')}
-          className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-2 transition cursor-pointer rounded-none border ${
+          className={`px-2.5 py-1 text-[11px] font-semibold flex items-center gap-1.5 transition cursor-pointer rounded-none border ${
             activeSubTab === 'working'
-              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-md'
+              ? 'bg-theme-accent text-white border-theme-accent font-bold shadow-sm'
               : 'bg-ide-bg text-slate-300 border-ide-border hover:bg-white/10 hover:text-white'
           }`}
         >
-          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
           <span>Working Trackers</span>
-          <span className="px-1.5 py-0.2 bg-black/30 font-mono text-[10px]">
+          <span className="px-1.5 py-0.2 bg-black/30 font-mono text-[9px]">
             {trackers.filter((t) => t.status === 'working').length}
           </span>
         </button>

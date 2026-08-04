@@ -13,6 +13,8 @@ import { AddDownloadModal } from './components/AddDownloadModal'
 import { SettingsModal } from './components/SettingsModal'
 import { HashModal } from './components/HashModal'
 
+import { AnalyticsView } from './components/AnalyticsView'
+
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook
   const {
@@ -61,6 +63,7 @@ export function App(): React.JSX.Element {
     theme: 'dark'
   })
 
+  const [activeMainView, setActiveMainView] = useState<'home' | 'analytics'>('home')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [addModalInitialMode, setAddModalInitialMode] = useState<'link' | 'file'>('link')
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
@@ -95,6 +98,8 @@ export function App(): React.JSX.Element {
         onResumeAll={handleResumeAll}
         onClearCompleted={handleClearCompleted}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        activeView={activeMainView}
+        setActiveView={setActiveMainView}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         filterBy={filterBy}
@@ -102,59 +107,67 @@ export function App(): React.JSX.Element {
         globalSpeed={globalSpeed}
       />
 
-      {/* Main Content split into Sidebar and Workspace with Resizable Splitters */}
-      <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
-        {/* Left Resizable Sidebar Filter Tree */}
-        <Sidebar
-          width={sidebarWidth}
-          activeStatusFilter={activeStatusFilter}
-          setActiveStatusFilter={setActiveStatusFilter}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-          activeTag={activeTag}
-          setActiveTag={setActiveTag}
+      {/* Main View Area: Home (Analytics Dashboard Overview) vs Analytics (Tasks Workspace) */}
+      {activeMainView === 'home' ? (
+        <AnalyticsView
           downloads={downloads}
-          onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
-          onToggleAnalytics={() => setIsSettingsModalOpen(true)}
+          speedHistory={speedHistory}
+          globalSpeed={globalSpeed}
         />
+      ) : (
+        <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
+          {/* Left Resizable Sidebar Filter Tree */}
+          <Sidebar
+            width={sidebarWidth}
+            activeStatusFilter={activeStatusFilter}
+            setActiveStatusFilter={setActiveStatusFilter}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+            activeTag={activeTag}
+            setActiveTag={setActiveTag}
+            downloads={downloads}
+            onResumeAll={handleResumeAll}
+            onPauseAll={handlePauseAll}
+          />
 
-        {/* Vertical Resize Handle between Sidebar and Workspace */}
-        <div
-          onMouseDown={handleSidebarMouseDown}
-          className="w-0.5 cursor-col-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
-          title="Drag to resize sidebar"
-        />
-
-        {/* Center Task Workspace Split (Table on Top, Detail Inspector on Bottom) */}
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-          {/* Upper Main Task Data Table */}
-          <main className="flex-1 min-h-0 overflow-hidden p-0 bg-ide-bg">
-            <TaskTableView
-              downloads={filteredDownloads}
-              selectedId={selectedDownload?.id || null}
-              onSelect={(id) => setSelectedId(id)}
-              onPause={handlePause}
-              onResume={handleResume}
-              onCancel={handleCancel}
-              onOpenHashModal={(item) => setHashModalDownload(item)}
-            />
-          </main>
-
-          {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
+          {/* Vertical Resize Handle between Sidebar and Workspace */}
           <div
-            onMouseDown={handleInspectorMouseDown}
-            className="h-0.5 cursor-row-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
-            title="Drag to resize inspector pane"
+            onMouseDown={handleSidebarMouseDown}
+            className="w-0.5 cursor-col-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
+            title="Drag to resize sidebar"
           />
 
-          {/* Lower Resizable Detail Inspector Tabbed Pane */}
-          <BottomDetailInspector
-            height={inspectorHeight}
-            download={selectedDownload}
-            speedHistory={speedHistory}
-          />
+          {/* Center Task Workspace Split (Table on Top, Detail Inspector on Bottom) */}
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+            {/* Upper Main Task Data Table */}
+            <main className="flex-1 min-h-0 overflow-hidden p-0 bg-ide-bg">
+              <TaskTableView
+                downloads={filteredDownloads}
+                selectedId={selectedDownload?.id || null}
+                onSelect={(id) => setSelectedId(id)}
+                onPause={handlePause}
+                onResume={handleResume}
+                onCancel={handleCancel}
+                onOpenHashModal={(item) => setHashModalDownload(item)}
+              />
+            </main>
+
+            {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
+            <div
+              onMouseDown={handleInspectorMouseDown}
+              className="h-0.5 cursor-row-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
+              title="Drag to resize inspector pane"
+            />
+
+            {/* Lower Resizable Detail Inspector Tabbed Pane */}
+            <BottomDetailInspector
+              height={inspectorHeight}
+              download={selectedDownload}
+              speedHistory={speedHistory}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Bottom Status Bar */}
       <BottomStatusBar downloads={downloads} globalSpeed={globalSpeed} />

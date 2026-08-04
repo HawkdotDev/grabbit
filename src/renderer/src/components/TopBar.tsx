@@ -12,6 +12,8 @@ interface TopBarProps {
   onResumeAll: () => void
   onClearCompleted: () => void
   onOpenSettingsModal: () => void
+  activeView: 'home' | 'analytics'
+  setActiveView: (view: 'home' | 'analytics') => void
   searchQuery: string
   setSearchQuery: (q: string) => void
   filterBy: 'name' | 'category' | 'tag'
@@ -22,10 +24,10 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = React.memo(
   ({
     onOpenAddModal,
-    onPauseAll,
-    onResumeAll,
     onClearCompleted,
     onOpenSettingsModal,
+    activeView,
+    setActiveView,
     searchQuery,
     setSearchQuery,
     filterBy,
@@ -54,10 +56,9 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
         <div className="h-11 px-3 flex items-center justify-between bg-ide-bg">
           <QuickActionGroup
             onOpenAddModal={onOpenAddModal}
-            onPauseAll={onPauseAll}
-            onResumeAll={onResumeAll}
             onClearCompleted={onClearCompleted}
-            onOpenSettingsModal={onOpenSettingsModal}
+            activeView={activeView}
+            setActiveView={setActiveView}
           />
 
           <SearchFilterBar

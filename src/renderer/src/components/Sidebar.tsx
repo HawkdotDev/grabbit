@@ -16,8 +16,7 @@ import {
   Pause,
   Play,
   Activity,
-  Search,
-  Sliders
+  Search
 } from 'lucide-react'
 import { SidebarSection } from './sidebar/SidebarSection'
 import { SidebarFilterItem } from './sidebar/SidebarFilterItem'
@@ -31,8 +30,8 @@ interface SidebarProps {
   activeTag: string
   setActiveTag: (tag: string) => void
   downloads: DownloadItem[]
-  onOpenSettingsModal?: () => void
-  onToggleAnalytics?: () => void
+  onResumeAll?: () => void
+  onPauseAll?: () => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = React.memo(
@@ -45,8 +44,8 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
     activeTag,
     setActiveTag,
     downloads,
-    onOpenSettingsModal,
-    onToggleAnalytics
+    onResumeAll,
+    onPauseAll
   }) => {
     // Memoize status counts map
     const statusCounts = useMemo(() => {
@@ -147,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
           {
             id: 'checking',
             label: 'Checking',
-            icon: <Search className="h-3.5 w-3.5 text-indigo-400" />
+            icon: <Search className="h-3.5 w-3.5 text-blue-400" />
           },
           {
             id: 'errored',
@@ -161,35 +160,35 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
     const categories: Array<{ id: DownloadCategory; label: string; icon: React.JSX.Element }> =
       useMemo(
         () => [
-          { id: 'all', label: 'All', icon: <Folder className="h-3.5 w-3.5 text-slate-400" /> },
-          {
-            id: 'other',
-            label: 'Uncategorized',
-            icon: <Folder className="h-3.5 w-3.5 text-slate-500" />
-          },
+          { id: 'all', label: 'All', icon: <Inbox className="h-3.5 w-3.5 text-slate-400" /> },
           {
             id: 'documents',
             label: 'Documents',
-            icon: <FileText className="h-3.5 w-3.5 text-amber-500" />
+            icon: <FileText className="h-3.5 w-3.5 text-amber-400" />
           },
           {
             id: 'compressed',
-            label: 'Archives',
+            label: 'Compressed',
             icon: <Archive className="h-3.5 w-3.5 text-purple-400" />
           },
-          { id: 'video', label: 'Videos', icon: <Film className="h-3.5 w-3.5 text-emerald-400" /> },
-          { id: 'audio', label: 'Audio', icon: <Music className="h-3.5 w-3.5 text-cyan-400" /> },
+          { id: 'video', label: 'Videos', icon: <Film className="h-3.5 w-3.5 text-blue-400" /> },
+          { id: 'audio', label: 'Audio', icon: <Music className="h-3.5 w-3.5 text-emerald-400" /> },
           {
             id: 'executables',
-            label: 'Executables',
-            icon: <Cpu className="h-3.5 w-3.5 text-teal-400" />
+            label: 'Programs',
+            icon: <Cpu className="h-3.5 w-3.5 text-rose-400" />
           },
           {
             id: 'images',
             label: 'Images',
-            icon: <ImageIcon className="h-3.5 w-3.5 text-yellow-400" />
+            icon: <ImageIcon className="h-3.5 w-3.5 text-pink-400" />
           },
-          { id: 'code', label: 'Code', icon: <Code2 className="h-3.5 w-3.5 text-indigo-400" /> }
+          {
+            id: 'code',
+            label: 'Source Code',
+            icon: <Code2 className="h-3.5 w-3.5 text-cyan-400" />
+          },
+          { id: 'other', label: 'Other', icon: <Folder className="h-3.5 w-3.5 text-slate-400" /> }
         ],
         []
       )
@@ -203,21 +202,21 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
           {/* Top Action Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={onOpenSettingsModal}
+              onClick={onResumeAll}
               className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-slate-200 border border-white/5 rounded-none font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-              title="Open Preferences & Engine Settings"
+              title="Resume All Downloads"
             >
-              <Sliders className="h-3.5 w-3.5 text-theme-accent" />
-              <span>Settings</span>
+              <Play className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400/20" />
+              <span>Resume</span>
             </button>
 
             <button
-              onClick={onToggleAnalytics}
-              className="flex-1 py-1.5 px-2 bg-theme-tint hover:bg-[#064e37] active:scale-[0.98] text-theme-accent border border-theme-accent/30 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-              title="Toggle Bandwidth & Engine Diagnostics"
+              onClick={onPauseAll}
+              className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-slate-200 border border-white/5 rounded-none font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+              title="Pause All Downloads"
             >
-              <Activity className="h-3.5 w-3.5" />
-              <span>Analytics</span>
+              <Pause className="h-3.5 w-3.5 text-amber-400 fill-amber-400/20" />
+              <span>Pause</span>
             </button>
           </div>
 
