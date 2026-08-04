@@ -60,9 +60,9 @@ export interface GrabbitAPI {
       history: SpeedSample[]
     }) => void
   ) => () => void
-  onDownloadProgress: (callback: (data: any) => void) => () => void
-  onDownloadCompleted: (callback: (data: any) => void) => () => void
-  onDownloadError: (callback: (data: any) => void) => () => void
+  onDownloadProgress: (callback: (data: DownloadItem) => void) => () => void
+  onDownloadCompleted: (callback: (data: DownloadItem) => void) => () => void
+  onDownloadError: (callback: (data: { id: string; error: string }) => void) => () => void
   onDownloadAdded: (callback: (download: DownloadItem) => void) => () => void
   onDownloadUpdated: (callback: (download: DownloadItem) => void) => () => void
   onDownloadRemoved: (callback: (id: string) => void) => () => void
