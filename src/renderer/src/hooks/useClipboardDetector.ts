@@ -5,12 +5,20 @@ export interface ClipboardDetectedLink {
   suggestedName: string
 }
 
-export function useClipboardDetector(onDetected?: (link: ClipboardDetectedLink) => void) {
+export interface UseClipboardDetectorReturn {
+  detectedLink: ClipboardDetectedLink | null
+  dismiss: () => void
+  clear: () => void
+}
+
+export function useClipboardDetector(
+  onDetected?: (link: ClipboardDetectedLink) => void
+): UseClipboardDetectorReturn {
   const [detectedLink, setDetectedLink] = useState<ClipboardDetectedLink | null>(null)
   const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    const checkClipboard = async () => {
+    const checkClipboard = async (): Promise<void> => {
       try {
         if (!navigator.clipboard || !navigator.clipboard.readText) return
         const text = await navigator.clipboard.readText()
@@ -58,14 +66,14 @@ export function useClipboardDetector(onDetected?: (link: ClipboardDetectedLink) 
     }
   }, [dismissedUrls, onDetected])
 
-  const dismiss = () => {
+  const dismiss = (): void => {
     if (detectedLink) {
       setDismissedUrls((prev) => new Set(prev).add(detectedLink.url))
       setDetectedLink(null)
     }
   }
 
-  const clear = () => {
+  const clear = (): void => {
     setDetectedLink(null)
   }
 

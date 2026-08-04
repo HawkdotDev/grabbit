@@ -9,13 +9,13 @@ interface MenuBarProps {
 export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettingsModal }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
 
-  const handleExport = async () => {
+  const handleExport = async (): Promise<void> => {
     if (window.api && window.api.exportQueue) {
       await window.api.exportQueue()
     }
   }
 
-  const handleImport = async () => {
+  const handleImport = async (): Promise<void> => {
     if (window.api && window.api.importQueue) {
       await window.api.importQueue()
     }

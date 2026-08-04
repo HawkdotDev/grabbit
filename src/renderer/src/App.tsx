@@ -85,7 +85,7 @@ export function App(): React.JSX.Element {
     }
   }, [])
 
-  const handleSaveSettings = async (newSettings: Partial<EngineSettings>) => {
+  const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
     if (window.api && window.api.updateSettings) {
       const updated = await window.api.updateSettings(newSettings)
       if (updated) setSettings(updated)
@@ -93,7 +93,7 @@ export function App(): React.JSX.Element {
     setIsSettingsModalOpen(false)
   }
 
-  const handleAddFromClipboard = (url: string) => {
+  const handleAddFromClipboard = (url: string): void => {
     handleAddDownload({ url })
     clear()
   }
