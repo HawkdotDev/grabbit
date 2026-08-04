@@ -1,46 +1,33 @@
 # Implementation Plan — Grabbit Download Manager
 
-> Comprehensive technical blueprint and implementation roadmap for **Grabbit** — a modern, high-performance, multithreaded desktop download manager and accelerator built with Electron, React 19, TypeScript, and Bun.
+> Focused technical blueprint and implementation roadmap of **remaining features** for **Grabbit**.
 
 ---
 
-## 📊 Completed Milestones vs. Remaining Roadmap
+## 🗺️ Remaining Roadmap
 
 ```mermaid
 graph TB
-    subgraph Done["✅ Completed Milestones (v0.0.2)"]
-        UI["Modern qBittorrent Dark UI & Sora/Inter Fonts"]
-        Architecture["Domain-Driven Modular Architecture (home, network, tasktable, inspector, modals)"]
-        Telemetry["Network View Bezier Spline Graph & Hover Tooltip"]
-        HomeDashboard["Home Dashboard Engine & Queue Status Panel"]
-        Branding["Full App Rebranding to Grabbit"]
-        Typecheck["Zero TypeScript & Prettier Errors"]
+    subgraph Phase1["📋 Phase 1: Clipboard Auto-Detection & Quick Add"]
+        Clipboard["System Clipboard Link Auto-Detector"]
+        QuickAddBanner["Top Quick-Add Banner Toast"]
     end
 
-    subgraph Phase1["🔨 Phase 1: Real Multi-Threaded HTTP Engine"]
-        DirectPWrite["Direct Positioned Disk Writes (pwriteSync)"]
-        RangeChunking["HTTP Range Segment Streaming (1..32 Threads)"]
-        PreAllocation["Sparse File Pre-allocation (DiskAllocator)"]
+    subgraph Phase2["💾 Phase 2: Queue Export & Import"]
+        QueueExport["Export Queue State (grabbit_queue.json)"]
+        QueueImport["Import Queue State & Batch Hydration"]
     end
 
-    subgraph Phase2["⚡ Phase 2: Bandwidth Governor & IPC Sync"]
-        RateLimiting["Token-Bucket RateLimiter Governor Integration"]
-        IPCRealtime["IPC Real-Time Progress Push Events"]
-        PauseResume["Persistent Byte Offset Resume & ETag Check"]
+    subgraph Phase3["🌐 Phase 3: Browser Integration & Extension"]
+        NMH["Native Messaging Host (Chrome / Firefox)"]
+        ExtensionInstaller["Browser Extension Helper Installer"]
     end
 
-    subgraph Phase3["🔔 Phase 3: OS Integration & Automation"]
-        OSNotifications["Native Desktop Notifications (Notification API)"]
-        AutoStartBoot["Start on System Boot (setLoginItemSettings)"]
-        ClipboardDetect["Clipboard Download Link Auto-Detection"]
+    subgraph Phase4["🧲 Phase 4: Extended Protocols & Media"]
+        MagnetWorker["BitTorrent / Magnet Link Handler (TorrentWorker)"]
+        YtDlpWorker["Video Downloader Wrapper (MediaWorker + yt-dlp)"]
     end
 
-    subgraph Phase4["💾 Phase 4: Queue State & Export"]
-        QueueExport["Export / Import Download Queue (JSON & Metalink)"]
-        BatchDownload["Batch Multi-URL Extractor"]
-    end
-
-    Done --> Phase1
     Phase1 --> Phase2
     Phase2 --> Phase3
     Phase3 --> Phase4
@@ -48,61 +35,53 @@ graph TB
 
 ---
 
-## 🎯 Detailed Remaining Implementation Plan
+## 🎯 Detailed Tasks Remaining
 
-### 1. Real Multi-Threaded HTTP Range Downloader & Direct `pwrite` Disk Writer
+### Task 1: Clipboard Link Auto-Detection & Quick-Add Banner
 
-#### Scope & Architecture:
-
-- Upgrade `src/engine/ChunkEngine.ts` to execute real HTTP `Range: bytes=X-Y` requests for each chunk.
-- Open file handles using `fs.openSync(path, 'r+')` and write incoming chunk stream buffers directly using `fs.writeSync(fd, buffer, 0, buffer.length, currentOffset)`.
-- **Zero Concatenation**: Eliminates intermediate segment files (`.part0`, `.part1`). Files are written at exact byte offsets in real time.
+#### Scope:
+- Add a periodic or focus-triggered clipboard scanner in `src/renderer/src/hooks/useDownloads.ts` using `navigator.clipboard.readText()`.
+- When an HTTP/S downloadable URL (e.g. `.iso`, `.zip`, `.exe`, `.mp4`) or `magnet:?` link is detected in the clipboard, render a sleek floating toast banner with a **"1-Click Add to Grabbit"** action button.
 
 ---
 
-### 2. Bandwidth Governor & Token-Bucket RateLimiter Integration
+### Task 2: Download Queue State Export & Import
 
-#### Scope & Architecture:
-
-- Connect `src/engine/RateLimiter.ts` to `ChunkEngine` stream throttlers.
-- When `maxGlobalSpeedLimitKbps` is configured in `SettingsModal.tsx`, throttle chunk stream chunks via `RateLimiter.removeTokens(bytes)`.
-
----
-
-### 3. OS Desktop Notifications & Auto-Start Configuration
-
-#### Scope & Architecture:
-
-- Trigger Electron `Notification` API in `src/main/index.ts` whenever a task finishes (`onDownloadCompleted`) or fails (`onDownloadError`).
-- Implement `app.setLoginItemSettings({ openAtLogin: startOnBoot })` for Windows startup toggle in `SettingsModal`.
+#### Scope:
+- Implement **Export Download Queue** in `src/renderer/src/components/topbar/MenuBar.tsx` (saves active task list as `grabbit_queue.json`).
+- Implement **Import Download Queue** to upload a saved queue JSON file and batch-populate tasks into the engine.
 
 ---
 
-### 4. Clipboard Auto-Detection & Quick Add Banner
+### Task 3: Browser Native Messaging Host (Chrome / Firefox Extension Helper)
 
-#### Scope & Architecture:
-
-- Add clipboard polling listener in `useDownloads.ts` using `navigator.clipboard.readText()`.
-- When an HTTP file link (`http://.../file.zip`, `https://.../app.exe`) or `.torrent` URL is detected, show a top banner/toast offering 1-click **Add Download**.
+#### Scope:
+- Create `src/main/browser-integration/native_messaging_host.ts` to communicate with browser extensions over `stdio` using 32-bit length-prefixed JSON frames.
+- Add installer script to register the Windows Registry key (`HKCU\Software\Google\Chrome\NativeMessagingHosts\com.grabbit.host`).
 
 ---
 
-### 5. Import & Export Download Queue State
+### Task 4: BitTorrent & Magnet Link Handler (`TorrentWorker.ts`)
 
-#### Scope & Architecture:
+#### Scope:
+- Build magnet URI parsing engine in `src/engine/TorrentWorker.ts`.
+- Extract infohashes, tracker lists, and file manifests to display piece progress in the multi-thread chunk inspector.
 
-- Add **Export Queue State** to `src/renderer/src/components/topbar/MenuBar.tsx` (saves active queue as `grabbit_queue.json`).
-- Add **Import Queue State** to parse and populate saved tasks into the download engine.
+---
+
+### Task 5: Video Downloader Pipeline (`MediaWorker.ts` + `yt-dlp`)
+
+#### Scope:
+- Create wrapper in `src/engine/MediaWorker.ts` around `yt-dlp` executable.
+- Parse video resolutions/codecs and pipe video streaming progress into Grabbit task table.
 
 ---
 
 ## 🧪 Verification Plan
 
-### Automated Verification:
-
-- Run `bun run typecheck` to verify zero compilation or interface mismatch errors.
-- Run `bun run format` to ensure clean code formatting.
+### Automated Tests:
+- Run `bun run typecheck` to verify zero type mismatches.
+- Run `bun run format` to ensure clean Prettier formatting.
 
 ### Manual Verification:
-
-- Add real test download URLs (e.g. Ubuntu ISO / test files) and verify multi-threaded chunk downloading, pause/resume, and OS desktop notifications.
+- Copy an HTTP download link, verify quick-add banner pops up, export active queue to JSON, and import back into Grabbit.
