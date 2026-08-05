@@ -1,6 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react'
+import { Inbox } from 'lucide-react'
 import { DownloadItem } from '../../../../engine/types'
-import { TaskTableHeader, SortField } from './TaskTableHeader'
+import {
+  TaskTableHeader,
+  SortField,
+  ColumnKey,
+  ColumnWidths,
+  DEFAULT_COLUMN_WIDTHS,
+  MIN_COLUMN_WIDTHS
+} from './TaskTableHeader'
 import { TaskTableRow } from './TaskTableRow'
 import { SearchFilterBar } from '../topbar/SearchFilterBar'
 
@@ -34,6 +42,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
   }) => {
     const [sortField, setSortField] = useState<SortField>('name')
     const [sortAsc, setSortAsc] = useState(true)
+    const [columnWidths, setColumnWidths] = useState<ColumnWidths>(DEFAULT_COLUMN_WIDTHS)
 
     const handleSort = useCallback((field: SortField): void => {
       setSortField((prevField) => {
@@ -46,6 +55,40 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
         }
       })
     }, [])
+
+    const handleResizeStart = useCallback(
+      (e: React.MouseEvent, column: ColumnKey): void => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const startX = e.clientX
+        const startWidth = columnWidths[column]
+        const minWidth = MIN_COLUMN_WIDTHS[column]
+
+        document.body.style.cursor = 'col-resize'
+        document.body.style.userSelect = 'none'
+
+        const handleMouseMove = (moveEvent: MouseEvent): void => {
+          const dx = moveEvent.clientX - startX
+          const newWidth = Math.max(minWidth, startWidth + dx)
+          setColumnWidths((prev) => ({
+            ...prev,
+            [column]: newWidth
+          }))
+        }
+
+        const handleMouseUp = (): void => {
+          document.body.style.cursor = ''
+          document.body.style.userSelect = ''
+          window.removeEventListener('mousemove', handleMouseMove)
+          window.removeEventListener('mouseup', handleMouseUp)
+        }
+
+        window.addEventListener('mousemove', handleMouseMove)
+        window.addEventListener('mouseup', handleMouseUp)
+      },
+      [columnWidths]
+    )
 
     const sortedDownloads = useMemo(() => {
       return [...downloads].sort((a, b) => {
@@ -82,16 +125,23 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
         </div>
 
         <div className="overflow-x-auto overflow-y-auto flex-1">
-          <table className="w-full border-collapse text-left font-sans">
-            <TaskTableHeader onSort={handleSort} />
+          <table className="w-full border-collapse text-left font-sans table-fixed">
+            <TaskTableHeader
+              onSort={handleSort}
+              sortField={sortField}
+              sortAsc={sortAsc}
+              columnWidths={columnWidths}
+              onResizeStart={handleResizeStart}
+            />
 
-            <tbody className="divide-y divide-[#242424] text-slate-200">
+            <tbody className="divide-y divide-ide-border/50 text-slate-200">
               {sortedDownloads.map((d, index) => (
                 <TaskTableRow
                   key={d.id}
                   item={d}
                   index={index}
                   isSelected={selectedId === d.id}
+                  columnWidths={columnWidths}
                   onSelect={onSelect}
                   onPause={onPause}
                   onResume={onResume}
@@ -102,9 +152,19 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
 
               {downloads.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="p-8 text-center text-slate-500 italic">
-                    No items in current queue. Click &quot;+ Add task&quot; to start accelerating
-                    downloads.
+                  <td colSpan={11} className="p-16 text-center">
+                    <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-3">
+                      <div className="w-12 h-12 rounded-none bg-theme-tint/40 border border-theme-accent/30 flex items-center justify-center text-theme-accent shadow-lg shadow-purple-950/20">
+                        <Inbox className="h-6 w-6 opacity-90" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-semibold text-sm text-slate-200">No tasks in queue</h4>
+                        <p className="text-xs text-slate-400">
+                          Your download queue is empty. Click &quot;+ Add task&quot; or paste a link
+                          to start supercharged multi-threaded downloads.
+                        </p>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               )}
