@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { EngineSettings } from '../../../../engine/types'
-import { X, Sliders, Folder, Network, Cpu, Bell, Laptop } from 'lucide-react'
+import { X, Sliders, Folder, Network, Cpu, Bell, Laptop, GripHorizontal } from 'lucide-react'
+import { useDraggable } from '../../hooks/useDraggable'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -25,6 +26,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [enableNotifications, setEnableNotifications] = useState(settings.enableNotifications)
   const [startOnBoot, setStartOnBoot] = useState(settings.startOnBoot)
 
+  const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
+    useDraggable(isOpen)
+
   if (!isOpen) return null
 
   const handleSave = (e: React.FormEvent): void => {
@@ -42,11 +46,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 flex items-center justify-center p-4 select-none font-sans text-xs">
-      <div className="bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 bg-slate-950/35 flex items-center justify-center p-4 select-none font-sans text-xs"
+    >
+      <div
+        ref={modalRef}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${
+          isDragging ? 'transition-none duration-0' : ''
+        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+      >
         {/* Header */}
-        <div className="p-5 border-b border-ide-border flex items-center justify-between">
+        <div
+          onMouseDown={handleMouseDown}
+          className="p-5 border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none"
+        >
           <div className="flex items-center gap-2.5">
+            <GripHorizontal className="h-4 w-4 text-slate-500 shrink-0 opacity-70" />
             <div className="p-2 bg-theme-tint text-theme-accent rounded-none border border-theme-accent/20">
               <Sliders className="h-5 w-5" />
             </div>

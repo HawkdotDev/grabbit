@@ -16,7 +16,9 @@ import {
   Pause,
   Play,
   Activity,
-  Search
+  Search,
+  Upload,
+  Download as DownloadIcon
 } from 'lucide-react'
 import { SidebarSection } from './SidebarSection'
 import { SidebarFilterItem } from './SidebarFilterItem'
@@ -106,52 +108,60 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
     const statusItems: Array<{ id: StatusFilter; label: string; icon: React.JSX.Element }> =
       useMemo(
         () => [
-          { id: 'all', label: 'All', icon: <Inbox className="h-3.5 w-3.5 text-slate-400" /> },
+          {
+            id: 'all',
+            label: 'All',
+            icon: <Inbox className="h-3.5 w-3.5 text-slate-400/85" />
+          },
           {
             id: 'downloading',
             label: 'Downloading',
-            icon: <Activity className="h-3.5 w-3.5 text-violet-300" />
+            icon: <DownloadIcon className="h-3.5 w-3.5 text-violet-400/85" />
           },
           {
             id: 'seeding',
             label: 'Seeding',
-            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+            icon: <Upload className="h-3.5 w-3.5 text-emerald-400/85" />
           },
           {
             id: 'completed',
             label: 'Completed',
-            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/85" />
           },
-          { id: 'running', label: 'Running', icon: <Play className="h-3.5 w-3.5 text-cyan-300" /> },
+          {
+            id: 'running',
+            label: 'Running',
+            icon: <Play className="h-3.5 w-3.5 fill-current text-cyan-400/85" />
+          },
           {
             id: 'stopped',
             label: 'Stopped',
-            icon: <Pause className="h-3.5 w-3.5 text-amber-200" />
+            icon: <Pause className="h-3.5 w-3.5 fill-current text-amber-400/85" />
           },
           {
             id: 'active',
             label: 'Active',
-            icon: <Activity className="h-3.5 w-3.5 text-emerald-300" />
+            icon: <Activity className="h-3.5 w-3.5 text-emerald-400/85" />
           },
           {
             id: 'inactive',
             label: 'Inactive',
-            icon: <Pause className="h-3.5 w-3.5 text-slate-400" />
+            icon: <Pause className="h-3.5 w-3.5 fill-current text-slate-500/85" />
           },
           {
             id: 'stalled',
             label: 'Stalled',
-            icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-200" />
+            icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-400/85" />
           },
           {
             id: 'checking',
             label: 'Checking',
-            icon: <Search className="h-3.5 w-3.5 text-sky-300" />
+            icon: <Search className="h-3.5 w-3.5 text-sky-400/85" />
           },
           {
             id: 'errored',
             label: 'Errored',
-            icon: <AlertTriangle className="h-3.5 w-3.5 text-rose-300" />
+            icon: <AlertTriangle className="h-3.5 w-3.5 text-rose-400/85" />
           }
         ],
         []
@@ -160,35 +170,51 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
     const categories: Array<{ id: DownloadCategory; label: string; icon: React.JSX.Element }> =
       useMemo(
         () => [
-          { id: 'all', label: 'All', icon: <Inbox className="h-3.5 w-3.5 text-slate-400" /> },
+          {
+            id: 'all',
+            label: 'All',
+            icon: <Inbox className="h-3.5 w-3.5 text-slate-400/85" />
+          },
           {
             id: 'documents',
             label: 'Documents',
-            icon: <FileText className="h-3.5 w-3.5 text-amber-200" />
+            icon: <FileText className="h-3.5 w-3.5 text-amber-400/85" />
           },
           {
             id: 'compressed',
             label: 'Compressed',
-            icon: <Archive className="h-3.5 w-3.5 text-purple-300" />
+            icon: <Archive className="h-3.5 w-3.5 text-purple-400/85" />
           },
-          { id: 'video', label: 'Videos', icon: <Film className="h-3.5 w-3.5 text-sky-300" /> },
-          { id: 'audio', label: 'Audio', icon: <Music className="h-3.5 w-3.5 text-emerald-300" /> },
+          {
+            id: 'video',
+            label: 'Videos',
+            icon: <Film className="h-3.5 w-3.5 text-sky-400/85" />
+          },
+          {
+            id: 'audio',
+            label: 'Audio',
+            icon: <Music className="h-3.5 w-3.5 text-emerald-400/85" />
+          },
           {
             id: 'executables',
             label: 'Programs',
-            icon: <Cpu className="h-3.5 w-3.5 text-rose-300" />
+            icon: <Cpu className="h-3.5 w-3.5 text-rose-400/85" />
           },
           {
             id: 'images',
             label: 'Images',
-            icon: <ImageIcon className="h-3.5 w-3.5 text-pink-300" />
+            icon: <ImageIcon className="h-3.5 w-3.5 text-pink-400/85" />
           },
           {
             id: 'code',
             label: 'Source Code',
-            icon: <Code2 className="h-3.5 w-3.5 text-cyan-300" />
+            icon: <Code2 className="h-3.5 w-3.5 text-cyan-400/85" />
           },
-          { id: 'other', label: 'Other', icon: <Folder className="h-3.5 w-3.5 text-slate-400" /> }
+          {
+            id: 'other',
+            label: 'Other',
+            icon: <Folder className="h-3.5 w-3.5 text-slate-500/85" />
+          }
         ],
         []
       )
@@ -261,7 +287,7 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
                 key={tg.id}
                 id={tg.id}
                 label={tg.label}
-                icon={<Tag className="h-3.5 w-3.5 text-cyan-400" />}
+                icon={<Tag className="h-3.5 w-3.5 text-cyan-400/85" />}
                 count={downloads.length}
                 isActive={activeTag === tg.id}
                 onClick={() => setActiveTag(tg.id)}

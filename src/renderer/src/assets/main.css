@@ -103,3 +103,25 @@ body {
 .progress-active {
   animation: progressPulse 2s infinite ease-in-out;
 }
+
+/* Modal Border Blink Animation on Backdrop Click */
+@keyframes modalBlink {
+  0% {
+    border-color: #272938;
+    box-shadow: 0 0 0 0 rgba(180, 151, 255, 0);
+  }
+  50% {
+    border-color: #c4b5fd;
+    box-shadow:
+      0 0 0 3px rgba(180, 151, 255, 0.4),
+      0 0 16px rgba(180, 151, 255, 0.3);
+  }
+  100% {
+    border-color: #272938;
+    box-shadow: 0 0 0 0 rgba(180, 151, 255, 0);
+  }
+}
+
+.animate-modal-blink {
+  animation: modalBlink 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

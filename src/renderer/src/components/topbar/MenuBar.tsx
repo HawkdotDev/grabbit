@@ -229,7 +229,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettings
         <div key={item} className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === item ? null : item)}
-            className={`px-2.5 py-1 rounded-none transition cursor-pointer flex items-center leading-none ${
+            className={`px-4 py-2 rounded-none transition cursor-pointer flex items-center leading-none ${
               activeMenu === item
                 ? 'bg-theme-tint text-theme-accent font-semibold'
                 : 'hover:bg-white/10 hover:text-white'
