@@ -1,15 +1,16 @@
 <div align="center">
 
+  <img src="resources/icon.png" width="72" height="72" alt="Grabbit Logo" />
   <h1>Grabbit</h1>
 
-  <p><strong>High-Performance, Hyper-Modular Electron Download Manager &amp; Network Telemetry Engine</strong></p>
+  <p><strong>High-Performance, Hyper-Fast Modern Desktop Download Manager &amp; Network Accelerator</strong></p>
 
   <p>
     <a href="https://github.com/HawkdotDev/grabbit/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/License-Apache_2.0-009669.svg?style=for-the-badge" alt="License" />
     </a>
     <a href="https://github.com/HawkdotDev/grabbit/releases">
-      <img src="https://img.shields.io/badge/Version-0.0.2-009669.svg?style=for-the-badge" alt="Version" />
+      <img src="https://img.shields.io/badge/Version-0.1.0-009669.svg?style=for-the-badge" alt="Version" />
     </a>
     <a href="https://electronjs.org">
       <img src="https://img.shields.io/badge/Electron-v35-47848F.svg?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
@@ -27,28 +28,23 @@
 
 ## Overview
 
-**Grabbit** is a next-generation desktop download manager and accelerator built for speed, density, and efficiency. Combining raw multi-threaded HTTP Range chunking with a sharp, zero-border-radius qBittorrent-inspired desktop interface, Grabbit offers real-time diagnostics, thread visualizers, checksum verification, remote JSON-RPC control, browser extension integration, and dynamic pane customization.
-
-Designed with an emerald green (`#009669`) theme, dark matte aesthetic, and premium **Sora** and **Inter** typography, Grabbit delivers a desktop experience tailored for power users.
+**Grabbit** is a powerful, modern desktop download manager and speed accelerator designed to give you total control over your downloads. Combining raw multi-threaded speed acceleration with a clean, dark-mode user interface and pastel accents, Grabbit simplifies downloading files, torrents, and online videos.
 
 ---
 
 ## Key Features
 
-- **Multi-Threaded Range Chunking**: Splits file downloads across up to 32 parallel worker threads using direct positioned disk writes (`pwrite`).
-- **Sora & Inter Typography**: Custom typography system pairing Sora (display & headings) with Inter (UI text & data tables).
-- **qBittorrent Data Grid Layout**: Sortable data table displaying live down/up speeds, ETA, seed/peer counts, file size, progress bars, and info hashes.
-- **Network Telemetry Spline Graph**: Smooth Bezier curve graph with live hover tooltips, bar/curve toggle modes, and peak throughput tracking.
-- **Clipboard Link Auto-Detection**: Auto-scans system clipboard for downloadable URLs or Magnet links and displays a 1-click **Quick Add** banner toast.
-- **Queue State Export & Import**: Native OS file dialog interface to save active download queues to `grabbit_queue.json` and restore tasks.
-- **Browser Native Messaging Integration**: Built-in stdio host communicating with Chrome, Firefox, and Edge extensions via Windows Registry key `com.grabbit.host`.
-- **Remote Control JSON-RPC Gateway**: Embedded HTTP/JSON-RPC server running at `http://127.0.0.1:6800/` for mobile or external web UI management.
-- **BitTorrent & Magnet Link Parser**: Extracts infohashes, tracker endpoints, and file lists from `magnet:?` URIs.
-- **Video Downloader Pipeline**: Integrates `yt-dlp` executable for format resolution extraction and streaming pipelines.
-- **Adaptive QoS Latency Governor**: Monitors network ping and automatically throttles download bandwidth during gaming or video calls.
-- **Native OS Desktop Notifications**: Triggers native desktop notifications upon download completion or error.
-- **Multi-Tree Filtering Sidebar**: Filter tasks instantly by **Status** (_Downloading, Seeding, Completed, Running, Stopped, Stalled, Checking, Errored_), **Categories**, **Tags**, and **Trackers**.
-- **Checksum Verification**: Built-in SHA-256, SHA-512, and MD5 file integrity validation.
+- ⚡ **Supercharged Speed**: Splits large downloads into up to 32 parallel streams to max out your internet speed.
+- 🧲 **Full Torrent & Magnet Support**: Open `.torrent` files or paste `magnet:` links directly into the app with automatic peer discovery.
+- 🎬 **Online Video Downloader**: Grab online videos directly from supported web streaming links.
+- 📋 **Automatic Clipboard Detector**: Copies a link or magnet URI? Grabbit automatically pops up a 1-click **Add Download** notification.
+- 🌐 **Browser Integration**: Seamlessly integrates with Chrome, Firefox, and Edge extensions to handle your web downloads automatically.
+- 🎮 **Smart Anti-Lag Mode (QoS)**: Automatically slows down downloads while you're gaming or streaming videos to prevent lag.
+- 💾 **Export & Import Queues**: Save your active download list to a file and restore it anytime across computers.
+- 📊 **Real-Time Speed Charts**: Track download speeds, live throughput graphs, and estimated completion times at a glance.
+- 🔒 **File Integrity Check (Hash Verifier)**: Built-in SHA-256, SHA-512, and MD5 verifier to make sure downloaded files are safe and untampered.
+- 📂 **Easy Category & Tag Filters**: Sort downloads instantly by category (_Videos, Software, Music, Documents_) or filter by status (_Downloading, Completed, Paused_).
+- 📡 **Remote Network Control**: Control and monitor your downloads remotely from another device or web browser.
 
 ---
 
@@ -64,64 +60,6 @@ Designed with an emerald green (`#009669`) theme, dark matte aesthetic, and prem
 | **Build & Bundler**           | [electron-vite](package.json) + [Vite v6](package.json)    |
 | **Runtime & Package Manager** | [Bun](package.json)                                        |
 | **Icons**                     | [Lucide React](package.json)                               |
-
----
-
-## Domain-Driven Architecture
-
-```
-grabbit/
-├── src/
-│   ├── engine/                   # Core Download Engine Architecture
-│   │   ├── ChunkEngine.ts        # Parallel HTTP range downloader & worker threads
-│   │   ├── DownloadManager.ts    # Main download queue manager & state dispatcher
-│   │   ├── Storage.ts            # Disk persistence & state serialization
-│   │   ├── RateLimiter.ts        # Global token-bucket bandwidth speed governor
-│   │   ├── DiskAllocator.ts      # Direct position-based disk write (pwrite)
-│   │   ├── HashVerifier.ts       # Checksum calculation (SHA-256, SHA-512, MD5)
-│   │   ├── AdaptiveQoS.ts        # Latency-aware speed governor
-│   │   ├── PostProcessor.ts      # Integrity check & archive auto-extract
-│   │   └── workers/              # Specialized Protocol Workers
-│   │       ├── TorrentWorker.ts  # Magnet URI & torrent parser
-│   │       └── MediaWorker.ts    # yt-dlp video format extractor
-│   │
-│   ├── main/                     # Electron Main Process Lifecycle
-│   │   ├── index.ts              # BrowserWindow initialization & setup
-│   │   ├── ipc.ts                # Native IPC handlers & OS notifications
-│   │   └── browser-integration/  # Native Messaging Host for browser extensions
-│   │       └── native_messaging_host.ts
-│   │
-│   ├── preload/                  # Secure Context Bridge
-│   │   ├── index.ts              # Exposed safe IPC methods for renderer
-│   │   └── index.d.ts            # Type-safe window.api interface
-│   │
-│   ├── server/                   # Remote Control Gateway
-│   │   └── RemoteServer.ts       # HTTP & JSON-RPC Gateway server (Port 6800)
-│   │
-│   └── renderer/                 # React Frontend Application
-│       └── src/
-│           ├── assets/           # Main CSS theme tokens & font rules
-│           ├── components/       # Domain Subdirectory Modules
-│           │   ├── home/         # Home dashboard & queue overview
-│           │   ├── network/      # Network telemetry & Bezier spline graph
-│           │   ├── tasktable/    # Task data table & progress cells
-│           │   ├── inspector/    # Multi-tab detail inspector
-│           │   ├── modals/       # Add task, Settings & Hash modals
-│           │   ├── topbar/       # Titlebar, MenuBar & quick action tools
-│           │   ├── sidebar/      # Category & status filter tree
-│           │   ├── statusbar/    # Bottom telemetry status bar
-│           │   ├── notifications/# Notification panel & Clipboard banner
-│           │   └── common/       # Speed chart reusable component
-│           ├── hooks/            # Custom React Hooks
-│           │   ├── useDownloads.ts
-│           │   ├── useFilteredDownloads.ts
-│           │   ├── useClipboardDetector.ts
-│           │   └── useResizablePanes.ts
-│           └── utils/            # Formatters & helper utilities
-│
-├── package.json
-└── README.md
-```
 
 ---
 
