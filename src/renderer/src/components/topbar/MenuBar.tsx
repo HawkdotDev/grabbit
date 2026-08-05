@@ -22,12 +22,12 @@ export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettings
   }
 
   return (
-    <div className="flex items-center gap-3 text-xs text-slate-300 font-medium style-no-drag">
+    <div className="flex items-center gap-1 text-xs text-slate-300 font-medium style-no-drag">
       {['File', 'Edit', 'View', 'Tools', 'Help'].map((item) => (
         <div key={item} className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === item ? null : item)}
-            className="px-4 py-1.5 hover:bg-white/10 hover:text-white rounded-none transition cursor-pointer"
+            className="px-2.5 py-1 hover:bg-white/10 hover:text-white rounded-none transition cursor-pointer flex items-center leading-none"
           >
             {item}
           </button>

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { DownloadItem } from '../../../../engine/types'
 import { TaskTableHeader, SortField } from './TaskTableHeader'
 import { TaskTableRow } from './TaskTableRow'
+import { SearchFilterBar } from '../topbar/SearchFilterBar'
 
 interface TaskTableViewProps {
   downloads: DownloadItem[]
@@ -11,10 +12,26 @@ interface TaskTableViewProps {
   onResume: (id: string) => void
   onCancel: (id: string) => void
   onOpenHashModal: (download: DownloadItem) => void
+  searchQuery: string
+  setSearchQuery: (q: string) => void
+  filterBy: 'name' | 'category' | 'tag'
+  setFilterBy: (f: 'name' | 'category' | 'tag') => void
 }
 
 export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
-  ({ downloads, selectedId, onSelect, onPause, onResume, onCancel, onOpenHashModal }) => {
+  ({
+    downloads,
+    selectedId,
+    onSelect,
+    onPause,
+    onResume,
+    onCancel,
+    onOpenHashModal,
+    searchQuery,
+    setSearchQuery,
+    filterBy,
+    setFilterBy
+  }) => {
     const [sortField, setSortField] = useState<SortField>('name')
     const [sortAsc, setSortAsc] = useState(true)
 
@@ -45,6 +62,25 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
 
     return (
       <div className="w-full h-full flex flex-col bg-ide-bg font-sans text-xs select-none overflow-hidden rounded-none">
+        {/* Strip above Tasks Table */}
+        <div className="h-13 px-4 bg-ide-surface border-b border-ide-border flex items-center justify-between shrink-0 shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="font-bold text-xs text-slate-100 uppercase tracking-wider">
+              Tasks Queue
+            </span>
+            <span className="bg-theme-tint text-theme-accent font-mono text-[11px] px-2 py-0.5 font-bold border border-theme-accent/20">
+              {downloads.length} {downloads.length === 1 ? 'task' : 'tasks'}
+            </span>
+          </div>
+
+          <SearchFilterBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filterBy={filterBy}
+            setFilterBy={setFilterBy}
+          />
+        </div>
+
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <table className="w-full border-collapse text-left font-sans">
             <TaskTableHeader onSort={handleSort} />

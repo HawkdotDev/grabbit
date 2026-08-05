@@ -73,7 +73,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
                   onClick={() => setAlgo(a)}
                   className={`py-2 px-3 text-xs font-mono font-bold border transition cursor-pointer rounded-none uppercase ${
                     algo === a
-                      ? 'bg-theme-tint text-theme-accent border-theme-accent/40'
+                      ? 'bg-theme-accent text-slate-950 border-theme-accent'
                       : 'bg-ide-bg text-slate-400 border-ide-border hover:text-slate-200'
                   }`}
                 >
@@ -133,7 +133,7 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
             <button
               type="submit"
               disabled={isVerifying || !expectedHash.trim()}
-              className="px-5 py-2 text-xs font-bold text-white bg-theme-accent hover:bg-theme-bright active:scale-95 rounded-none shadow-lg shadow-theme-accent/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-bold text-slate-950 bg-theme-accent hover:bg-theme-bright active:scale-95 rounded-none shadow-lg shadow-theme-accent/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isVerifying && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>Verify Integrity</span>

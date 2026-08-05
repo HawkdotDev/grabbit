@@ -119,7 +119,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                 e.stopPropagation()
                 onPause(download.id)
               }}
-              className="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-none border border-amber-500/20 transition cursor-pointer"
+              className="p-2 bg-amber-300 hover:bg-amber-200 text-slate-950 rounded-none border border-amber-300 transition cursor-pointer"
               title="Pause Download"
             >
               <Pause className="h-4 w-4" />
@@ -132,7 +132,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                 e.stopPropagation()
                 onResume(download.id)
               }}
-              className="p-2 bg-theme-tint hover:bg-[#064e37] text-theme-accent rounded-none border border-theme-accent/30 transition cursor-pointer"
+              className="p-2 bg-theme-accent hover:bg-theme-bright text-slate-950 rounded-none border border-theme-accent transition cursor-pointer"
               title="Resume Download"
             >
               <Play className="h-4 w-4" />

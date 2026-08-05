@@ -39,7 +39,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = React.memo(
           totalDownloadedBytes={totalDownloadedBytes}
           totalUploadedBytes={totalUploadedBytes}
           totalSize={totalSize}
-          onOpenAddModal={onOpenAddModal}
+          globalSpeed={globalSpeed}
+          activeTasksCount={downloads.filter((d) => d.status === 'downloading').length}
         />
 
         {/* Main Content Split: Recent Downloads & Engine Overview */}

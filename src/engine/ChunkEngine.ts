@@ -269,7 +269,7 @@ export class ChunkEngine {
       const totalChunkSize = chunk.endByte - chunk.startByte + 1
       const blockSize = 65536 // 64KB block writes
 
-      const downloadLoop = async () => {
+      const downloadLoop = async (): Promise<void> => {
         while (chunk.downloadedBytes < totalChunkSize && !isAborted) {
           const remaining = totalChunkSize - chunk.downloadedBytes
           const chunkSizeToWrite = Math.min(blockSize, remaining)

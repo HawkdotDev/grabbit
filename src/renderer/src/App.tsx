@@ -102,10 +102,6 @@ export function App(): React.JSX.Element {
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans select-none border border-ide-border rounded-none">
       {/* Top Application Header & Navigation Toolbar */}
       <TopBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        filterBy={filterBy}
-        setFilterBy={setFilterBy}
         activeView={activeMainView}
         setActiveView={setActiveMainView}
         onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -171,6 +167,10 @@ export function App(): React.JSX.Element {
                 onResume={handleResume}
                 onCancel={handleCancel}
                 onOpenHashModal={(item) => setHashModalDownload(item)}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                filterBy={filterBy}
+                setFilterBy={setFilterBy}
               />
             </main>
 

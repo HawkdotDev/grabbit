@@ -110,48 +110,48 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
           {
             id: 'downloading',
             label: 'Downloading',
-            icon: <Activity className="h-3.5 w-3.5 text-theme-accent" />
+            icon: <Activity className="h-3.5 w-3.5 text-violet-300" />
           },
           {
             id: 'seeding',
             label: 'Seeding',
-            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
           },
           {
             id: 'completed',
             label: 'Completed',
-            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
           },
-          { id: 'running', label: 'Running', icon: <Play className="h-3.5 w-3.5 text-cyan-400" /> },
+          { id: 'running', label: 'Running', icon: <Play className="h-3.5 w-3.5 text-cyan-300" /> },
           {
             id: 'stopped',
             label: 'Stopped',
-            icon: <Pause className="h-3.5 w-3.5 text-amber-400" />
+            icon: <Pause className="h-3.5 w-3.5 text-amber-200" />
           },
           {
             id: 'active',
             label: 'Active',
-            icon: <Activity className="h-3.5 w-3.5 text-emerald-400" />
+            icon: <Activity className="h-3.5 w-3.5 text-emerald-300" />
           },
           {
             id: 'inactive',
             label: 'Inactive',
-            icon: <Pause className="h-3.5 w-3.5 text-slate-500" />
+            icon: <Pause className="h-3.5 w-3.5 text-slate-400" />
           },
           {
             id: 'stalled',
             label: 'Stalled',
-            icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+            icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-200" />
           },
           {
             id: 'checking',
             label: 'Checking',
-            icon: <Search className="h-3.5 w-3.5 text-blue-400" />
+            icon: <Search className="h-3.5 w-3.5 text-sky-300" />
           },
           {
             id: 'errored',
             label: 'Errored',
-            icon: <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />
+            icon: <AlertTriangle className="h-3.5 w-3.5 text-rose-300" />
           }
         ],
         []
@@ -164,29 +164,29 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
           {
             id: 'documents',
             label: 'Documents',
-            icon: <FileText className="h-3.5 w-3.5 text-amber-400" />
+            icon: <FileText className="h-3.5 w-3.5 text-amber-200" />
           },
           {
             id: 'compressed',
             label: 'Compressed',
-            icon: <Archive className="h-3.5 w-3.5 text-purple-400" />
+            icon: <Archive className="h-3.5 w-3.5 text-purple-300" />
           },
-          { id: 'video', label: 'Videos', icon: <Film className="h-3.5 w-3.5 text-blue-400" /> },
-          { id: 'audio', label: 'Audio', icon: <Music className="h-3.5 w-3.5 text-emerald-400" /> },
+          { id: 'video', label: 'Videos', icon: <Film className="h-3.5 w-3.5 text-sky-300" /> },
+          { id: 'audio', label: 'Audio', icon: <Music className="h-3.5 w-3.5 text-emerald-300" /> },
           {
             id: 'executables',
             label: 'Programs',
-            icon: <Cpu className="h-3.5 w-3.5 text-rose-400" />
+            icon: <Cpu className="h-3.5 w-3.5 text-rose-300" />
           },
           {
             id: 'images',
             label: 'Images',
-            icon: <ImageIcon className="h-3.5 w-3.5 text-pink-400" />
+            icon: <ImageIcon className="h-3.5 w-3.5 text-pink-300" />
           },
           {
             id: 'code',
             label: 'Source Code',
-            icon: <Code2 className="h-3.5 w-3.5 text-cyan-400" />
+            icon: <Code2 className="h-3.5 w-3.5 text-cyan-300" />
           },
           { id: 'other', label: 'Other', icon: <Folder className="h-3.5 w-3.5 text-slate-400" /> }
         ],
@@ -203,19 +203,19 @@ export const Sidebar: React.FC<SidebarProps> = React.memo(
           <div className="flex items-center gap-2">
             <button
               onClick={onResumeAll}
-              className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-slate-200 border border-white/5 rounded-none font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+              className="flex-1 py-1.5 px-2 bg-emerald-300 text-slate-950 hover:bg-emerald-200 active:scale-[0.98] border border-emerald-300 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
               title="Resume All Downloads"
             >
-              <Play className="h-3.5 w-3.5 text-emerald-400 fill-emerald-400/20" />
+              <Play className="h-3.5 w-3.5 text-slate-950 fill-slate-950" />
               <span>Resume</span>
             </button>
 
             <button
               onClick={onPauseAll}
-              className="flex-1 py-1.5 px-2 bg-white/5 hover:bg-white/10 active:scale-[0.98] text-slate-200 border border-white/5 rounded-none font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+              className="flex-1 py-1.5 px-2 bg-amber-300 text-slate-950 hover:bg-amber-200 active:scale-[0.98] border border-amber-300 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
               title="Pause All Downloads"
             >
-              <Pause className="h-3.5 w-3.5 text-amber-400 fill-amber-400/20" />
+              <Pause className="h-3.5 w-3.5 text-slate-950 fill-slate-950" />
               <span>Pause</span>
             </button>
           </div>

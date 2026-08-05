@@ -33,12 +33,12 @@ export const ChunkProgress: React.FC<ChunkProgressProps> = ({ chunks }) => {
 
           let statusBg = 'bg-ide-surface border-ide-border'
           if (chunk.status === 'completed')
-            statusBg = 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
+            statusBg = 'bg-emerald-950/40 border-emerald-300/40 text-emerald-300'
           if (chunk.status === 'downloading')
-            statusBg = 'bg-theme-tint border-theme-accent/40 text-theme-accent'
+            statusBg = 'bg-violet-950/40 border-violet-300/40 text-violet-300'
           if (chunk.status === 'paused')
-            statusBg = 'bg-amber-950/60 border-amber-800 text-amber-400'
-          if (chunk.status === 'error') statusBg = 'bg-rose-950/60 border-rose-800 text-rose-400'
+            statusBg = 'bg-amber-950/40 border-amber-300/40 text-amber-200'
+          if (chunk.status === 'error') statusBg = 'bg-rose-950/40 border-rose-300/40 text-rose-300'
 
           return (
             <div

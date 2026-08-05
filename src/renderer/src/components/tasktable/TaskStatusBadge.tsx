@@ -19,12 +19,12 @@ export const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = React.memo(({ sta
     <span
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none text-[11px] ${
         status === 'completed' || status === 'seeding'
-          ? 'text-emerald-400 font-bold'
+          ? 'text-emerald-300 font-medium'
           : status === 'downloading'
-            ? 'text-theme-accent'
+            ? 'text-violet-300 font-medium'
             : status === 'error'
-              ? 'text-rose-400'
-              : 'text-amber-400'
+              ? 'text-rose-300 font-medium'
+              : 'text-amber-200 font-medium'
       }`}
     >
       {status === 'completed' && <CheckCircle2 className="h-3 w-3" />}

@@ -12,7 +12,7 @@ export const AddDropdown: React.FC<AddDropdownProps> = React.memo(({ onOpenAddMo
     <div className="relative">
       <button
         onClick={() => setIsAddDropdownOpen((prev) => !prev)}
-        className="px-3 py-1 bg-theme-accent hover:bg-theme-bright active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer rounded-none"
+        className="px-3 py-1 bg-theme-accent hover:bg-theme-bright active:scale-95 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer rounded-none"
         title="Add New Download Task"
       >
         <Plus className="h-4 w-4 stroke-[2.5]" />
@@ -27,7 +27,7 @@ export const AddDropdown: React.FC<AddDropdownProps> = React.memo(({ onOpenAddMo
       {isAddDropdownOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsAddDropdownOpen(false)} />
-          <div className="absolute left-0 top-full mt-1.5 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200 animate-in fade-in zoom-in duration-150">
+          <div className="absolute right-0 top-full mt-1.5 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200 animate-in fade-in zoom-in duration-150">
             <button
               onClick={() => {
                 setIsAddDropdownOpen(false)

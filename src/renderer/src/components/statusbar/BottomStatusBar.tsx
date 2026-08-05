@@ -60,12 +60,12 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = React.memo(
             </span>
           </span>
 
-          <span className="flex items-center gap-1 text-cyan-400 font-semibold">
+          <span className="flex items-center gap-1 text-cyan-300 font-semibold">
             <span>U: 0 B/s ({formatBytes(totalUploaded)})</span>
           </span>
 
           <span className="flex items-center gap-1 text-slate-300 border-l border-ide-border pl-3">
-            <ShieldCheck className="h-3 w-3 text-emerald-400" />
+            <ShieldCheck className="h-3 w-3 text-emerald-300" />
             <span>Connection Normal</span>
           </span>
         </div>

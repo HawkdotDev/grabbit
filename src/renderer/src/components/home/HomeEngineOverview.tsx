@@ -1,7 +1,6 @@
 import React from 'react'
 import { DownloadItem } from '../../../../engine/types'
 import { formatSpeed } from '../../utils/formatters'
-import { Zap } from 'lucide-react'
 
 interface HomeEngineOverviewProps {
   downloads: DownloadItem[]
@@ -19,8 +18,7 @@ export const HomeEngineOverview: React.FC<HomeEngineOverviewProps> = React.memo(
     return (
       <div className="space-y-4">
         <h2 className="text-base font-bold text-slate-100 tracking-tight flex items-center gap-2">
-          <Zap className="h-4 w-4 text-theme-accent" />
-          Engine &amp; Queue Overview
+          Overview
         </h2>
 
         <div className="bg-[#1a1b23] border border-[#272936] rounded-none p-5 space-y-5">

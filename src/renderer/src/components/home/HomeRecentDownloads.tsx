@@ -10,7 +10,10 @@ import {
   Play,
   CheckCircle,
   Check,
-  FileText
+  FileText,
+  Search,
+  Filter,
+  Upload
 } from 'lucide-react'
 
 interface HomeRecentDownloadsProps {
@@ -25,6 +28,9 @@ interface HomeRecentDownloadsProps {
 export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.memo(
   ({ recentDownloads, onOpenAddModal, onNavigateToTasks, onSelectDownload, onPause, onResume }) => {
     const [copiedId, setCopiedId] = useState<string | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [statusFilter, setStatusFilter] = useState<string>('all')
+    const [isDragging, setIsDragging] = useState(false)
 
     const handleCopyUrl = (id: string, url: string, e: React.MouseEvent): void => {
       e.stopPropagation()
@@ -42,41 +48,137 @@ export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.mem
       return 'FILE'
     }
 
+    const handleDragOver = (e: React.DragEvent): void => {
+      e.preventDefault()
+      setIsDragging(true)
+    }
+
+    const handleDragLeave = (): void => {
+      setIsDragging(false)
+    }
+
+    const handleDrop = (e: React.DragEvent): void => {
+      e.preventDefault()
+      setIsDragging(false)
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        onOpenAddModal('file')
+      } else {
+        onOpenAddModal('link')
+      }
+    }
+
+    const filteredDownloads = recentDownloads.filter((d) => {
+      const matchesSearch =
+        d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.url.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesStatus = statusFilter === 'all' || d.status === statusFilter
+      return matchesSearch && matchesStatus
+    })
+
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        {/* Header Row: Title & Search/Filter Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-bold text-slate-100 tracking-tight">Recent downloads</h2>
-          {onNavigateToTasks && (
-            <button
-              onClick={onNavigateToTasks}
-              className="text-xs font-bold text-theme-accent hover:text-cyan-300 hover:underline tracking-wider uppercase transition cursor-pointer"
-            >
-              SEE ALL TASKS &rarr;
-            </button>
-          )}
+
+          {/* Search & Filter Controls opposite Recent downloads */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center">
+              <Search className="absolute left-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search downloads..."
+                className="bg-[#191a22] border border-[#272936] text-slate-200 text-xs pl-8 pr-2.5 py-1.5 rounded-none focus:outline-none focus:border-theme-accent font-mono w-36 sm:w-48"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-[#191a22] border border-[#272936] px-2.5 py-1.5 rounded-none text-xs text-slate-300">
+              <Filter className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent text-slate-200 font-mono text-[11px] focus:outline-none cursor-pointer"
+              >
+                <option value="all" className="bg-[#191a22]">
+                  All Status
+                </option>
+                <option value="downloading" className="bg-[#191a22]">
+                  Downloading
+                </option>
+                <option value="completed" className="bg-[#191a22]">
+                  Completed
+                </option>
+                <option value="paused" className="bg-[#191a22]">
+                  Paused
+                </option>
+                <option value="seeding" className="bg-[#191a22]">
+                  Seeding
+                </option>
+              </select>
+            </div>
+
+            {onNavigateToTasks && (
+              <button
+                onClick={onNavigateToTasks}
+                className="text-xs font-bold text-theme-accent hover:text-cyan-300 hover:underline tracking-wider uppercase transition cursor-pointer ml-1"
+              >
+                SEE ALL TASKS &rarr;
+              </button>
+            )}
+          </div>
         </div>
 
-        {recentDownloads.length === 0 ? (
-          <div className="bg-[#191a22] border border-[#272936] rounded-none p-8 flex flex-col items-center justify-center text-center space-y-3">
-            <div className="p-3 bg-[#242633] text-slate-400 rounded-none">
-              <FileText className="h-6 w-6" />
+        {/* Drag & Drop Card - Spacious & Prominent */}
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => onOpenAddModal('link')}
+          className={`p-6 sm:p-8 rounded-none flex flex-col items-center justify-center text-center space-y-3 transition cursor-pointer border border-dashed ${
+            isDragging
+              ? 'bg-theme-tint border-theme-accent scale-[1.01] shadow-lg'
+              : 'bg-[#191a22] border-[#272936] hover:border-violet-300/40 hover:bg-[#1f202b]'
+          }`}
+        >
+          <div className="bg-[#262835] p-3.5 rounded-none text-theme-accent shrink-0 border border-theme-accent/20">
+            <Upload className="h-7 w-7" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-100 tracking-tight">
+              Drag &amp; Drop torrent files or paste download links
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 max-w-md">
+              Drop .torrent, .meta files or click to paste direct HTTP / HTTPS download URLs
+            </p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenAddModal('file')
+            }}
+            className="bg-theme-accent hover:bg-theme-bright text-slate-950 text-xs font-bold px-5 py-2 rounded-none transition cursor-pointer shrink-0 shadow-md"
+          >
+            Browse Local Files
+          </button>
+        </div>
+
+        {filteredDownloads.length === 0 ? (
+          <div className="bg-[#191a22] border border-[#272936] rounded-none p-6 flex flex-col items-center justify-center text-center space-y-2">
+            <div className="p-2.5 bg-[#242633] text-slate-400 rounded-none">
+              <FileText className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-200">No downloads queued yet</h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Click Browse or drag a torrent file above to start downloading.
+              <h3 className="text-xs font-bold text-slate-200">No downloads queued yet</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Use the drop zone above or click Browse to start your first download task.
               </p>
             </div>
-            <button
-              onClick={() => onOpenAddModal('link')}
-              className="bg-theme-accent hover:bg-cyan-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-none transition cursor-pointer"
-            >
-              Add First Download
-            </button>
           </div>
         ) : (
           <div className="space-y-3">
-            {recentDownloads.map((item) => {
+            {filteredDownloads.map((item) => {
               const pct =
                 item.totalSize > 0
                   ? Math.min(100, Math.round((item.downloadedSize / item.totalSize) * 100))

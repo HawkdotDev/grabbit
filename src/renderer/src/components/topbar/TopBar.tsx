@@ -4,7 +4,6 @@ import { MenuBar } from './MenuBar'
 import { HeaderActions } from './HeaderActions'
 import { WindowControls } from './WindowControls'
 import { QuickActionGroup } from './QuickActionGroup'
-import { SearchFilterBar } from './SearchFilterBar'
 
 interface TopBarProps {
   onOpenAddModal: (mode?: 'link' | 'file') => void
@@ -14,25 +13,11 @@ interface TopBarProps {
   onOpenSettingsModal: () => void
   activeView: 'home' | 'analytics' | 'network'
   setActiveView: (view: 'home' | 'analytics' | 'network') => void
-  searchQuery: string
-  setSearchQuery: (q: string) => void
-  filterBy: 'name' | 'category' | 'tag'
-  setFilterBy: (f: 'name' | 'category' | 'tag') => void
   globalSpeed?: number
 }
 
 export const TopBar: React.FC<TopBarProps> = React.memo(
-  ({
-    onOpenAddModal,
-    onClearCompleted,
-    onOpenSettingsModal,
-    activeView,
-    setActiveView,
-    searchQuery,
-    setSearchQuery,
-    filterBy,
-    setFilterBy
-  }) => {
+  ({ onOpenAddModal, onClearCompleted, onOpenSettingsModal, activeView, setActiveView }) => {
     return (
       <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none font-sans rounded-none">
         {/* Upper Window Title & Menu Bar Row */}
@@ -59,13 +44,6 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
             onClearCompleted={onClearCompleted}
             activeView={activeView}
             setActiveView={setActiveView}
-          />
-
-          <SearchFilterBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            filterBy={filterBy}
-            setFilterBy={setFilterBy}
           />
         </div>
       </header>

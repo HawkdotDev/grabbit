@@ -2,21 +2,30 @@
 
 @theme {
   --font-sans: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --color-ide-bg: #141414;
-  --color-ide-surface: #1e1e1e;
-  --color-ide-card: #252525;
-  --color-ide-border: #2e2e2e;
-  --color-theme-accent: #009669;
-  --color-theme-bright: #059669;
-  --color-theme-tint: #063e2c;
+  --color-ide-bg: #161522;
+  --color-ide-surface: #201f30;
+  --color-ide-card: #28263c;
+  --color-ide-border: #383552;
+  --color-theme-accent: #b497ff;
+  --color-theme-bright: #c4b5fd;
+  --color-theme-tint: #3b2d56;
+
+  /* Custom Pastel Accents */
+  --color-pastel-mint: #a7f3d0;
+  --color-pastel-lavender: #ddd6fe;
+  --color-pastel-rose: #fecdd3;
+  --color-pastel-sky: #bae6fd;
+  --color-pastel-peach: #fde68a;
+  --color-pastel-pink: #fbcfe8;
+  --color-pastel-cyan: #a5f3fc;
 }
 
 /* Apply Sora/Inter globally to all elements with smooth scrolling */
 html,
 body {
   scroll-behavior: smooth;
-  background-color: #141414;
-  color: #e5e5e5;
+  background-color: #161522;
+  color: #f3f4f6;
   user-select: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,21 +70,21 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #141414;
+  background: #161522;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2e2e2e;
-  border-radius: 0px;
+  background: #383552;
+  border-radius: 4px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #009669;
+  background: #b497ff;
 }
 
 ::-webkit-scrollbar-corner {
-  background: #141414;
+  background: #161522;
 }
 
 /* Smooth Progress Fill Pulse Animation */
