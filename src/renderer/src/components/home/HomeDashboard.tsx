@@ -33,7 +33,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = React.memo(
     const recentDownloads = [...downloads].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4)
 
     return (
-      <div className="flex-1 flex flex-col h-full bg-[#121317] text-slate-100 p-2 md:p-4 overflow-y-auto font-sans text-xs select-none space-y-6 relative rounded-none">
+      <div className="flex-1 flex flex-col h-full bg-ide-bg text-slate-100 p-2 md:p-4 overflow-y-auto font-sans text-xs select-none space-y-6 relative rounded-none">
         {/* Top Metric Cards */}
         <HomeMetricCards
           totalDownloadedBytes={totalDownloadedBytes}

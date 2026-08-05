@@ -71,7 +71,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   // --- FULLSCREEN / MAXIMIZED MODAL MODE ---
   if (isMaximized) {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 font-sans text-xs select-none">
+      <div className="fixed inset-0 z-50 bg-slate-950/85 flex items-center justify-center p-4 sm:p-6 font-sans text-xs select-none">
         <div className="bg-ide-surface border border-ide-border rounded-none w-full h-full max-w-5xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
           {/* Header */}
           <div className="p-4 border-b border-ide-border flex items-center justify-between bg-ide-bg">

@@ -2,13 +2,13 @@
 
 @theme {
   --font-sans: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --color-ide-bg: #161522;
-  --color-ide-surface: #201f30;
-  --color-ide-card: #28263c;
-  --color-ide-border: #383552;
+  --color-ide-bg: #0d0e12;
+  --color-ide-surface: #14151c;
+  --color-ide-card: #1b1c26;
+  --color-ide-border: #272938;
   --color-theme-accent: #b497ff;
   --color-theme-bright: #c4b5fd;
-  --color-theme-tint: #3b2d56;
+  --color-theme-tint: #2c2244;
 
   /* Custom Pastel Accents */
   --color-pastel-mint: #a7f3d0;
@@ -24,7 +24,7 @@
 html,
 body {
   scroll-behavior: smooth;
-  background-color: #161522;
+  background-color: #0d0e12;
   color: #f3f4f6;
   user-select: none;
   -webkit-font-smoothing: antialiased;

@@ -90,30 +90,30 @@ export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.mem
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search downloads..."
-                className="bg-[#191a22] border border-[#272936] text-slate-200 text-xs pl-8 pr-2.5 py-1.5 rounded-none focus:outline-none focus:border-theme-accent font-mono w-36 sm:w-48"
+                className="bg-ide-surface border border-ide-border text-slate-200 text-xs pl-8 pr-2.5 py-1.5 rounded-none focus:outline-none focus:border-theme-accent font-mono w-36 sm:w-48"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 bg-[#191a22] border border-[#272936] px-2.5 py-1.5 rounded-none text-xs text-slate-300">
+            <div className="flex items-center gap-1.5 bg-ide-surface border border-ide-border px-2.5 py-1.5 rounded-none text-xs text-slate-300">
               <Filter className="h-3.5 w-3.5 text-slate-400 shrink-0" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="bg-transparent text-slate-200 font-mono text-[11px] focus:outline-none cursor-pointer"
               >
-                <option value="all" className="bg-[#191a22]">
+                <option value="all" className="bg-ide-surface">
                   All Status
                 </option>
-                <option value="downloading" className="bg-[#191a22]">
+                <option value="downloading" className="bg-ide-surface">
                   Downloading
                 </option>
-                <option value="completed" className="bg-[#191a22]">
+                <option value="completed" className="bg-ide-surface">
                   Completed
                 </option>
-                <option value="paused" className="bg-[#191a22]">
+                <option value="paused" className="bg-ide-surface">
                   Paused
                 </option>
-                <option value="seeding" className="bg-[#191a22]">
+                <option value="seeding" className="bg-ide-surface">
                   Seeding
                 </option>
               </select>
@@ -139,10 +139,10 @@ export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.mem
           className={`p-6 sm:p-8 rounded-none flex flex-col items-center justify-center text-center space-y-3 transition cursor-pointer border border-dashed ${
             isDragging
               ? 'bg-theme-tint border-theme-accent scale-[1.01] shadow-lg'
-              : 'bg-[#191a22] border-[#272936] hover:border-violet-300/40 hover:bg-[#1f202b]'
+              : 'bg-ide-surface border-ide-border hover:border-violet-300/40 hover:bg-[#1a1b24]'
           }`}
         >
-          <div className="bg-[#262835] p-3.5 rounded-none text-theme-accent shrink-0 border border-theme-accent/20">
+          <div className="bg-[#1d1e28] p-3.5 rounded-none text-theme-accent shrink-0 border border-theme-accent/20">
             <Upload className="h-7 w-7" />
           </div>
           <div>
@@ -165,7 +165,7 @@ export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.mem
         </div>
 
         {filteredDownloads.length === 0 ? (
-          <div className="bg-[#191a22] border border-[#272936] rounded-none p-6 flex flex-col items-center justify-center text-center space-y-2">
+          <div className="bg-ide-surface border border-ide-border rounded-none p-6 flex flex-col items-center justify-center text-center space-y-2">
             <div className="p-2.5 bg-[#242633] text-slate-400 rounded-none">
               <FileText className="h-5 w-5" />
             </div>

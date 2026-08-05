@@ -1,6 +1,6 @@
 {
   "name": "grabbit",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "High-performance, feature-rich modern download manager built with Electron, React, and TypeScript.",
   "main": "./out/main/index.js",
   "author": {

@@ -65,7 +65,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none font-sans text-xs">
+    <div className="fixed inset-0 z-50 bg-slate-950/85 flex items-center justify-center p-4 select-none font-sans text-xs">
       <div className="bg-ide-surface border border-ide-border rounded-none w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="p-5 border-b border-ide-border flex items-center justify-between">

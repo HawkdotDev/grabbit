@@ -21,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   setShowSpeedChart
 }) => {
   return (
-    <header className="h-16 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md px-6 flex items-center justify-between select-none">
+    <header className="h-16 border-b border-slate-800 bg-slate-900 px-6 flex items-center justify-between select-none">
       {/* Search Input */}
       <div className="relative w-72">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />

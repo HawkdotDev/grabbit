@@ -54,7 +54,7 @@ export class RemoteServer {
       }
 
       res.writeHead(200, { 'Content-Type': 'text/plain' })
-      res.end('Grabbit Download Manager Remote Server Gateway v0.0.2')
+      res.end('Grabbit Download Manager Remote Server Gateway v0.1.0')
     })
 
     this.server.listen(this.port, '127.0.0.1', () => {

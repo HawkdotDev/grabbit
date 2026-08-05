@@ -21,9 +21,9 @@ export const HomeEngineOverview: React.FC<HomeEngineOverviewProps> = React.memo(
           Overview
         </h2>
 
-        <div className="bg-[#1a1b23] border border-[#272936] rounded-none p-5 space-y-5">
+        <div className="bg-ide-surface border border-ide-border rounded-none p-5 space-y-5">
           {/* Live Speed Banner */}
-          <div className="flex items-center justify-between border-b border-[#282a38] pb-3">
+          <div className="flex items-center justify-between border-b border-ide-border pb-3">
             <div>
               <span className="text-[11px] text-slate-400 font-medium block">
                 Current Transfer Speed
@@ -40,7 +40,7 @@ export const HomeEngineOverview: React.FC<HomeEngineOverviewProps> = React.memo(
 
           {/* Status Breakdown Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#21232e] border border-[#2e303f] p-3 rounded-none">
+            <div className="bg-ide-card border border-ide-border p-3 rounded-none">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
                 Active Tasks
               </span>
@@ -48,7 +48,7 @@ export const HomeEngineOverview: React.FC<HomeEngineOverviewProps> = React.memo(
               <span className="text-[10px] text-slate-400">{completedTasksCount} completed</span>
             </div>
 
-            <div className="bg-[#21232e] border border-[#2e303f] p-3 rounded-none">
+            <div className="bg-ide-card border border-ide-border p-3 rounded-none">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
                 DHT Network
               </span>
@@ -56,7 +56,7 @@ export const HomeEngineOverview: React.FC<HomeEngineOverviewProps> = React.memo(
               <span className="text-[10px] text-slate-400">Peer discovery ready</span>
             </div>
 
-            <div className="bg-[#21232e] border border-[#2e303f] p-3 rounded-none">
+            <div className="bg-ide-card border border-ide-border p-3 rounded-none">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
                 Worker Threads
               </span>
@@ -64,7 +64,7 @@ export const HomeEngineOverview: React.FC<HomeEngineOverviewProps> = React.memo(
               <span className="text-[10px] text-slate-400">Zero-copy cache</span>
             </div>
 
-            <div className="bg-[#21232e] border border-[#2e303f] p-3 rounded-none">
+            <div className="bg-ide-card border border-ide-border p-3 rounded-none">
               <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
                 Speed Limit
               </span>
