@@ -26,6 +26,32 @@ const api = {
   getDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
   getAllDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
 
+  // WebTorrent IPC
+  addTorrentTracker: (id: string, trackerUrl: string): Promise<boolean> =>
+    ipcRenderer.invoke('torrent:addTracker', { id, trackerUrl }),
+  removeTorrentTracker: (id: string, trackerUrl: string): Promise<boolean> =>
+    ipcRenderer.invoke('torrent:removeTracker', { id, trackerUrl }),
+  addTorrentPeer: (id: string, peerAddress: string): Promise<boolean> =>
+    ipcRenderer.invoke('torrent:addPeer', { id, peerAddress }),
+  setTorrentFilePriority: (
+    id: string,
+    filePath: string,
+    priority: 'high' | 'normal' | 'low' | 'ignore'
+  ): Promise<boolean> => ipcRenderer.invoke('torrent:setFilePriority', { id, filePath, priority }),
+  exportTorrentFile: (downloadId: string): Promise<boolean> =>
+    ipcRenderer.invoke('torrent:exportFile', downloadId),
+  getTorrentStreamUrl: (id: string, fileIndex?: number): Promise<string | null> =>
+    ipcRenderer.invoke('torrent:getStreamUrl', { id, fileIndex }),
+  parseTorrentMetadata: (
+    source: string
+  ): Promise<{
+    name: string
+    infoHash: string
+    totalSize: number
+    files: Array<{ name: string; path: string; size: number }>
+    trackers: string[]
+  }> => ipcRenderer.invoke('torrent:parseMetadata', source),
+
   verifyHash: (args: {
     id: string
     expectedHash: string
@@ -41,6 +67,7 @@ const api = {
 
   openFileLocation: (path: string): Promise<boolean> =>
     ipcRenderer.invoke('system:openFileLocation', path),
+  openFile: (path: string): Promise<boolean> => ipcRenderer.invoke('system:openFile', path),
   copyToClipboard: (text: string): Promise<boolean> =>
     ipcRenderer.invoke('system:copyToClipboard', text),
 

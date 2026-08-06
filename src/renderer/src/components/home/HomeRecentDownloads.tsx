@@ -13,7 +13,8 @@ import {
   FileText,
   Search,
   Filter,
-  Upload
+  Upload,
+  Trash2
 } from 'lucide-react'
 
 interface HomeRecentDownloadsProps {
@@ -23,10 +24,19 @@ interface HomeRecentDownloadsProps {
   onSelectDownload?: (id: string) => void
   onPause?: (id: string) => void
   onResume?: (id: string) => void
+  onCancel?: (id: string) => void
 }
 
 export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.memo(
-  ({ recentDownloads, onOpenAddModal, onNavigateToTasks, onSelectDownload, onPause, onResume }) => {
+  ({
+    recentDownloads,
+    onOpenAddModal,
+    onNavigateToTasks,
+    onSelectDownload,
+    onPause,
+    onResume,
+    onCancel
+  }) => {
     const [copiedId, setCopiedId] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -283,6 +293,16 @@ export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.mem
                           <CheckCircle className="h-3.5 w-3.5" />
                           <span>DONE</span>
                         </div>
+                      )}
+
+                      {onCancel && (
+                        <button
+                          onClick={() => onCancel(item.id)}
+                          className="p-2 bg-[#252734] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-transparent hover:border-rose-500/30 rounded-none transition cursor-pointer"
+                          title="Delete Task"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       )}
                     </div>
                   </div>

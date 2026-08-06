@@ -24,7 +24,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = React.memo(
     onNavigateToTasks,
     onSelectDownload,
     onPause,
-    onResume
+    onResume,
+    onCancel
   }) => {
     const totalDownloadedBytes = downloads.reduce((acc, d) => acc + d.downloadedSize, 0)
     const totalUploadedBytes = downloads.reduce((acc, d) => acc + (d.uploadedSize || 0), 0)
@@ -53,6 +54,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = React.memo(
               onSelectDownload={onSelectDownload}
               onPause={onPause}
               onResume={onResume}
+              onCancel={onCancel}
             />
           </div>
 

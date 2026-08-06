@@ -28,6 +28,25 @@ export interface GrabbitAPI {
   exportQueue: () => Promise<boolean>
   importQueue: () => Promise<number>
 
+  // WebTorrent IPC
+  addTorrentTracker: (id: string, trackerUrl: string) => Promise<boolean>
+  removeTorrentTracker: (id: string, trackerUrl: string) => Promise<boolean>
+  addTorrentPeer: (id: string, peerAddress: string) => Promise<boolean>
+  setTorrentFilePriority: (
+    id: string,
+    filePath: string,
+    priority: 'high' | 'normal' | 'low' | 'ignore'
+  ) => Promise<boolean>
+  exportTorrentFile: (downloadId: string) => Promise<boolean>
+  getTorrentStreamUrl: (id: string, fileIndex?: number) => Promise<string | null>
+  parseTorrentMetadata: (source: string) => Promise<{
+    name: string
+    infoHash: string
+    totalSize: number
+    files: Array<{ name: string; path: string; size: number }>
+    trackers: string[]
+  }>
+
   // Category & Filter IPC
   getCategories: () => Promise<Record<DownloadCategory, string[]>>
   setCategory: (id: string, category: DownloadCategory) => Promise<boolean>
@@ -43,6 +62,7 @@ export interface GrabbitAPI {
     algo?: 'md5' | 'sha256' | 'sha512'
   }) => Promise<{ matches: boolean; actualHash: string }>
   openFileLocation: (path: string) => Promise<boolean>
+  openFile: (path: string) => Promise<boolean>
   copyToClipboard: (text: string) => Promise<boolean>
 
   getSpeedHistory: () => Promise<SpeedSample[]>

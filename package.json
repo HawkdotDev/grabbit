@@ -1,6 +1,6 @@
 {
   "name": "grabbit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "High-performance, feature-rich modern download manager built with Electron, React, and TypeScript.",
   "main": "./out/main/index.js",
   "author": {
@@ -72,7 +72,8 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "electron-updater": "^6.3.9",
-    "lucide-react": "^1.28.0"
+    "lucide-react": "^1.28.0",
+    "webtorrent": "^3.0.21"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
@@ -82,6 +83,7 @@
     "@types/node": "^22.19.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/webtorrent": "^0.110.1",
     "@vitejs/plugin-react": "^5.1.1",
     "electron": "^39.2.6",
     "electron-builder": "^26.0.12",

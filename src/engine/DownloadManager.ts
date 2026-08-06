@@ -190,6 +190,64 @@ export class DownloadManager extends EventEmitter {
     this.saveStateImmediate()
     this.emit('downloadUpdated', download)
 
+    const isTorrent =
+      download.url.startsWith('magnet:') ||
+      download.url.endsWith('.torrent') ||
+      download.url.endsWith('.meta') ||
+      download.url.endsWith('.metalink') ||
+      !!download.infoHash
+
+    if (isTorrent) {
+      const saveDir = path.dirname(download.savePath)
+      TorrentWorker.startTorrentDownload(
+        download.id,
+        download.url,
+        saveDir,
+        (event) => {
+          const d = this.downloads.get(event.downloadId)
+          if (!d) return
+          d.downloadedSize = event.downloadedSize
+          d.totalSize = event.totalSize || d.totalSize
+          d.speed = event.downloadSpeed
+          d.upSpeed = event.uploadSpeed
+          d.uploadedSize = event.uploadedSize
+          d.ratio = event.ratio
+          d.eta = event.eta
+          d.peersCount = event.peersCount
+          d.seedsCount = event.seedsCount
+          d.chunks = event.chunks
+          d.trackers = event.trackers
+          d.files = event.files.length > 0 ? event.files : d.files
+
+          this.saveStateDebounced()
+          this.emit('progress', d)
+        },
+        (event) => {
+          const d = this.downloads.get(event.downloadId)
+          if (!d) return
+          d.status = 'completed'
+          d.speed = 0
+          d.upSpeed = event.uploadSpeed
+          d.eta = 0
+          d.completedAt = Date.now()
+          d.downloadedSize = d.totalSize
+          this.saveStateImmediate()
+          this.emit('downloadCompleted', d)
+          this.processQueue()
+        }
+      ).catch((err) => {
+        const d = this.downloads.get(id)
+        if (!d) return
+        d.status = 'error'
+        d.error = err.message
+        d.speed = 0
+        this.saveStateImmediate()
+        this.emit('downloadUpdated', d)
+        this.processQueue()
+      })
+      return
+    }
+
     this.chunkEngine.startChunkDownload(
       download,
       this.rateLimiter,
@@ -241,8 +299,20 @@ export class DownloadManager extends EventEmitter {
     const d = this.downloads.get(id)
     if (!d || d.status !== 'downloading') return
 
-    this.chunkEngine.cancelDownload(id)
-    DiskAllocator.closeFile(d.savePath)
+    const isTorrent =
+      d.url.startsWith('magnet:') ||
+      d.url.endsWith('.torrent') ||
+      d.url.endsWith('.meta') ||
+      d.url.endsWith('.metalink') ||
+      !!d.infoHash
+
+    if (isTorrent) {
+      TorrentWorker.pauseTorrent(id)
+    } else {
+      this.chunkEngine.cancelDownload(id)
+      DiskAllocator.closeFile(d.savePath)
+    }
+
     d.status = 'paused'
     d.speed = 0
     d.chunks.forEach((c) => {
@@ -256,6 +326,17 @@ export class DownloadManager extends EventEmitter {
   public resumeDownload(id: string): void {
     const d = this.downloads.get(id)
     if (!d || (d.status !== 'paused' && d.status !== 'error')) return
+
+    const isTorrent =
+      d.url.startsWith('magnet:') ||
+      d.url.endsWith('.torrent') ||
+      d.url.endsWith('.meta') ||
+      d.url.endsWith('.metalink') ||
+      !!d.infoHash
+
+    if (isTorrent) {
+      TorrentWorker.resumeTorrent(id)
+    }
 
     d.status = 'queued'
     d.error = undefined
@@ -271,8 +352,20 @@ export class DownloadManager extends EventEmitter {
     const d = this.downloads.get(id)
     if (!d) return
 
-    this.chunkEngine.cancelDownload(id)
-    DiskAllocator.closeFile(d.savePath)
+    const isTorrent =
+      d.url.startsWith('magnet:') ||
+      d.url.endsWith('.torrent') ||
+      d.url.endsWith('.meta') ||
+      d.url.endsWith('.metalink') ||
+      !!d.infoHash
+
+    if (isTorrent) {
+      TorrentWorker.removeTorrent(id)
+    } else {
+      this.chunkEngine.cancelDownload(id)
+      DiskAllocator.closeFile(d.savePath)
+    }
+
     this.downloads.delete(id)
     this.saveStateImmediate()
     this.emit('downloadRemoved', id)

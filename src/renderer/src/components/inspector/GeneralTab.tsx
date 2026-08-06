@@ -1,4 +1,5 @@
 import React from 'react'
+import { FolderOpen } from 'lucide-react'
 import { DownloadItem } from '../../../../engine/types'
 import { formatBytes, formatSpeed } from '../../utils/formatters'
 
@@ -59,11 +60,20 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({ download }) => {
         <div className="font-bold uppercase text-[10px] tracking-wider border-b border-[#292929] pb-1 text-theme-accent">
           File Diagnostics
         </div>
-        <div className="flex justify-between font-mono">
-          <span className="text-slate-400">Save Path:</span>
-          <span className="truncate max-w-35" title={download.savePath}>
-            {download.savePath}
-          </span>
+        <div className="flex justify-between items-center font-mono gap-1">
+          <span className="text-slate-400 shrink-0">Save Path:</span>
+          <div className="flex items-center gap-1 overflow-hidden">
+            <span className="truncate max-w-28 text-[11px]" title={download.savePath}>
+              {download.savePath}
+            </span>
+            <button
+              onClick={() => window.api?.openFileLocation(download.savePath)}
+              className="p-1 bg-white/5 hover:bg-theme-tint hover:text-theme-accent text-cyan-400 border border-ide-border rounded-none cursor-pointer shrink-0 transition-colors"
+              title="Open Destination Folder"
+            >
+              <FolderOpen className="h-3 w-3" />
+            </button>
+          </div>
         </div>
         <div className="flex justify-between font-mono">
           <span className="text-slate-400">Info Hash:</span>

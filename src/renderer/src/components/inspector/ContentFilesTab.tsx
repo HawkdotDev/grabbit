@@ -30,10 +30,26 @@ export const ContentFilesTab: React.FC<ContentFilesTabProps> = ({ download }) =>
         <tbody className="divide-y divide-[#242424]">
           {files.map((f, idx) => (
             <tr key={idx} className="hover:bg-white/5">
-              <td className="p-2 font-medium">{f.path}</td>
-              <td className="p-2 text-right">{formatBytes(f.size)}</td>
-              <td className="p-2 text-right text-emerald-400">{formatBytes(f.downloaded)}</td>
-              <td className="p-2 text-center text-slate-400 uppercase">{f.priority}</td>
+              <td className="p-2 font-medium text-slate-200">{f.path}</td>
+              <td className="p-2 text-right text-slate-300">{formatBytes(f.size)}</td>
+              <td className="p-2 text-right text-emerald-400 font-semibold">
+                {formatBytes(f.downloaded)}
+              </td>
+              <td className="p-2 text-center">
+                <select
+                  value={f.priority}
+                  onChange={async (e) => {
+                    const newPrio = e.target.value as 'high' | 'normal' | 'low' | 'ignore'
+                    await window.api?.setTorrentFilePriority(download.id, f.path, newPrio)
+                  }}
+                  className="bg-ide-surface border border-ide-border text-slate-200 text-[11px] px-1.5 py-0.5 rounded-none font-mono cursor-pointer focus:outline-none focus:border-theme-accent"
+                >
+                  <option value="high">High</option>
+                  <option value="normal">Normal</option>
+                  <option value="low">Low</option>
+                  <option value="ignore">Skip / Don&apos;t Download</option>
+                </select>
+              </td>
             </tr>
           ))}
         </tbody>

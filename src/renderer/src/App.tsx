@@ -12,6 +12,7 @@ import {
   BottomDetailInspector,
   BottomStatusBar,
   AddDownloadModal,
+  SimpleAddDownloadModal,
   SettingsModal,
   HashModal,
   AnalyticsView,
@@ -34,7 +35,8 @@ export function App(): React.JSX.Element {
     handlePauseAll,
     handleResumeAll,
     handleClearCompleted,
-    handleVerifyHash
+    handleVerifyHash,
+    handleUpdateDownload
   } = useDownloads()
 
   // 2. Filter State Hook
@@ -59,8 +61,16 @@ export function App(): React.JSX.Element {
   // 4. Navigation & Modals State
   const [activeMainView, setActiveMainView] = useState<'home' | 'analytics' | 'network'>('home')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [addModalMode, setAddModalMode] = useState<'link' | 'file'>('link')
+  const [addModalInitialUrl, setAddModalInitialUrl] = useState('')
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
+
+  const handleOpenAddModal = (mode: 'link' | 'file' = 'link', initialUrl = ''): void => {
+    setAddModalMode(mode)
+    setAddModalInitialUrl(initialUrl)
+    setIsAddModalOpen(true)
+  }
 
   // 5. Clipboard Detector Hook
   const { detectedLink, dismiss, clear } = useClipboardDetector()
@@ -94,7 +104,7 @@ export function App(): React.JSX.Element {
   }
 
   const handleAddFromClipboard = (url: string): void => {
-    handleAddDownload({ url })
+    handleOpenAddModal('link', url)
     clear()
   }
 
@@ -104,7 +114,7 @@ export function App(): React.JSX.Element {
       <TopBar
         activeView={activeMainView}
         setActiveView={setActiveMainView}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenAddModal={handleOpenAddModal}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         onResumeAll={handleResumeAll}
         onPauseAll={handlePauseAll}
@@ -124,7 +134,7 @@ export function App(): React.JSX.Element {
           downloads={downloads}
           speedHistory={speedHistory}
           globalSpeed={globalSpeed}
-          onOpenAddModal={() => setIsAddModalOpen(true)}
+          onOpenAddModal={handleOpenAddModal}
           onSelectDownload={(id) => setSelectedId(id)}
           onPause={handlePause}
           onResume={handleResume}
@@ -133,17 +143,17 @@ export function App(): React.JSX.Element {
       ) : activeMainView === 'network' ? (
         <NetworkView downloads={downloads} speedHistory={speedHistory} globalSpeed={globalSpeed} />
       ) : (
-        <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
-          {/* Left Resizable Sidebar Filter Tree */}
+        <div className="flex-1 flex overflow-hidden min-h-0 relative">
+          {/* Left Navigation Sidebar */}
           <Sidebar
-            width={sidebarWidth}
+            downloads={downloads}
             activeStatusFilter={activeStatusFilter}
             setActiveStatusFilter={setActiveStatusFilter}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
             activeTag={activeTag}
             setActiveTag={setActiveTag}
-            downloads={downloads}
+            width={sidebarWidth}
             onResumeAll={handleResumeAll}
             onPauseAll={handlePauseAll}
           />
@@ -171,6 +181,8 @@ export function App(): React.JSX.Element {
                 setSearchQuery={setSearchQuery}
                 filterBy={filterBy}
                 setFilterBy={setFilterBy}
+                onUpdateDownload={handleUpdateDownload}
+                onOpenAddModal={handleOpenAddModal}
               />
             </main>
 
@@ -178,13 +190,13 @@ export function App(): React.JSX.Element {
             <div
               onMouseDown={handleInspectorMouseDown}
               className="h-0.5 cursor-row-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
-              title="Drag to resize inspector pane"
+              title="Drag to resize inspector panel"
             />
 
-            {/* Lower Resizable Detail Inspector Tabbed Pane */}
+            {/* Lower Detail Inspector Panel */}
             <BottomDetailInspector
-              height={inspectorHeight}
               download={selectedDownload}
+              height={inspectorHeight}
               speedHistory={speedHistory}
             />
           </div>
@@ -195,12 +207,25 @@ export function App(): React.JSX.Element {
       <BottomStatusBar downloads={downloads} globalSpeed={globalSpeed} />
 
       {/* Floating Action Modals */}
-      <AddDownloadModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddDownload}
-        defaultSavePath={settings.defaultSavePath}
-      />
+      {addModalMode === 'file' ? (
+        <AddDownloadModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={handleAddDownload}
+          defaultSavePath={settings.defaultSavePath}
+          initialMode="file"
+          initialUrl={addModalInitialUrl}
+        />
+      ) : (
+        <SimpleAddDownloadModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={handleAddDownload}
+          defaultSavePath={settings.defaultSavePath}
+          initialMode="link"
+          initialUrl={addModalInitialUrl}
+        />
+      )}
 
       <SettingsModal
         isOpen={isSettingsModalOpen}

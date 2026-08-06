@@ -128,15 +128,19 @@ export function useDownloads() {
     async (
       id: string,
       expectedHash: string,
-      algo: 'md5' | 'sha256' | 'sha512'
+      algo?: 'sha256' | 'md5' | 'sha512'
     ): Promise<{ matches: boolean; actualHash: string }> => {
-      if (window.api && window.api.verifyHash) {
+      if (window.api?.verifyHash) {
         return await window.api.verifyHash({ id, expectedHash, algo })
       }
-      return { matches: false, actualHash: '' }
+      return { matches: false, actualHash: 'API Not Available' }
     },
     []
   )
+
+  const handleUpdateDownload = useCallback((id: string, updates: Partial<DownloadItem>): void => {
+    setDownloads((prev) => prev.map((d) => (d.id === id ? { ...d, ...updates } : d)))
+  }, [])
 
   return {
     downloads,
@@ -152,6 +156,7 @@ export function useDownloads() {
     handlePauseAll,
     handleResumeAll,
     handleClearCompleted,
-    handleVerifyHash
+    handleVerifyHash,
+    handleUpdateDownload
   }
 }

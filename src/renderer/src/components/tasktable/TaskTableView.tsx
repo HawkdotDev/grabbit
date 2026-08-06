@@ -1,15 +1,16 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Inbox } from 'lucide-react'
 import { DownloadItem } from '../../../../engine/types'
+import { TaskTableHeader } from './TaskTableHeader'
 import {
-  TaskTableHeader,
   SortField,
   ColumnKey,
   ColumnWidths,
   DEFAULT_COLUMN_WIDTHS,
   MIN_COLUMN_WIDTHS
-} from './TaskTableHeader'
+} from './types'
 import { TaskTableRow } from './TaskTableRow'
+import { TaskContextMenu } from './TaskContextMenu'
 import { SearchFilterBar } from '../topbar/SearchFilterBar'
 
 interface TaskTableViewProps {
@@ -20,6 +21,8 @@ interface TaskTableViewProps {
   onResume: (id: string) => void
   onCancel: (id: string) => void
   onOpenHashModal: (download: DownloadItem) => void
+  onUpdateDownload?: (id: string, updates: Partial<DownloadItem>) => void
+  onOpenAddModal?: (mode?: 'link' | 'file') => void
   searchQuery: string
   setSearchQuery: (q: string) => void
   filterBy: 'name' | 'category' | 'tag'
@@ -35,6 +38,8 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
     onResume,
     onCancel,
     onOpenHashModal,
+    onUpdateDownload,
+    onOpenAddModal,
     searchQuery,
     setSearchQuery,
     filterBy,
@@ -43,6 +48,11 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
     const [sortField, setSortField] = useState<SortField>('name')
     const [sortAsc, setSortAsc] = useState(true)
     const [columnWidths, setColumnWidths] = useState<ColumnWidths>(DEFAULT_COLUMN_WIDTHS)
+    const [contextMenu, setContextMenu] = useState<{
+      x: number
+      y: number
+      download: DownloadItem
+    } | null>(null)
 
     const handleSort = useCallback((field: SortField): void => {
       setSortField((prevField) => {
@@ -54,6 +64,18 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
           return field
         }
       })
+    }, [])
+
+    const handleContextMenu = useCallback((e: React.MouseEvent, download: DownloadItem): void => {
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        download
+      })
+    }, [])
+
+    const handleCloseContextMenu = useCallback((): void => {
+      setContextMenu(null)
     }, [])
 
     const handleResizeStart = useCallback(
@@ -147,6 +169,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
                   onResume={onResume}
                   onCancel={onCancel}
                   onOpenHashModal={onOpenHashModal}
+                  onContextMenu={handleContextMenu}
                 />
               ))}
 
@@ -163,6 +186,17 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
                           Your download queue is empty. Click &quot;+ Add task&quot; or paste a link
                           to start supercharged multi-threaded downloads.
                         </p>
+                        {onOpenAddModal && (
+                          <div className="pt-2">
+                            <button
+                              type="button"
+                              onClick={() => onOpenAddModal('link')}
+                              className="px-4 py-2 bg-theme-accent hover:bg-theme-bright text-slate-950 font-bold text-xs rounded-none shadow-lg shadow-theme-accent/20 cursor-pointer transition"
+                            >
+                              + Add task
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -171,6 +205,20 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
             </tbody>
           </table>
         </div>
+
+        {contextMenu && (
+          <TaskContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            download={contextMenu.download}
+            onClose={handleCloseContextMenu}
+            onPause={onPause}
+            onResume={onResume}
+            onCancel={onCancel}
+            onOpenHashModal={onOpenHashModal}
+            onUpdateDownload={onUpdateDownload}
+          />
+        )}
       </div>
     )
   }

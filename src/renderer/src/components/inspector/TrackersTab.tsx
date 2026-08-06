@@ -85,6 +85,20 @@ export const TrackersTab: React.FC<TrackersTabProps> = ({ download }) => {
             {trackers.filter((t) => t.status === 'working').length}
           </span>
         </button>
+
+        {download && (
+          <button
+            onClick={async () => {
+              const trUrl = prompt('Enter Tracker Announce URL (udp://... or https://...):')
+              if (trUrl && trUrl.trim()) {
+                await window.api?.addTorrentTracker(download.id, trUrl.trim())
+              }
+            }}
+            className="ml-auto px-2.5 py-1 text-[11px] font-semibold bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 transition cursor-pointer"
+          >
+            + Add Tracker
+          </button>
+        )}
       </div>
 
       {/* Tab Contents */}

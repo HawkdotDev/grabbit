@@ -213,7 +213,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettings
               onClick={() => setActiveMenu(null)}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
             >
-              <Info className="h-3.5 w-3.5 text-theme-accent" /> About Grabbit v0.1.0
+              <Info className="h-3.5 w-3.5 text-theme-accent" /> About Grabbit v0.1.1
             </button>
           </>
         )

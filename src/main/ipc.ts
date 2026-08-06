@@ -1,9 +1,56 @@
 import { ipcMain, BrowserWindow, Notification, shell, app, clipboard, dialog } from 'electron'
 import * as fs from 'fs'
 import { DownloadManager } from '../engine/DownloadManager'
+import { TorrentWorker } from '../engine/workers/TorrentWorker'
 import { DownloadCategory, DownloadPriority, EngineSettings } from '../engine/types'
 
 export function setupIPC(downloadManager: DownloadManager): void {
+  // WebTorrent Specific IPC Handlers
+  ipcMain.handle('torrent:addTracker', (_, args: { id: string; trackerUrl: string }) => {
+    return TorrentWorker.addTracker(args.id, args.trackerUrl)
+  })
+
+  ipcMain.handle('torrent:removeTracker', (_, args: { id: string; trackerUrl: string }) => {
+    return TorrentWorker.removeTracker(args.id, args.trackerUrl)
+  })
+
+  ipcMain.handle('torrent:addPeer', (_, args: { id: string; peerAddress: string }) => {
+    return TorrentWorker.addPeer(args.id, args.peerAddress)
+  })
+
+  ipcMain.handle(
+    'torrent:setFilePriority',
+    (_, args: { id: string; filePath: string; priority: 'high' | 'normal' | 'low' | 'ignore' }) => {
+      return TorrentWorker.setFilePriority(args.id, args.filePath, args.priority)
+    }
+  )
+
+  ipcMain.handle('torrent:exportFile', async (event, downloadId: string) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return false
+    const buffer = TorrentWorker.getTorrentFileBuffer(downloadId)
+    if (!buffer) return false
+
+    const { filePath } = await dialog.showSaveDialog(win, {
+      title: 'Export .torrent File',
+      defaultPath: `${downloadId}.torrent`,
+      filters: [{ name: 'Torrent File', extensions: ['torrent'] }]
+    })
+
+    if (filePath) {
+      fs.writeFileSync(filePath, buffer)
+      return true
+    }
+    return false
+  })
+
+  ipcMain.handle('torrent:getStreamUrl', async (_, args: { id: string; fileIndex?: number }) => {
+    return await TorrentWorker.getStreamUrl(args.id, args.fileIndex || 0)
+  })
+
+  ipcMain.handle('torrent:parseMetadata', (_, source: string) => {
+    return TorrentWorker.parseTorrentMetadata(source)
+  })
   // Download handlers
   ipcMain.handle(
     'download:add',
@@ -132,6 +179,14 @@ export function setupIPC(downloadManager: DownloadManager): void {
   ipcMain.handle('system:openFileLocation', (_, path: string) => {
     if (path) {
       shell.showItemInFolder(path)
+      return true
+    }
+    return false
+  })
+
+  ipcMain.handle('system:openFile', (_, path: string) => {
+    if (path) {
+      shell.openPath(path)
       return true
     }
     return false

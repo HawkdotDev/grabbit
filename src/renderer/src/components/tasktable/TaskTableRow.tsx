@@ -13,12 +13,14 @@ import {
   Code,
   Folder,
   ArrowDown,
-  ArrowUp
+  ArrowUp,
+  FolderOpen,
+  ExternalLink
 } from 'lucide-react'
 import { DownloadItem } from '../../../../engine/types'
 import { ProgressBarCell } from './ProgressBarCell'
 import { TaskStatusBadge } from './TaskStatusBadge'
-import { ColumnWidths, MIN_COLUMN_WIDTHS } from './TaskTableHeader'
+import { ColumnWidths, MIN_COLUMN_WIDTHS } from './types'
 
 interface TaskTableRowProps {
   item: DownloadItem
@@ -30,6 +32,7 @@ interface TaskTableRowProps {
   onResume: (id: string) => void
   onCancel: (id: string) => void
   onOpenHashModal: (download: DownloadItem) => void
+  onContextMenu?: (e: React.MouseEvent, download: DownloadItem) => void
 }
 
 const getCategoryIcon = (category: string): React.JSX.Element => {
@@ -87,7 +90,8 @@ export const TaskTableRow: React.FC<TaskTableRowProps> = React.memo(
     onPause,
     onResume,
     onCancel,
-    onOpenHashModal
+    onOpenHashModal,
+    onContextMenu
   }) => {
     const pct =
       item.totalSize > 0
@@ -96,9 +100,24 @@ export const TaskTableRow: React.FC<TaskTableRowProps> = React.memo(
           ? 100
           : 0
 
+    const handleOpenFolder = (e: React.MouseEvent): void => {
+      e.stopPropagation()
+      window.api?.openFileLocation(item.savePath)
+    }
+
+    const handleOpenFile = (e: React.MouseEvent): void => {
+      e.stopPropagation()
+      window.api?.openFile(item.savePath)
+    }
+
     return (
       <tr
         onClick={() => onSelect(item.id)}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          onSelect(item.id)
+          onContextMenu?.(e, item)
+        }}
         className={`transition-colors cursor-pointer border-l-2 ${
           isSelected
             ? 'border-theme-accent bg-theme-tint/70 text-white font-semibold'
@@ -188,6 +207,24 @@ export const TaskTableRow: React.FC<TaskTableRowProps> = React.memo(
           className="p-2.5 text-center"
         >
           <div className="flex items-center justify-center gap-1">
+            <button
+              onClick={handleOpenFolder}
+              className="p-1.5 text-cyan-400 hover:bg-white/10 hover:border-cyan-500/30 border border-transparent rounded-none cursor-pointer transition-colors"
+              title="Open Destination Folder"
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+            </button>
+
+            {item.status === 'completed' && (
+              <button
+                onClick={handleOpenFile}
+                className="p-1.5 text-emerald-400 hover:bg-white/10 hover:border-emerald-500/30 border border-transparent rounded-none cursor-pointer transition-colors"
+                title="Open File"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </button>
+            )}
+
             {item.status === 'downloading' && (
               <button
                 onClick={(e) => {
