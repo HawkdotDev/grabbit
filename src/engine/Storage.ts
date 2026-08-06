@@ -1,12 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { app } from 'electron'
 import { DownloadItem, EngineSettings, SpeedSample } from './types'
 
 function getAppPath(name: 'userData' | 'downloads'): string {
   try {
-    if (app && typeof app.getPath === 'function') {
-      return app.getPath(name)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const electron = require('electron')
+    const appObj = electron?.app || electron?.default?.app
+    if (appObj && typeof appObj.getPath === 'function') {
+      return appObj.getPath(name)
     }
   } catch {
     // Fallback when executed outside Electron environment
