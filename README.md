@@ -13,10 +13,13 @@
       <img src="https://img.shields.io/badge/Version-0.1.1-009669.svg?style=for-the-badge" alt="Version" />
     </a>
     <a href="https://electronjs.org">
-      <img src="https://img.shields.io/badge/Electron-v39-47848F.svg?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
+      <img src="https://img.shields.io/badge/Electron-v43-47848F.svg?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
     </a>
     <a href="https://webtorrent.io">
       <img src="https://img.shields.io/badge/WebTorrent-v3-e00000.svg?style=for-the-badge&logo=bittorrent&logoColor=white" alt="WebTorrent" />
+    </a>
+    <a href="https://typescriptlang.org">
+      <img src="https://img.shields.io/badge/TypeScript-v7-3178C6.svg?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     </a>
     <a href="https://react.dev">
       <img src="https://img.shields.io/badge/React-v19-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black" alt="React" />
@@ -50,13 +53,13 @@
 
 | Layer                         | Technology                                              |
 | :---------------------------- | :------------------------------------------------------ |
-| **Desktop Framework**         | [Electron v39](package.json)                            |
+| **Desktop Framework**         | [Electron v43](package.json)                            |
 | **BitTorrent Engine**         | [WebTorrent v3](package.json)                           |
 | **Frontend Framework**        | [React v19](package.json)                               |
-| **Language**                  | [TypeScript v5.8](package.json)                         |
+| **Language**                  | [TypeScript v7](package.json)                           |
 | **Styling**                   | [Tailwind CSS v4](package.json)                         |
 | **Typography**                | Sora & Inter (Google Fonts)                             |
-| **Build & Bundler**           | [electron-vite](package.json) + [Vite v6](package.json) |
+| **Build & Bundler**           | [electron-vite](package.json) + [Vite v8](package.json) |
 | **Runtime & Package Manager** | [Bun](package.json)                                     |
 | **Icons**                     | [Lucide React](package.json)                            |
 
