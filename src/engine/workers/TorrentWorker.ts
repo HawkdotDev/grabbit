@@ -19,6 +19,20 @@ export interface ParsedTorrentMeta {
   trackers: string[]
 }
 
+interface ParsedTorrentFileItem {
+  name?: string
+  path?: string
+  length?: number
+}
+
+interface InstanceTorrentData {
+  name?: string
+  infoHash?: string
+  length?: number
+  files?: ParsedTorrentFileItem[]
+  announce?: string | string[]
+}
+
 export interface TorrentPeerInfo {
   ip: string
   port: number
@@ -132,18 +146,18 @@ export class TorrentWorker {
   public static async parseTorrentMetadata(sourcePathOrMagnet: string): Promise<ParsedTorrentMeta> {
     if (sourcePathOrMagnet.startsWith('magnet:')) {
       try {
-        const parsed = (await parseTorrent(sourcePathOrMagnet)) as any
+        const parsed = (await parseTorrent(sourcePathOrMagnet)) as InstanceTorrentData
         const trackers = Array.isArray(parsed.announce)
           ? parsed.announce
           : parsed.announce
             ? [parsed.announce]
             : []
-        const files = (parsed.files || []).map((f: any) => ({
+        const files = (parsed.files || []).map((f: ParsedTorrentFileItem) => ({
           name: f.name || f.path || 'file',
           path: f.path || f.name || 'file',
           size: f.length || 0
         }))
-        const totalSize = parsed.length || files.reduce((acc: number, f: any) => acc + f.size, 0)
+        const totalSize = parsed.length || files.reduce((acc: number, f) => acc + f.size, 0)
         return {
           name: parsed.name || 'Magnet Download',
           infoHash: parsed.infoHash || '',
@@ -166,14 +180,14 @@ export class TorrentWorker {
     try {
       if (fs.existsSync(sourcePathOrMagnet)) {
         const buf = fs.readFileSync(sourcePathOrMagnet)
-        const parsed = (await parseTorrent(buf)) as any
+        const parsed = (await parseTorrent(buf)) as InstanceTorrentData
         if (parsed) {
-          const files = (parsed.files || []).map((f: any) => ({
+          const files = (parsed.files || []).map((f: ParsedTorrentFileItem) => ({
             name: f.name || f.path || 'file',
             path: f.path || f.name || 'file',
             size: f.length || 0
           }))
-          const totalSize = parsed.length || files.reduce((acc: number, f: any) => acc + f.size, 0)
+          const totalSize = parsed.length || files.reduce((acc: number, f) => acc + f.size, 0)
           const trackers = Array.isArray(parsed.announce)
             ? parsed.announce
             : parsed.announce
