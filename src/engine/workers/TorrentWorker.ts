@@ -1,4 +1,5 @@
 import WebTorrent from 'webtorrent'
+import parseTorrent from 'parse-torrent'
 import * as fs from 'fs'
 import * as path from 'path'
 import { ChunkInfo, DownloadFileItem } from '../types'
@@ -128,38 +129,62 @@ export class TorrentWorker {
   /**
    * Parses local .torrent file or magnet URI metadata
    */
-  public static parseTorrentMetadata(sourcePathOrMagnet: string): ParsedTorrentMeta {
+  public static async parseTorrentMetadata(sourcePathOrMagnet: string): Promise<ParsedTorrentMeta> {
     if (sourcePathOrMagnet.startsWith('magnet:')) {
-      const mag = this.parseMagnetURI(sourcePathOrMagnet)
-      return {
-        name: mag.name || 'Magnet Download',
-        infoHash: mag.infoHash,
-        totalSize: 0,
-        files: [],
-        trackers: mag.trackers
+      try {
+        const parsed = (await parseTorrent(sourcePathOrMagnet)) as any
+        const trackers = Array.isArray(parsed.announce)
+          ? parsed.announce
+          : parsed.announce
+            ? [parsed.announce]
+            : []
+        const files = (parsed.files || []).map((f: any) => ({
+          name: f.name || f.path || 'file',
+          path: f.path || f.name || 'file',
+          size: f.length || 0
+        }))
+        const totalSize = parsed.length || files.reduce((acc: number, f: any) => acc + f.size, 0)
+        return {
+          name: parsed.name || 'Magnet Download',
+          infoHash: parsed.infoHash || '',
+          totalSize,
+          files,
+          trackers
+        }
+      } catch {
+        const mag = this.parseMagnetURI(sourcePathOrMagnet)
+        return {
+          name: mag.name || 'Magnet Download',
+          infoHash: mag.infoHash,
+          totalSize: 0,
+          files: [],
+          trackers: mag.trackers
+        }
       }
     }
 
     try {
       if (fs.existsSync(sourcePathOrMagnet)) {
         const buf = fs.readFileSync(sourcePathOrMagnet)
-        const parseFunc = (
-          WebTorrent as unknown as { parseTorrent?: (b: Buffer) => Record<string, unknown> }
-        ).parseTorrent
-        const parsed = parseFunc ? parseFunc(buf) : null
+        const parsed = (await parseTorrent(buf)) as any
         if (parsed) {
-          const files = ((parsed.files as Array<Record<string, unknown>>) || []).map((f) => ({
-            name: (f.name as string) || (f.path as string) || 'file',
-            path: (f.path as string) || (f.name as string) || 'file',
-            size: (f.length as number) || 0
+          const files = (parsed.files || []).map((f: any) => ({
+            name: f.name || f.path || 'file',
+            path: f.path || f.name || 'file',
+            size: f.length || 0
           }))
-          const totalSize = (parsed.length as number) || files.reduce((acc, f) => acc + f.size, 0)
+          const totalSize = parsed.length || files.reduce((acc: number, f: any) => acc + f.size, 0)
+          const trackers = Array.isArray(parsed.announce)
+            ? parsed.announce
+            : parsed.announce
+              ? [parsed.announce]
+              : []
           return {
-            name: (parsed.name as string) || path.basename(sourcePathOrMagnet),
-            infoHash: (parsed.infoHash as string) || '',
+            name: parsed.name || path.basename(sourcePathOrMagnet),
+            infoHash: parsed.infoHash || '',
             totalSize,
             files,
-            trackers: (parsed.announce as string[]) || []
+            trackers
           }
         }
       }

@@ -62,8 +62,8 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return await TorrentWorker.getStreamUrl(args.id, args.fileIndex || 0)
   })
 
-  ipcMain.handle('torrent:parseMetadata', (_, source: string) => {
-    return TorrentWorker.parseTorrentMetadata(source)
+  ipcMain.handle('torrent:parseMetadata', async (_, source: string) => {
+    return await TorrentWorker.parseTorrentMetadata(source)
   })
   // Download handlers
   ipcMain.handle(

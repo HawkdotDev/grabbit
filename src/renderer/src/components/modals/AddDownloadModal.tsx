@@ -163,28 +163,101 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
 
+  function buildFileTreeFromPaths(
+    files: Array<{ name: string; path: string; size: number }>,
+    rootName: string
+  ): FileTreeNode[] {
+    if (!files || files.length === 0) {
+      return [
+        {
+          id: 'f_root',
+          name: rootName || 'Torrent Payload',
+          size: 0,
+          selected: true,
+          priority: 'normal',
+          type: 'folder',
+          children: []
+        }
+      ]
+    }
+
+    const rootNode: FileTreeNode = {
+      id: 'f_root',
+      name: rootName || 'Torrent Payload',
+      size: files.reduce((acc, f) => acc + f.size, 0),
+      selected: true,
+      priority: 'normal',
+      type: 'folder',
+      children: []
+    }
+
+    files.forEach((file, index) => {
+      const rawPath = file.path || file.name
+      const parts = rawPath.replace(/\\/g, '/').split('/').filter(Boolean)
+
+      if (parts.length > 1 && parts[0] === rootName) {
+        parts.shift()
+      }
+
+      let currentLevel = rootNode.children!
+
+      parts.forEach((part, partIndex) => {
+        const isFile = partIndex === parts.length - 1
+        const existing = currentLevel.find((n) => n.name === part)
+
+        if (existing) {
+          if (!isFile) {
+            if (!existing.children) existing.children = []
+            currentLevel = existing.children
+          }
+        } else {
+          const newNode: FileTreeNode = {
+            id: `node_${index}_${partIndex}`,
+            name: part,
+            size: isFile ? file.size : 0,
+            selected: true,
+            priority: 'normal',
+            type: isFile ? 'file' : 'folder',
+            ...(isFile ? {} : { children: [] })
+          }
+          currentLevel.push(newNode)
+          if (!isFile) {
+            currentLevel = newNode.children!
+          }
+        }
+      })
+    })
+
+    function calcSize(node: FileTreeNode): number {
+      if (node.type === 'file') return node.size
+      if (node.children) {
+        node.size = node.children.reduce((acc, child) => acc + calcSize(child), 0)
+      }
+      return node.size
+    }
+
+    calcSize(rootNode)
+    return [rootNode]
+  }
+
   const processSourceMetadata = useCallback(async (sourcePathOrUrl: string) => {
     if (!sourcePathOrUrl || !window.api?.parseTorrentMetadata) return
     try {
       const meta = await window.api.parseTorrentMetadata(sourcePathOrUrl)
       if (meta.name) setFilename(meta.name)
       if (meta.files && meta.files.length > 0) {
+        const tree = buildFileTreeFromPaths(meta.files, meta.name)
+        setFilesTree(tree)
+      } else {
         setFilesTree([
           {
             id: 'f_root',
             name: meta.name || 'Torrent Payload',
-            size: meta.totalSize,
+            size: meta.totalSize || 0,
             selected: true,
             priority: 'normal',
             type: 'folder',
-            children: meta.files.map((f, idx) => ({
-              id: `f_${idx}`,
-              name: f.name,
-              size: f.size,
-              selected: true,
-              priority: 'normal',
-              type: 'file' as const
-            }))
+            children: []
           }
         ])
       }
