@@ -44,6 +44,20 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return false
   })
 
+  ipcMain.handle('dialog:selectDirectory', async (event, defaultPath?: string) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return null
+    const result = await dialog.showOpenDialog(win, {
+      title: 'Select Destination Folder',
+      defaultPath: defaultPath || app.getPath('downloads'),
+      properties: ['openDirectory', 'createDirectory']
+    })
+    if (!result.canceled && result.filePaths.length > 0) {
+      return result.filePaths[0]
+    }
+    return null
+  })
+
   ipcMain.handle('torrent:getStreamUrl', async (_, args: { id: string; fileIndex?: number }) => {
     return await TorrentWorker.getStreamUrl(args.id, args.fileIndex || 0)
   })

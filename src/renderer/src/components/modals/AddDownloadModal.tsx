@@ -59,7 +59,6 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 }) => {
   // Step: 1 = source picker, 2 = full options
   const [step, setStep] = useState<1 | 2>(1)
-  const [mode, setMode] = useState<'link' | 'file'>(initialMode)
   const [url, setUrl] = useState(initialUrl)
   const [localFilePath, setLocalFilePath] = useState('')
   const [filename, setFilename] = useState('')
@@ -74,7 +73,6 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     setPrevSyncKey(currentSyncKey)
     if (isOpen) {
       setStep(1)
-      setMode(initialMode)
       setLocalFilePath('')
       setUrl(initialUrl || '')
       setFilename('')
@@ -250,6 +248,16 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     }
   }
 
+  const handleBrowseSavePath = async (): Promise<void> => {
+    if (window.api?.selectDirectory) {
+      const selected = await window.api.selectDirectory(savePath)
+      if (selected) setSavePath(selected)
+    } else {
+      const path = prompt('Enter save directory path:', savePath)
+      if (path) setSavePath(path)
+    }
+  }
+
   const handleStep1Continue = (): void => {
     const source = url.trim() || localFilePath.trim()
     if (!source) return
@@ -259,7 +267,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
-    const targetUrl = mode === 'link' ? url.trim() : localFilePath.trim()
+    const targetUrl = url.trim() || localFilePath.trim()
     if (!targetUrl) return
 
     onAdd({
@@ -274,6 +282,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     setUrl('')
     setLocalFilePath('')
     setFilename('')
+    setStep(1)
     onClose()
   }
 
@@ -588,10 +597,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      const path = prompt('Enter save directory path:', savePath)
-                      if (path) setSavePath(path)
-                    }}
+                    onClick={handleBrowseSavePath}
                     className="px-2.5 py-1.5 bg-white/4 hover:bg-white/8 border border-ide-border text-slate-300 hover:text-white rounded-none cursor-pointer transition"
                     title="Browse..."
                   >

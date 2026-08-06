@@ -59,6 +59,9 @@ const api = {
   }): Promise<{ matches: boolean; actualHash: string }> =>
     ipcRenderer.invoke('download:verifyHash', args),
 
+  selectDirectory: (defaultPath?: string): Promise<string | null> =>
+    ipcRenderer.invoke('dialog:selectDirectory', defaultPath),
+
   getSettings: (): Promise<EngineSettings> => ipcRenderer.invoke('settings:get'),
   updateSettings: (settings: Partial<EngineSettings>): Promise<EngineSettings> =>
     ipcRenderer.invoke('settings:update', settings),

@@ -8,7 +8,8 @@ import {
   Zap,
   HardDrive,
   Gauge,
-  ArrowDownToLine
+  ArrowDownToLine,
+  FileText
 } from 'lucide-react'
 import { useDraggable } from '../../hooks/useDraggable'
 
@@ -93,6 +94,16 @@ export const SimpleAddDownloadModal: React.FC<SimpleAddDownloadModalProps> = ({
     onClose()
   }
 
+  const handleBrowseSavePath = async (): Promise<void> => {
+    if (window.api?.selectDirectory) {
+      const selected = await window.api.selectDirectory(savePath)
+      if (selected) setSavePath(selected)
+    } else {
+      const path = prompt('Enter save directory path:', savePath)
+      if (path) setSavePath(path)
+    }
+  }
+
   return (
     <div
       onClick={handleBackdropClick}
@@ -101,7 +112,7 @@ export const SimpleAddDownloadModal: React.FC<SimpleAddDownloadModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[92vh] ${
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
@@ -139,40 +150,44 @@ export const SimpleAddDownloadModal: React.FC<SimpleAddDownloadModalProps> = ({
             <div>
               <label className="text-[11px] font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
                 <LinkIcon className="h-3 w-3 text-theme-accent/70" />
-                Download URL <span className="text-theme-accent/80">*</span>
+                Download URL
               </label>
               <input
-                type="url"
-                required
+                type="text"
                 value={url}
                 onChange={(e) => {
-                  setUrl(e.target.value)
-                  if (!filename && e.target.value) {
-                    const parsed = e.target.value.split('/').pop()?.split('?')[0]
-                    if (parsed) {
-                      try {
-                        setFilename(decodeURIComponent(parsed))
-                      } catch {
-                        setFilename(parsed)
+                  const val = e.target.value
+                  setUrl(val)
+                  if (!filename && val) {
+                    try {
+                      const u = new URL(val)
+                      const pathSegments = u.pathname.split('/')
+                      const lastSegment = pathSegments[pathSegments.length - 1]
+                      if (lastSegment && lastSegment.includes('.')) {
+                        setFilename(decodeURIComponent(lastSegment))
                       }
+                    } catch {
+                      // ignore
                     }
                   }
                 }}
                 placeholder="https://example.com/file.zip"
-                className="w-full bg-ide-surface text-slate-100 placeholder-slate-600 text-xs px-3 py-2 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent/60 focus:shadow-[0_0_0_1px_rgba(180,151,255,0.15)] font-mono transition"
+                className="w-full bg-ide-surface text-slate-100 text-xs px-2.5 py-1.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent/60 font-mono transition"
+                autoFocus
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-semibold text-slate-400 mb-1 block">
-                Rename (optional)
+              <label className="text-[11px] font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <FileText className="h-3 w-3 text-emerald-400/70" />
+                Filename (Optional)
               </label>
               <input
                 type="text"
                 value={filename}
                 onChange={(e) => setFilename(e.target.value)}
-                placeholder="Auto-detected from URL"
-                className="w-full bg-ide-surface text-slate-100 placeholder-slate-600 text-xs px-3 py-1.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent/60 font-mono transition"
+                placeholder="Custom filename"
+                className="w-full bg-ide-surface text-slate-100 text-xs px-2.5 py-1.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent/60 font-mono transition"
               />
             </div>
           </div>
@@ -193,10 +208,7 @@ export const SimpleAddDownloadModal: React.FC<SimpleAddDownloadModalProps> = ({
               />
               <button
                 type="button"
-                onClick={() => {
-                  const path = prompt('Enter save directory path:', savePath)
-                  if (path) setSavePath(path)
-                }}
+                onClick={handleBrowseSavePath}
                 className="px-2.5 py-1.5 bg-white/4 hover:bg-white/8 border border-ide-border text-slate-300 hover:text-white rounded-none cursor-pointer transition"
                 title="Browse..."
               >

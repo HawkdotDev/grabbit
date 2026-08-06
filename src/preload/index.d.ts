@@ -61,6 +61,7 @@ export interface GrabbitAPI {
     expectedHash: string
     algo?: 'md5' | 'sha256' | 'sha512'
   }) => Promise<{ matches: boolean; actualHash: string }>
+  selectDirectory: (defaultPath?: string) => Promise<string | null>
   openFileLocation: (path: string) => Promise<boolean>
   openFile: (path: string) => Promise<boolean>
   copyToClipboard: (text: string) => Promise<boolean>
