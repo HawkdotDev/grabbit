@@ -44,6 +44,8 @@ interface MenuBarProps {
   onClearCompleted?: () => void
   activeView?: 'home' | 'analytics' | 'network'
   setActiveView?: (view: 'home' | 'analytics' | 'network') => void
+  currentTheme?: string
+  onThemeChange?: (theme: string) => void
 }
 
 export const MenuBar: React.FC<MenuBarProps> = ({
@@ -60,15 +62,14 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   onPauseAll,
   onClearCompleted,
   activeView = 'home',
-  setActiveView
+  setActiveView,
+  currentTheme = 'dark',
+  onThemeChange
 }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
 
-  // Local view preferences state
-  const [theme, setTheme] = useState<
-    'dark' | 'light' | 'contrast' | 'carrot' | 'custom' | 'system'
-  >('dark')
+  // Local view preferences state (theme is now managed by App via props)
   const [density, setDensity] = useState<'compact' | 'default' | 'comfortable'>('default')
   const [alwaysOnTop, setAlwaysOnTop] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(100)
@@ -359,16 +360,13 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                       key={t.id}
                       type="button"
                       onClick={() => {
-                        setTheme(t.id)
-                        if (document.documentElement) {
-                          document.documentElement.setAttribute('data-theme', t.id)
-                        }
+                        if (onThemeChange) onThemeChange(t.id)
                         setActiveMenu(null)
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
                     >
                       <span>{t.label}</span>
-                      {theme === t.id && <Check className="h-3 w-3 text-theme-accent" />}
+                      {currentTheme === t.id && <Check className="h-3 w-3 text-theme-accent" />}
                     </button>
                   ))}
                   <div className="border-t border-ide-border my-1" />

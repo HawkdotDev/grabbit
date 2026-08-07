@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { EngineSettings, DownloadItem, CustomThemeColors } from '../../engine/types'
 import { useDownloads } from './hooks/useDownloads'
 import { useFilteredDownloads } from './hooks/useFilteredDownloads'
@@ -27,7 +27,6 @@ import {
   ClipboardBanner
 } from './components'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
-import { PRESET_THEMES } from './components/modals/ThemeCustomizerModal'
 
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook
@@ -83,9 +82,15 @@ export function App(): React.JSX.Element {
   const [isAutomationsOpen, setIsAutomationsOpen] = useState(false)
   const [isScriptConsoleOpen, setIsScriptConsoleOpen] = useState(false)
   const [isThemeCustomizerOpen, setIsThemeCustomizerOpen] = useState(false)
-  const [customColors, setCustomColors] = useState<CustomThemeColors>(
-    PRESET_THEMES['carrot']!.colors
-  )
+  const [customColors, setCustomColors] = useState<CustomThemeColors>({
+    bg: '#0d0e12',
+    surface: '#14151c',
+    card: '#1b1c26',
+    border: '#272938',
+    accent: '#b497ff',
+    bright: '#c4b5fd',
+    tint: '#2c2244'
+  })
 
   const handleOpenAddModal = (mode: 'link' | 'file' = 'link', initialUrl = ''): void => {
     setAddModalMode(mode)
@@ -143,28 +148,60 @@ export function App(): React.JSX.Element {
     }
   }, [])
 
+  // ─── Single source of truth: clear inline CSS vars for built-in themes ───
+  const CUSTOM_CSS_VARS = [
+    '--color-ide-bg',
+    '--color-ide-surface',
+    '--color-ide-card',
+    '--color-ide-border',
+    '--color-theme-accent',
+    '--color-theme-bright',
+    '--color-theme-tint'
+  ] as const
+
+  const clearInlineThemeVars = useCallback((): void => {
+    const root = document.documentElement
+    for (const v of CUSTOM_CSS_VARS) {
+      root.style.removeProperty(v)
+    }
+  }, [])
+
+  const applyInlineThemeVars = useCallback((colors: CustomThemeColors): void => {
+    const root = document.documentElement
+    root.style.setProperty('--color-ide-bg', colors.bg)
+    root.style.setProperty('--color-ide-surface', colors.surface)
+    root.style.setProperty('--color-ide-card', colors.card)
+    root.style.setProperty('--color-ide-border', colors.border)
+    root.style.setProperty('--color-theme-accent', colors.accent)
+    root.style.setProperty('--color-theme-bright', colors.bright)
+    root.style.setProperty('--color-theme-tint', colors.tint)
+  }, [])
+
   useEffect(() => {
     const currentTheme = settings.theme || 'dark'
-    document.documentElement.setAttribute('data-theme', currentTheme)
 
-    if (currentTheme === 'custom' && customColors) {
-      document.documentElement.style.setProperty('--color-ide-bg', customColors.bg)
-      document.documentElement.style.setProperty('--color-ide-surface', customColors.surface)
-      document.documentElement.style.setProperty('--color-ide-card', customColors.card)
-      document.documentElement.style.setProperty('--color-ide-border', customColors.border)
-      document.documentElement.style.setProperty('--color-theme-accent', customColors.accent)
-      document.documentElement.style.setProperty('--color-theme-bright', customColors.bright)
-      document.documentElement.style.setProperty('--color-theme-tint', customColors.tint)
+    // Always clear inline vars first to ensure a clean slate
+    clearInlineThemeVars()
+
+    if (currentTheme === 'custom') {
+      // For custom theme, set data-theme to 'dark' as the base, then overlay inline vars
+      document.documentElement.setAttribute('data-theme', 'dark')
+      applyInlineThemeVars(customColors)
     } else {
-      document.documentElement.style.removeProperty('--color-ide-bg')
-      document.documentElement.style.removeProperty('--color-ide-surface')
-      document.documentElement.style.removeProperty('--color-ide-card')
-      document.documentElement.style.removeProperty('--color-ide-border')
-      document.documentElement.style.removeProperty('--color-theme-accent')
-      document.documentElement.style.removeProperty('--color-theme-bright')
-      document.documentElement.style.removeProperty('--color-theme-tint')
+      // For built-in themes, just set the data-theme attribute — CSS handles the rest
+      document.documentElement.setAttribute('data-theme', currentTheme)
     }
-  }, [settings.theme, customColors])
+  }, [settings.theme, customColors, clearInlineThemeVars, applyInlineThemeVars])
+
+  // ─── Unified theme change handler (used by MenuBar, Settings, and Customizer) ───
+  const handleThemeChange = useCallback((newTheme: string): void => {
+    const typedTheme = newTheme as EngineSettings['theme']
+    setSettings((prev) => ({ ...prev, theme: typedTheme }))
+    // Persist to backend if available
+    if (window.api && window.api.updateSettings) {
+      window.api.updateSettings({ theme: typedTheme })
+    }
+  }, [])
 
   const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
     if (window.api && window.api.updateSettings) {
@@ -197,6 +234,8 @@ export function App(): React.JSX.Element {
         onResumeAll={handleResumeAll}
         onPauseAll={handlePauseAll}
         onClearCompleted={handleClearCompleted}
+        currentTheme={settings.theme || 'dark'}
+        onThemeChange={handleThemeChange}
       />
 
       {/* Clipboard Link Auto-Detector Banner */}
@@ -343,7 +382,7 @@ export function App(): React.JSX.Element {
         currentColors={customColors}
         onSave={(newColors) => {
           setCustomColors(newColors)
-          handleSaveSettings({ theme: 'custom' })
+          handleThemeChange('custom')
         }}
       />
     </div>

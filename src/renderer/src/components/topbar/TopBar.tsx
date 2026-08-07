@@ -21,6 +21,8 @@ interface TopBarProps {
   activeView: 'home' | 'analytics' | 'network'
   setActiveView: (view: 'home' | 'analytics' | 'network') => void
   globalSpeed?: number
+  currentTheme?: string
+  onThemeChange?: (theme: string) => void
 }
 
 export const TopBar: React.FC<TopBarProps> = React.memo(
@@ -38,7 +40,9 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
     onOpenScriptConsole,
     onOpenThemeCustomizer,
     activeView,
-    setActiveView
+    setActiveView,
+    currentTheme,
+    onThemeChange
   }) => {
     return (
       <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none font-sans rounded-none">
@@ -63,6 +67,8 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
               onClearCompleted={onClearCompleted}
               activeView={activeView}
               setActiveView={setActiveView}
+              currentTheme={currentTheme}
+              onThemeChange={onThemeChange}
             />
           </div>
 
