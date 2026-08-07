@@ -14,15 +14,15 @@ export interface CustomThemeColors {
 
 export const PRESET_THEMES: Record<string, { label: string; colors: CustomThemeColors }> = {
   carrot: {
-    label: 'Carrot 🥕 (Pastel Orange & Green on Pitch Black)',
+    label: 'Carrot 🥕 (Pastel Orange & Mint Green on Pitch Black)',
     colors: {
       bg: '#000000',
-      surface: '#0e110d',
-      card: '#151a13',
-      border: '#263321',
+      surface: '#0a120b',
+      card: '#111d13',
+      border: '#1f3822',
       accent: '#ff9e43',
-      bright: '#ffb86c',
-      tint: '#342010'
+      bright: '#ffc085',
+      tint: '#341d0b'
     }
   },
   dark: {
