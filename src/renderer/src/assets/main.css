@@ -55,26 +55,41 @@ html[data-theme='contrast'] {
   color: #ffffff;
 }
 
-/* Carrot Theme Overrides (#101010 Background, Multi-Shade Pastel Orange & Green Accents) */
+/* Carrot Theme Overrides (#101010 Background, 50% Pastel Orange & 50% Pastel Green Dual Balance) */
 html[data-theme='carrot'] {
   --color-ide-bg: #101010;
-  --color-ide-surface: #161716;
-  --color-ide-card: #1c1e1b;
-  --color-ide-border: #283025;
-  --color-theme-accent: #ff9e43;
-  --color-theme-bright: #4ade80;
-  --color-theme-tint: #132a18;
+  --color-ide-surface: #171816;
+  --color-ide-card: #1d1f1c;
+  --color-ide-border: #2c3429;
+  --color-theme-accent: #ff9e43; /* 50% Pastel Carrot Orange */
+  --color-theme-bright: #4ade80; /* 50% Pastel Mint Green */
+  --color-theme-tint: #1c281a; /* Balanced 50/50 Green & Amber Tint */
 
-  /* Carrot Theme Specific Multi-Shade Palettes */
+  /* 50/50 Dual Accents & Gradient Tokens */
+  --color-theme-orange: #ff9e43;
+  --color-theme-green: #4ade80;
+  --color-theme-dual-gradient: linear-gradient(
+    135deg,
+    #ff9e43 0%,
+    #ffb86c 50%,
+    #4ade80 50%,
+    #86efac 100%
+  );
+  --color-theme-dual-soft: linear-gradient(
+    to right,
+    #ff9e43 0%,
+    #ffb86c 48%,
+    #4ade80 52%,
+    #86efac 100%
+  );
+
   --color-carrot-orange-deep: #f97316;
   --color-carrot-orange-main: #ff9e43;
   --color-carrot-orange-light: #ffc085;
-  --color-carrot-orange-peach: #ffedd5;
 
   --color-carrot-green-mint: #4ade80;
   --color-carrot-green-emerald: #6ee7b7;
   --color-carrot-green-lime: #a3e635;
-  --color-carrot-green-border: #1f3822;
 
   --color-pastel-mint: #4ade80;
   --color-pastel-peach: #ffc085;
