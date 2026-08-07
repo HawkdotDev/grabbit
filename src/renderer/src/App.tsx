@@ -21,11 +21,13 @@ import {
   PluginsModal,
   AutomationsModal,
   ScriptConsoleModal,
+  ThemeCustomizerModal,
   AnalyticsView,
   NetworkView,
   ClipboardBanner
 } from './components'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { CustomThemeColors, PRESET_THEMES } from './components/modals/ThemeCustomizerModal'
 
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook
@@ -80,6 +82,10 @@ export function App(): React.JSX.Element {
   const [isPluginsOpen, setIsPluginsOpen] = useState(false)
   const [isAutomationsOpen, setIsAutomationsOpen] = useState(false)
   const [isScriptConsoleOpen, setIsScriptConsoleOpen] = useState(false)
+  const [isThemeCustomizerOpen, setIsThemeCustomizerOpen] = useState(false)
+  const [customColors, setCustomColors] = useState<CustomThemeColors>(
+    PRESET_THEMES['carrot']!.colors
+  )
 
   const handleOpenAddModal = (mode: 'link' | 'file' = 'link', initialUrl = ''): void => {
     setAddModalMode(mode)
@@ -138,8 +144,27 @@ export function App(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', settings.theme || 'dark')
-  }, [settings.theme])
+    const currentTheme = settings.theme || 'dark'
+    document.documentElement.setAttribute('data-theme', currentTheme)
+
+    if (currentTheme === 'custom' && customColors) {
+      document.documentElement.style.setProperty('--color-ide-bg', customColors.bg)
+      document.documentElement.style.setProperty('--color-ide-surface', customColors.surface)
+      document.documentElement.style.setProperty('--color-ide-card', customColors.card)
+      document.documentElement.style.setProperty('--color-ide-border', customColors.border)
+      document.documentElement.style.setProperty('--color-theme-accent', customColors.accent)
+      document.documentElement.style.setProperty('--color-theme-bright', customColors.bright)
+      document.documentElement.style.setProperty('--color-theme-tint', customColors.tint)
+    } else {
+      document.documentElement.style.removeProperty('--color-ide-bg')
+      document.documentElement.style.removeProperty('--color-ide-surface')
+      document.documentElement.style.removeProperty('--color-ide-card')
+      document.documentElement.style.removeProperty('--color-ide-border')
+      document.documentElement.style.removeProperty('--color-theme-accent')
+      document.documentElement.style.removeProperty('--color-theme-bright')
+      document.documentElement.style.removeProperty('--color-theme-tint')
+    }
+  }, [settings.theme, customColors])
 
   const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
     if (window.api && window.api.updateSettings) {
@@ -168,6 +193,7 @@ export function App(): React.JSX.Element {
         onOpenPlugins={() => setIsPluginsOpen(true)}
         onOpenAutomations={() => setIsAutomationsOpen(true)}
         onOpenScriptConsole={() => setIsScriptConsoleOpen(true)}
+        onOpenThemeCustomizer={() => setIsThemeCustomizerOpen(true)}
         onResumeAll={handleResumeAll}
         onPauseAll={handlePauseAll}
         onClearCompleted={handleClearCompleted}
@@ -309,6 +335,16 @@ export function App(): React.JSX.Element {
       <ScriptConsoleModal
         isOpen={isScriptConsoleOpen}
         onClose={() => setIsScriptConsoleOpen(false)}
+      />
+
+      <ThemeCustomizerModal
+        isOpen={isThemeCustomizerOpen}
+        onClose={() => setIsThemeCustomizerOpen(false)}
+        currentColors={customColors}
+        onSave={(newColors) => {
+          setCustomColors(newColors)
+          handleSaveSettings({ theme: 'custom' })
+        }}
       />
     </div>
   )

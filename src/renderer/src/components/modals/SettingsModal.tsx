@@ -1,6 +1,16 @@
 import React, { useState } from 'react'
 import { EngineSettings } from '../../../../engine/types'
-import { X, Sliders, Folder, Network, Cpu, Bell, Laptop, GripHorizontal } from 'lucide-react'
+import {
+  X,
+  Sliders,
+  Folder,
+  Network,
+  Cpu,
+  Bell,
+  Laptop,
+  GripHorizontal,
+  Palette
+} from 'lucide-react'
 import { useDraggable } from '../../hooks/useDraggable'
 
 interface SettingsModalProps {
@@ -22,6 +32,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [defaultThreads, setDefaultThreads] = useState(settings.defaultThreadCount)
   const [maxGlobalSpeed, setMaxGlobalSpeed] = useState(settings.maxGlobalSpeedLimitKbps)
   const [savePath, setSavePath] = useState(settings.defaultSavePath)
+  const [theme, setTheme] = useState(settings.theme || 'dark')
   const [autoCategorize, setAutoCategorize] = useState(settings.autoCategorize)
   const [enableNotifications, setEnableNotifications] = useState(settings.enableNotifications)
   const [startOnBoot, setStartOnBoot] = useState(settings.startOnBoot)
@@ -38,6 +49,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       defaultThreadCount: defaultThreads,
       maxGlobalSpeedLimitKbps: maxGlobalSpeed,
       defaultSavePath: savePath,
+      theme,
       autoCategorize,
       enableNotifications,
       startOnBoot
@@ -176,6 +188,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) => setSavePath(e.target.value)}
                   className="w-full bg-ide-bg text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
+                  <Palette className="h-3.5 w-3.5 text-amber-400" />
+                  Appearance Theme
+                </label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={theme}
+                    onChange={(e) => setTheme(e.target.value as any)}
+                    className="flex-1 bg-ide-bg text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono cursor-pointer"
+                  >
+                    <option value="dark">Dark Mode (IDE Default)</option>
+                    <option value="carrot">
+                      Carrot Theme 🥕 (Pastel Orange/Green on Pitch Black)
+                    </option>
+                    <option value="light">Light Mode</option>
+                    <option value="contrast">High Contrast</option>
+                    <option value="custom">Custom Theme 🎨</option>
+                  </select>
+                </div>
               </div>
 
               <div className="space-y-3 pt-2">

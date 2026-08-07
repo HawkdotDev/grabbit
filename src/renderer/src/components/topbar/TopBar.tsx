@@ -17,6 +17,7 @@ interface TopBarProps {
   onOpenPlugins?: () => void
   onOpenAutomations?: () => void
   onOpenScriptConsole?: () => void
+  onOpenThemeCustomizer?: () => void
   activeView: 'home' | 'analytics' | 'network'
   setActiveView: (view: 'home' | 'analytics' | 'network') => void
   globalSpeed?: number
@@ -35,6 +36,7 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
     onOpenPlugins,
     onOpenAutomations,
     onOpenScriptConsole,
+    onOpenThemeCustomizer,
     activeView,
     setActiveView
   }) => {
@@ -55,6 +57,7 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
               onOpenPlugins={onOpenPlugins}
               onOpenAutomations={onOpenAutomations}
               onOpenScriptConsole={onOpenScriptConsole}
+              onOpenThemeCustomizer={onOpenThemeCustomizer}
               onResumeAll={onResumeAll}
               onPauseAll={onPauseAll}
               onClearCompleted={onClearCompleted}

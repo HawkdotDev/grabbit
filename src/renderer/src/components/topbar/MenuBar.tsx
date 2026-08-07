@@ -38,6 +38,7 @@ interface MenuBarProps {
   onOpenPlugins?: () => void
   onOpenAutomations?: () => void
   onOpenScriptConsole?: () => void
+  onOpenThemeCustomizer?: () => void
   onResumeAll?: () => void
   onPauseAll?: () => void
   onClearCompleted?: () => void
@@ -54,6 +55,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   onOpenPlugins,
   onOpenAutomations,
   onOpenScriptConsole,
+  onOpenThemeCustomizer,
   onResumeAll,
   onPauseAll,
   onClearCompleted,
@@ -341,10 +343,11 @@ export const MenuBar: React.FC<MenuBarProps> = ({
               </button>
 
               {activeSubmenu === 'theme' && (
-                <div className="absolute left-full top-0 ml-1 w-44 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
+                <div className="absolute left-full top-0 ml-1 w-52 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
                   {(
                     [
                       { id: 'dark', label: 'Dark Mode (IDE Default)' },
+                      { id: 'carrot', label: 'Carrot Theme 🥕' },
                       { id: 'light', label: 'Light Mode' },
                       { id: 'contrast', label: 'High Contrast' },
                       { id: 'system', label: 'System Sync' }
@@ -354,7 +357,10 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                       key={t.id}
                       type="button"
                       onClick={() => {
-                        setTheme(t.id)
+                        setTheme(t.id as any)
+                        if (document.documentElement) {
+                          document.documentElement.setAttribute('data-theme', t.id)
+                        }
                         setActiveMenu(null)
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
@@ -363,6 +369,18 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                       {theme === t.id && <Check className="h-3 w-3 text-theme-accent" />}
                     </button>
                   ))}
+                  <div className="border-t border-ide-border my-1" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenThemeCustomizer) onOpenThemeCustomizer()
+                      setActiveMenu(null)
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium text-amber-300"
+                  >
+                    <Palette className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Advanced Customizer...</span>
+                  </button>
                 </div>
               )}
             </div>

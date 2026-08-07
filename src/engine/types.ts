@@ -87,7 +87,7 @@ export interface EngineSettings {
   autoCategorize: boolean
   enableNotifications: boolean
   startOnBoot: boolean
-  theme: 'dark' | 'light' | 'system'
+  theme: 'dark' | 'light' | 'contrast' | 'carrot' | 'custom' | 'system'
 }
 
 export interface SpeedSample {

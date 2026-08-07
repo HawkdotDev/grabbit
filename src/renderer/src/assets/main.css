@@ -55,6 +55,20 @@ html[data-theme='contrast'] {
   color: #ffffff;
 }
 
+/* Carrot Theme Overrides (Pitch Black Background, Pastel Orange & Green Accents) */
+html[data-theme='carrot'] {
+  --color-ide-bg: #000000;
+  --color-ide-surface: #0e110d;
+  --color-ide-card: #151a13;
+  --color-ide-border: #263321;
+  --color-theme-accent: #ff9e43;
+  --color-theme-bright: #ffb86c;
+  --color-theme-tint: #342010;
+  --color-pastel-mint: #86efac;
+  --color-pastel-peach: #ffedd5;
+  color: #f3f4f6;
+}
+
 *,
 *::before,
 *::after {
