@@ -71,9 +71,9 @@ export const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = React.memo(({ sta
     >
       <span className="relative flex h-2 w-2">
         {(status === 'downloading' || status === 'checking') && (
-          <span className={`absolute inline-flex h-full w-full rounded-full ${getDotStyle()}`} />
+          <span className={`absolute inline-flex h-full w-full rounded-none ${getDotStyle()}`} />
         )}
-        <span className={`relative inline-flex rounded-full h-2 w-2 ${getDotSolidStyle()}`} />
+        <span className={`relative inline-flex rounded-none h-2 w-2 ${getDotSolidStyle()}`} />
       </span>
       <span>{statusText}</span>
     </span>

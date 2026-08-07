@@ -150,6 +150,7 @@ html[data-theme='carrot'] ::selection {
     'Segoe UI',
     Roboto,
     sans-serif;
+  border-radius: 0 !important;
 }
 
 /* GPU Hardware Acceleration & Smooth Transitions */
@@ -171,7 +172,7 @@ html[data-theme='carrot'] ::selection {
   -webkit-app-region: no-drag;
 }
 
-/* Slim Sleek Scrollbars */
+/* Slim Sleek Scrollbars with sharp square styling */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -183,7 +184,7 @@ html[data-theme='carrot'] ::selection {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
+  border-radius: 0 !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {

@@ -303,7 +303,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
         e.stopPropagation()
         onChange()
       }}
-      className={`h-4 w-4 rounded-xs border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
+      className={`h-4 w-4 rounded-none border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
         checked
           ? 'bg-theme-accent border-theme-accent text-slate-950 shadow-sm font-bold'
           : 'bg-ide-bg border-ide-border hover:border-slate-400'
@@ -699,7 +699,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                 {filesTree.map((rootNode) => (
                   <div key={rootNode.id} className="space-y-1">
                     {/* Row 1: Root Folder (House.of.the.Dragon.S03E07.1080p.x265-ELiTE) */}
-                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs">
+                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none">
                       <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                         <button
                           type="button"
@@ -732,7 +732,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                         <React.Fragment key={child.id}>
                           {child.type === 'folder' ? (
                             // Row 2: Subfolder (Screens)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-6">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-6">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 <button
                                   type="button"
@@ -760,7 +760,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             </div>
                           ) : child.name.endsWith('.mkv') ? (
                             // Row 3: Video File (.mkv with VLC Cone Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-10">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-10">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <VlcConeIcon />
@@ -796,7 +796,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             </div>
                           ) : (
                             // Row 4: Document File (.nfo with Blue Doc Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-10">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-10">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <NfoDocIcon />
@@ -819,7 +819,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             child.children?.map((nested) => (
                               <div
                                 key={nested.id}
-                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-14"
+                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-14"
                               >
                                 <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                   {renderCheckbox(nested.selected, () =>

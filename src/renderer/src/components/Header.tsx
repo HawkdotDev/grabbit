@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search downloads by name or URL..."
-          className="w-full bg-slate-950 text-slate-200 placeholder-slate-500 text-xs pl-9 pr-3 py-2 rounded-xl border border-slate-800 focus:outline-none focus:border-cyan-500 transition duration-150"
+          className="w-full bg-slate-950 text-slate-200 placeholder-slate-500 text-xs pl-9 pr-3 py-2 rounded-none border border-slate-800 focus:outline-none focus:border-cyan-500 transition duration-150"
         />
       </div>
 
@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onResumeAll}
           title="Resume All Paused"
-          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-emerald-400 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700/60 transition cursor-pointer"
+          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-emerald-400 rounded-none text-xs font-semibold flex items-center gap-1.5 border border-slate-700/60 transition cursor-pointer"
         >
           <Play className="h-4 w-4 fill-emerald-400/20" />
           <span>Resume All</span>
@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onPauseAll}
           title="Pause All Active"
-          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-amber-400 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700/60 transition cursor-pointer"
+          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-amber-400 rounded-none text-xs font-semibold flex items-center gap-1.5 border border-slate-700/60 transition cursor-pointer"
         >
           <Pause className="h-4 w-4 fill-amber-400/20" />
           <span>Pause All</span>
@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onClearCompleted}
           title="Clear Completed Downloads"
-          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700/60 transition cursor-pointer"
+          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-none text-xs font-semibold flex items-center gap-1.5 border border-slate-700/60 transition cursor-pointer"
         >
           <Trash2 className="h-4 w-4" />
           <span>Clear Finished</span>
@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={() => setShowSpeedChart(!showSpeedChart)}
-          className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition cursor-pointer ${
+          className={`p-2 rounded-none text-xs font-semibold flex items-center gap-1.5 border transition cursor-pointer ${
             showSpeedChart
               ? 'bg-cyan-950 text-cyan-400 border-cyan-800'
               : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:bg-slate-700'

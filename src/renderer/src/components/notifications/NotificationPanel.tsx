@@ -205,7 +205,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                       <div className="flex items-center gap-2">
                         <h4 className="text-xs font-bold text-slate-100">{n.title}</h4>
                         {!n.read && (
-                          <span className="h-1.5 w-1.5 bg-theme-accent rounded-full shrink-0" />
+                          <span className="h-1.5 w-1.5 bg-theme-accent rounded-none shrink-0" />
                         )}
                       </div>
                       <p className="text-xs text-slate-300 font-sans leading-relaxed">

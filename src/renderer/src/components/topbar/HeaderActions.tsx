@@ -161,7 +161,7 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
         >
           <Bell className="h-4 w-4" />
           {notifications.some((n) => !n.read) && (
-            <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-theme-accent rounded-full animate-pulse" />
+            <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-theme-accent rounded-none animate-pulse" />
           )}
         </button>
 
