@@ -18,7 +18,7 @@ export const ProgressBarCell: React.FC<ProgressBarCellProps> = React.memo(({ pct
                 ? 'bg-linear-to-r from-rose-600 to-rose-400'
                 : status === 'paused'
                   ? 'bg-linear-to-r from-amber-600 to-amber-400'
-                  : 'bg-linear-to-r from-violet-600 via-purple-500 to-cyan-400 progress-active'
+                  : 'bg-linear-to-r from-amber-500 via-emerald-500 to-teal-400 progress-active'
           }`}
           style={{ width: `${pct}%` }}
         >

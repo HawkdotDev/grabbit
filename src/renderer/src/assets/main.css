@@ -62,8 +62,8 @@ html[data-theme='carrot'] {
   --color-ide-card: #1c1e1b;
   --color-ide-border: #283025;
   --color-theme-accent: #ff9e43;
-  --color-theme-bright: #ffc085;
-  --color-theme-tint: #322012;
+  --color-theme-bright: #4ade80;
+  --color-theme-tint: #132a18;
 
   /* Carrot Theme Specific Multi-Shade Palettes */
   --color-carrot-orange-deep: #f97316;

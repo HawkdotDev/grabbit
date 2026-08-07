@@ -12,8 +12,8 @@ export const PRESET_THEMES: Record<string, { label: string; colors: CustomThemeC
       card: '#1c1e1b',
       border: '#283025',
       accent: '#ff9e43',
-      bright: '#ffc085',
-      tint: '#322012'
+      bright: '#4ade80',
+      tint: '#132a18'
     }
   },
   dark: {
