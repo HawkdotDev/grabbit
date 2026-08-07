@@ -66,7 +66,9 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
 
   // Local view preferences state
-  const [theme, setTheme] = useState<'dark' | 'light' | 'contrast' | 'system'>('dark')
+  const [theme, setTheme] = useState<
+    'dark' | 'light' | 'contrast' | 'carrot' | 'custom' | 'system'
+  >('dark')
   const [density, setDensity] = useState<'compact' | 'default' | 'comfortable'>('default')
   const [alwaysOnTop, setAlwaysOnTop] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(100)
@@ -357,7 +359,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                       key={t.id}
                       type="button"
                       onClick={() => {
-                        setTheme(t.id as any)
+                        setTheme(t.id)
                         if (document.documentElement) {
                           document.documentElement.setAttribute('data-theme', t.id)
                         }
