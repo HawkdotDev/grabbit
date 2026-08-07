@@ -1,8 +1,24 @@
-import WebTorrent from 'webtorrent'
-import parseTorrent from 'parse-torrent'
 import * as fs from 'fs'
 import * as path from 'path'
 import { ChunkInfo, DownloadFileItem } from '../types'
+
+let _WebTorrentClass: any = null
+async function getWebTorrentClass(): Promise<any> {
+  if (!_WebTorrentClass) {
+    const mod = await (new Function('m', 'return import(m)')('webtorrent') as Promise<any>)
+    _WebTorrentClass = mod.default || mod
+  }
+  return _WebTorrentClass
+}
+
+let _parseTorrentFn: any = null
+async function getParseTorrentFn(): Promise<any> {
+  if (!_parseTorrentFn) {
+    const mod = await (new Function('m', 'return import(m)')('parse-torrent') as Promise<any>)
+    _parseTorrentFn = mod.default || mod
+  }
+  return _parseTorrentFn
+}
 
 export interface MagnetInfo {
   infoHash: string
@@ -61,8 +77,8 @@ export interface TorrentProgressEvent {
 }
 
 export class TorrentWorker {
-  private static client: InstanceType<typeof WebTorrent> | null = null
-  private static torrentsMap: Map<string, WebTorrent.Torrent> = new Map()
+  private static client: any = null
+  private static torrentsMap: Map<string, any> = new Map()
 
   public static generatePeerId(): string {
     const prefix = '-GR0110-' // GR = Grabbit, 0110 = v0.1.1
@@ -71,10 +87,11 @@ export class TorrentWorker {
   }
 
   /**
-   * Initializes or returns the shared WebTorrent client singleton instance
+   * Initializes or returns the shared WebTorrent client singleton instance asynchronously
    */
-  public static getClient(): InstanceType<typeof WebTorrent> {
+  public static async getClient(): Promise<any> {
     if (!this.client) {
+      const WebTorrent = await getWebTorrentClass()
       const customPeerId = this.generatePeerId()
 
       this.client = new WebTorrent({
@@ -144,6 +161,8 @@ export class TorrentWorker {
    * Parses local .torrent file or magnet URI metadata
    */
   public static async parseTorrentMetadata(sourcePathOrMagnet: string): Promise<ParsedTorrentMeta> {
+    const parseTorrent = await getParseTorrentFn()
+
     if (sourcePathOrMagnet.startsWith('magnet:')) {
       try {
         const parsed = (await parseTorrent(sourcePathOrMagnet)) as InstanceTorrentData
@@ -218,16 +237,16 @@ export class TorrentWorker {
   /**
    * Adds and starts a WebTorrent task
    */
-  public static startTorrentDownload(
+  public static async startTorrentDownload(
     downloadId: string,
     torrentSource: string,
     savePath: string,
     onProgress: (event: TorrentProgressEvent) => void,
     onComplete: (event: TorrentProgressEvent) => void
-  ): Promise<WebTorrent.Torrent> {
-    return new Promise((resolve, reject) => {
-      const client = this.getClient()
+  ): Promise<any> {
+    const client = await this.getClient()
 
+    return new Promise((resolve, reject) => {
       // Check if already active
       const existing = this.torrentsMap.get(downloadId)
       if (existing) {
@@ -242,7 +261,7 @@ export class TorrentWorker {
           {
             path: savePath
           },
-          (addedTorrent: WebTorrent.Torrent) => {
+          (addedTorrent: any) => {
             this.torrentsMap.set(downloadId, addedTorrent)
 
             // Setup listeners
@@ -279,13 +298,13 @@ export class TorrentWorker {
   /**
    * Seeds a local file or folder into a WebTorrent task
    */
-  public static seedTorrent(
+  public static async seedTorrent(
     sourcePath: string,
     options?: { savePath?: string }
-  ): Promise<WebTorrent.Torrent> {
+  ): Promise<any> {
+    const client = await this.getClient()
     return new Promise((resolve) => {
-      const client = this.getClient()
-      client.seed(sourcePath, { path: options?.savePath }, (torrent: WebTorrent.Torrent) => {
+      client.seed(sourcePath, { path: options?.savePath }, (torrent: any) => {
         resolve(torrent)
       })
     })
@@ -297,12 +316,9 @@ export class TorrentWorker {
   public static addTracker(downloadId: string, trackerUrl: string): boolean {
     const torrent = this.torrentsMap.get(downloadId)
     if (torrent) {
-      if (
-        typeof (torrent as unknown as { addTracker?: (url: string) => void }).addTracker ===
-        'function'
-      ) {
-        ;(torrent as unknown as { addTracker: (url: string) => void }).addTracker(trackerUrl)
-      } else if (!torrent.announce.includes(trackerUrl)) {
+      if (typeof torrent.addTracker === 'function') {
+        torrent.addTracker(trackerUrl)
+      } else if (Array.isArray(torrent.announce) && !torrent.announce.includes(trackerUrl)) {
         torrent.announce.push(trackerUrl)
       }
       return true
@@ -316,12 +332,9 @@ export class TorrentWorker {
   public static removeTracker(downloadId: string, trackerUrl: string): boolean {
     const torrent = this.torrentsMap.get(downloadId)
     if (torrent) {
-      if (
-        typeof (torrent as unknown as { removeTracker?: (url: string) => void }).removeTracker ===
-        'function'
-      ) {
-        ;(torrent as unknown as { removeTracker: (url: string) => void }).removeTracker(trackerUrl)
-      } else {
+      if (typeof torrent.removeTracker === 'function') {
+        torrent.removeTracker(trackerUrl)
+      } else if (Array.isArray(torrent.announce)) {
         const idx = torrent.announce.indexOf(trackerUrl)
         if (idx !== -1) torrent.announce.splice(idx, 1)
       }
@@ -335,7 +348,7 @@ export class TorrentWorker {
    */
   public static addPeer(downloadId: string, peerAddress: string): boolean {
     const torrent = this.torrentsMap.get(downloadId)
-    if (torrent) {
+    if (torrent && typeof torrent.addPeer === 'function') {
       torrent.addPeer(peerAddress)
       return true
     }
@@ -351,16 +364,14 @@ export class TorrentWorker {
     priority: 'high' | 'normal' | 'low' | 'ignore'
   ): boolean {
     const torrent = this.torrentsMap.get(downloadId)
-    if (!torrent) return false
+    if (!torrent || !Array.isArray(torrent.files)) return false
 
-    const targetFile = torrent.files.find((f) => f.path === filePath || f.name === filePath)
+    const targetFile = torrent.files.find((f: any) => f.path === filePath || f.name === filePath)
     if (targetFile) {
       if (priority === 'ignore') {
-        targetFile.deselect()
+        if (typeof targetFile.deselect === 'function') targetFile.deselect()
       } else {
-        targetFile.select()
-        if (priority === 'high') {
-          // Prioritize pieces for this file
+        if (typeof targetFile.select === 'function') {
           targetFile.select()
         }
       }
@@ -386,20 +397,24 @@ export class TorrentWorker {
   public static getStreamUrl(downloadId: string, fileIndex = 0): Promise<string | null> {
     return new Promise((resolve) => {
       const torrent = this.torrentsMap.get(downloadId)
-      if (!torrent || !torrent.files[fileIndex]) {
+      if (!torrent || !torrent.files || !torrent.files[fileIndex]) {
         resolve(null)
         return
       }
 
-      const server = torrent.createServer()
-      server.listen(0, () => {
-        const addr = server.address()
-        if (typeof addr === 'object' && addr !== null) {
-          resolve(`http://localhost:${addr.port}/${fileIndex}`)
-        } else {
-          resolve(null)
-        }
-      })
+      if (typeof torrent.createServer === 'function') {
+        const server = torrent.createServer()
+        server.listen(0, () => {
+          const addr = server.address()
+          if (typeof addr === 'object' && addr !== null) {
+            resolve(`http://localhost:${addr.port}/${fileIndex}`)
+          } else {
+            resolve(null)
+          }
+        })
+      } else {
+        resolve(null)
+      }
     })
   }
 
@@ -408,7 +423,7 @@ export class TorrentWorker {
    */
   public static pauseTorrent(downloadId: string): void {
     const torrent = this.torrentsMap.get(downloadId)
-    if (torrent) {
+    if (torrent && typeof torrent.pause === 'function') {
       torrent.pause()
     }
   }
@@ -418,7 +433,7 @@ export class TorrentWorker {
    */
   public static resumeTorrent(downloadId: string): void {
     const torrent = this.torrentsMap.get(downloadId)
-    if (torrent) {
+    if (torrent && typeof torrent.resume === 'function') {
       torrent.resume()
     }
   }
@@ -429,7 +444,9 @@ export class TorrentWorker {
   public static removeTorrent(downloadId: string): void {
     const torrent = this.torrentsMap.get(downloadId)
     if (torrent) {
-      torrent.destroy()
+      if (typeof torrent.destroy === 'function') {
+        torrent.destroy()
+      }
       this.torrentsMap.delete(downloadId)
     }
   }
@@ -439,7 +456,7 @@ export class TorrentWorker {
    */
   private static emitProgressEvent(
     downloadId: string,
-    torrent: WebTorrent.Torrent,
+    torrent: any,
     callback: (event: TorrentProgressEvent) => void
   ): void {
     const pieceCount = torrent.pieces ? torrent.pieces.length : 32
@@ -466,18 +483,18 @@ export class TorrentWorker {
     const trackerList = (torrent.announce || []).map((trUrl: string) => ({
       url: trUrl,
       status: 'working' as const,
-      peers: torrent.numPeers
+      peers: torrent.numPeers || 0
     }))
 
-    const fileList: DownloadFileItem[] = (torrent.files || []).map((f: WebTorrent.TorrentFile) => ({
+    const fileList: DownloadFileItem[] = (torrent.files || []).map((f: any) => ({
       path: f.path || f.name,
-      size: f.length,
-      downloaded: f.downloaded,
+      size: f.length || 0,
+      downloaded: f.downloaded || 0,
       priority: 'normal' as const
     }))
 
-    const wiresList = (torrent as unknown as { wires: Array<Record<string, unknown>> }).wires || []
-    const peersInfo: TorrentPeerInfo[] = wiresList.map((wire: Record<string, unknown>) => ({
+    const wiresList = torrent.wires || []
+    const peersInfo: TorrentPeerInfo[] = wiresList.map((wire: any) => ({
       ip: (wire.remoteAddress as string) || '127.0.0.1',
       port: (wire.remotePort as number) || 6881,
       clientName:
@@ -489,16 +506,16 @@ export class TorrentWorker {
 
     const event: TorrentProgressEvent = {
       downloadId,
-      downloadedSize: torrent.downloaded,
-      totalSize: torrent.length,
-      downloadSpeed: torrent.downloadSpeed,
-      uploadSpeed: torrent.uploadSpeed,
-      uploadedSize: torrent.uploaded,
-      progress: torrent.progress,
-      peersCount: torrent.numPeers,
-      seedsCount: Math.floor(torrent.numPeers * 0.6),
+      downloadedSize: torrent.downloaded || 0,
+      totalSize: torrent.length || 0,
+      downloadSpeed: torrent.downloadSpeed || 0,
+      uploadSpeed: torrent.uploadSpeed || 0,
+      uploadedSize: torrent.uploaded || 0,
+      progress: torrent.progress || 0,
+      peersCount: torrent.numPeers || 0,
+      seedsCount: Math.floor((torrent.numPeers || 0) * 0.6),
       ratio: torrent.ratio || 0,
-      eta: Math.round(torrent.timeRemaining / 1000),
+      eta: Math.round((torrent.timeRemaining || 0) / 1000),
       chunks,
       trackers: trackerList,
       files: fileList,
