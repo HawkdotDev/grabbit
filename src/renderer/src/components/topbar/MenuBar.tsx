@@ -284,17 +284,19 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 
               {activeSubmenu === 'theme' && (
                 <div className="absolute left-full top-0 ml-1 w-44 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
-                  {[
-                    { id: 'dark', label: 'Dark Mode (IDE Default)' },
-                    { id: 'light', label: 'Light Mode' },
-                    { id: 'contrast', label: 'High Contrast' },
-                    { id: 'system', label: 'System Sync' }
-                  ].map((t) => (
+                  {(
+                    [
+                      { id: 'dark', label: 'Dark Mode (IDE Default)' },
+                      { id: 'light', label: 'Light Mode' },
+                      { id: 'contrast', label: 'High Contrast' },
+                      { id: 'system', label: 'System Sync' }
+                    ] as const
+                  ).map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => {
-                        setTheme(t.id as any)
+                        setTheme(t.id)
                         setActiveMenu(null)
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
@@ -326,16 +328,18 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 
               {activeSubmenu === 'workspaces' && (
                 <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
-                  {[
-                    { id: 'home', label: 'Transfers Table' },
-                    { id: 'analytics', label: 'Analytics Dashboard' },
-                    { id: 'network', label: 'Network Telemetry' }
-                  ].map((w) => (
+                  {(
+                    [
+                      { id: 'home', label: 'Transfers Table' },
+                      { id: 'analytics', label: 'Analytics Dashboard' },
+                      { id: 'network', label: 'Network Telemetry' }
+                    ] as const
+                  ).map((w) => (
                     <button
                       key={w.id}
                       type="button"
                       onClick={() => {
-                        if (setActiveView) setActiveView(w.id as any)
+                        if (setActiveView) setActiveView(w.id)
                         setActiveMenu(null)
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
@@ -367,16 +371,18 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 
               {activeSubmenu === 'density' && (
                 <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
-                  {[
-                    { id: 'compact', label: 'Compact' },
-                    { id: 'default', label: 'Default' },
-                    { id: 'comfortable', label: 'Comfortable' }
-                  ].map((d) => (
+                  {(
+                    [
+                      { id: 'compact', label: 'Compact' },
+                      { id: 'default', label: 'Default' },
+                      { id: 'comfortable', label: 'Comfortable' }
+                    ] as const
+                  ).map((d) => (
                     <button
                       key={d.id}
                       type="button"
                       onClick={() => {
-                        setDensity(d.id as any)
+                        setDensity(d.id)
                         setActiveMenu(null)
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
