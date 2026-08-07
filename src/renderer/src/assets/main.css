@@ -171,10 +171,14 @@ html[data-theme='carrot'] ::selection {
   -webkit-app-region: no-drag;
 }
 
-/* Ultra-Thin Hairline Scrollbars */
+/* Ultra-Hairline Sleek Scrollbars (1px - 1.5px) */
+* {
+  scrollbar-width: thin;
+}
+
 ::-webkit-scrollbar {
-  width: 2px !important;
-  height: 2px !important;
+  width: 1.5px !important;
+  height: 1.5px !important;
 }
 
 ::-webkit-scrollbar-track {
@@ -182,22 +186,22 @@ html[data-theme='carrot'] ::selection {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   border-radius: 9999px !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45) !important;
+  background: rgba(255, 255, 255, 0.4) !important;
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent !important;
 }
 
-/* Green Ultra-Thin Scrollbars in Carrot Theme */
+/* Green Ultra-Hairline Scrollbars in Carrot Theme */
 html[data-theme='carrot'] ::-webkit-scrollbar {
-  width: 2px !important;
-  height: 2px !important;
+  width: 1.5px !important;
+  height: 1.5px !important;
 }
 
 html[data-theme='carrot'] ::-webkit-scrollbar-track {
