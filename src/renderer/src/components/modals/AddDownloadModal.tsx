@@ -12,7 +12,7 @@ import {
   Settings2,
   Info,
   Check,
-  FileText
+  Search
 } from 'lucide-react'
 import { useDraggable } from '../../hooks/useDraggable'
 
@@ -42,7 +42,7 @@ interface AddDownloadModalProps {
   initialUrl?: string
 }
 
-// Exact yellow folder icon matching image
+// Crisp classic folder icon
 const FolderIcon: React.FC = () => (
   <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
     <path
@@ -56,7 +56,7 @@ const FolderIcon: React.FC = () => (
   </svg>
 )
 
-// Exact VLC Traffic Cone Icon matching image
+// VLC Traffic Cone Icon
 const VlcConeIcon: React.FC = () => (
   <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
     <path d="M10.8 2.8C11.3 1.8 12.7 1.8 13.2 2.8L14.7 6.2H9.3L10.8 2.8Z" fill="#f97316" />
@@ -71,7 +71,7 @@ const VlcConeIcon: React.FC = () => (
   </svg>
 )
 
-// Exact Blue Document NFO Icon matching image
+// Blue Document NFO Icon
 const NfoDocIcon: React.FC = () => (
   <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
     <rect x="4" y="3" width="16" height="18" rx="2" fill="#3b82f6" />
@@ -120,6 +120,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
   )
   const [neverShowAgain, setNeverShowAgain] = useState(false)
 
+  const [fileFilter, setFileFilter] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     f_root: true,
     f_sub: false
@@ -252,6 +253,17 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     setFilesTree((prev) => updateRecursive(prev))
   }
 
+  const toggleSelectAll = (select: boolean): void => {
+    const updateRecursive = (nodes: FileTreeNode[]): FileTreeNode[] => {
+      return nodes.map((node) => ({
+        ...node,
+        selected: select,
+        children: node.children ? updateRecursive(node.children) : undefined
+      }))
+    }
+    setFilesTree((prev) => updateRecursive(prev))
+  }
+
   const formatBytes = (bytes: number): string => {
     if (bytes <= 0) return '0 B'
     const k = 1024
@@ -280,21 +292,21 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     'bg-ide-bg text-slate-100 text-xs px-2.5 py-1.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-sans transition w-full'
   const selectCls =
     'bg-ide-bg text-slate-100 text-xs px-2 py-1 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent cursor-pointer font-sans transition'
-  const fieldsetCls = 'border border-ide-border p-3 rounded-none bg-ide-bg/30 relative space-y-2'
+  const fieldsetCls = 'border border-ide-border p-3 rounded-none bg-ide-bg/40 relative space-y-2'
   const legendCls =
-    'text-[10px] font-bold text-theme-accent uppercase tracking-wider px-1.5 select-none -ml-1'
+    'text-[10px] font-bold text-theme-accent uppercase tracking-wider px-1.5 select-none -ml-1 flex items-center gap-1'
 
-  // Custom rounded-rectangle blue checkbox matching reference image
+  // Custom rounded blue checkbox matching reference image
   const renderCheckbox = (checked: boolean, onChange: () => void): React.JSX.Element => (
     <div
       onClick={(e) => {
         e.stopPropagation()
         onChange()
       }}
-      className={`h-4 w-4 rounded-[4px] border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
+      className={`h-4 w-4 rounded-[3px] border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
         checked
-          ? 'bg-[#3b82f6] border-[#3b82f6] text-white shadow-sm'
-          : 'bg-[#262626] border-[#4a4a4a] hover:border-slate-400'
+          ? 'bg-theme-accent border-theme-accent text-slate-950 shadow-sm font-bold'
+          : 'bg-ide-bg border-ide-border hover:border-slate-400'
       }`}
     >
       {checked && <Check className="h-3 w-3 stroke-[3]" />}
@@ -309,18 +321,18 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-[720px] ${
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
-        {/* Themed Window Header with Drag Grip */}
+        {/* ─── 1. Pinned Header with Drag Grip (shrink-0) ─── */}
         <div
           onMouseDown={handleMouseDown}
-          className="px-4 py-2.5 bg-linear-to-r from-ide-surface via-ide-bg to-ide-surface border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
+          className="px-4 py-2 bg-linear-to-r from-ide-surface via-ide-bg to-ide-surface border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
         >
           <div className="flex items-center gap-3 overflow-hidden">
             <GripHorizontal className="h-4 w-4 text-slate-500 shrink-0" />
-            <div className="p-1.5 bg-theme-tint text-theme-accent rounded-none border border-theme-accent/20 flex items-center justify-center font-bold text-[10px] shrink-0">
+            <div className="p-1 bg-theme-tint text-theme-accent rounded-none border border-theme-accent/20 flex items-center justify-center font-bold text-[10px] shrink-0">
               qb
             </div>
             <div className="min-w-0">
@@ -354,16 +366,17 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Form: 2-Column Split matching the reference layout */}
+        {/* ─── 2. Scrollable Body: 2-Column Split (flex-1 min-h-0 overflow-y-auto) ─── */}
         <form
+          id="torrent-download-form"
           onSubmit={handleSubmit}
-          className="p-4 flex flex-col gap-3.5 overflow-y-auto bg-ide-surface"
+          className="flex-1 min-h-0 overflow-y-auto p-3.5 bg-ide-surface flex flex-col"
         >
-          <div className="grid grid-cols-12 gap-3.5 items-start">
+          <div className="grid grid-cols-12 gap-3.5 items-stretch flex-1 min-h-0">
             {/* ─── LEFT PANEL (Torrent Settings & Options) ─── */}
-            <div className="col-span-12 lg:col-span-5 flex flex-col gap-3">
+            <div className="col-span-12 lg:col-span-5 flex flex-col gap-2.5">
               {/* Torrent Management Mode */}
-              <div className="flex items-center justify-between text-xs bg-ide-bg/50 px-3 py-2 border border-ide-border">
+              <div className="flex items-center justify-between text-xs bg-ide-bg/60 px-3 py-1.5 border border-ide-border">
                 <label className="text-slate-300 font-semibold">Torrent Management Mode:</label>
                 <select
                   value={managementMode}
@@ -378,11 +391,11 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               {/* Save at Fieldset */}
               <fieldset className={fieldsetCls}>
                 <legend className={legendCls}>
-                  <HardDrive className="h-3 w-3 inline mr-1 -mt-0.5" />
-                  Save at
+                  <HardDrive className="h-3 w-3" />
+                  <span>Save at</span>
                 </legend>
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="text"
                       value={savePath}
@@ -390,7 +403,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                       className={`flex-1 font-mono ${inputCls}`}
                     />
                     <select
-                      className={`${selectCls} px-1.5 text-center`}
+                      className={`${selectCls} px-1 text-center`}
                       onChange={(e) => setSavePath(e.target.value)}
                       value=""
                       title="Quick Save Locations"
@@ -403,26 +416,26 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                     <button
                       type="button"
                       onClick={handleBrowseSavePath}
-                      className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 hover:text-white rounded-none cursor-pointer transition flex items-center justify-center shrink-0"
+                      className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 hover:text-white rounded-none cursor-pointer transition flex items-center justify-center shrink-0"
                       title="Browse Save Path"
                     >
-                      <FolderOpen className="h-4 w-4 text-theme-bright" />
+                      <FolderOpen className="h-3.5 w-3.5 text-theme-bright" />
                     </button>
                   </div>
 
-                  <div className="space-y-2 pt-1">
-                    <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                  <div className="space-y-1.5 pt-0.5">
+                    <label className="flex items-center gap-2 text-[11px] text-slate-300 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={useIncompletePath}
                         onChange={(e) => setUseIncompletePath(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Use another path for incomplete torrent</span>
                     </label>
 
                     {useIncompletePath && (
-                      <div className="flex items-center gap-2 pl-6">
+                      <div className="flex items-center gap-1.5 pl-5">
                         <input
                           type="text"
                           value={incompleteSavePath}
@@ -432,20 +445,20 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                         <button
                           type="button"
                           onClick={handleBrowseIncompletePath}
-                          className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 rounded-none cursor-pointer transition"
+                          className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 rounded-none cursor-pointer transition"
                         >
-                          <FolderOpen className="h-4 w-4 text-cyan-400" />
+                          <FolderOpen className="h-3.5 w-3.5 text-cyan-400" />
                         </button>
                       </div>
                     )}
 
                     <div className="flex justify-end pt-0.5">
-                      <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={rememberPath}
                           onChange={(e) => setRememberPath(e.target.checked)}
-                          className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                          className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                         />
                         <span>Remember last used save path</span>
                       </label>
@@ -457,17 +470,17 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               {/* Torrent options Fieldset */}
               <fieldset className={fieldsetCls}>
                 <legend className={legendCls}>
-                  <Settings2 className="h-3 w-3 inline mr-1 -mt-0.5" />
-                  Torrent options
+                  <Settings2 className="h-3 w-3" />
+                  <span>Torrent options</span>
                 </legend>
-                <div className="space-y-2.5 text-xs">
+                <div className="space-y-2 text-[11px]">
                   {/* Category */}
                   <div className="flex items-center justify-between gap-2">
                     <label className="text-slate-300 font-medium">Category:</label>
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value as DownloadCategory)}
-                      className={`${selectCls} flex-1 max-w-[200px]`}
+                      className={`${selectCls} flex-1 max-w-[190px]`}
                     >
                       <option value="other">Uncategorized</option>
                       <option value="video">Videos</option>
@@ -479,12 +492,12 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   </div>
 
                   <div className="flex justify-end">
-                    <label className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-200 cursor-pointer">
+                    <label className="flex items-center gap-1.5 text-[10px] text-slate-400 hover:text-slate-200 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={setAsDefaultCategory}
                         onChange={(e) => setSetAsDefaultCategory(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Set as default category</span>
                     </label>
@@ -493,7 +506,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   {/* Tags */}
                   <div className="flex items-center justify-between gap-2">
                     <label className="text-slate-300 font-medium">Tags:</label>
-                    <div className="flex-1 flex gap-1.5 items-center">
+                    <div className="flex-1 flex gap-1 items-center">
                       <input
                         type="text"
                         value={tagsInput}
@@ -507,7 +520,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                           const tag = prompt('Add tag:', tagsInput)
                           if (tag !== null) setTagsInput(tag)
                         }}
-                        className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 font-bold rounded-none cursor-pointer transition"
+                        className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 font-bold rounded-none cursor-pointer transition"
                       >
                         ...
                       </button>
@@ -515,25 +528,25 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   </div>
 
                   {/* Checkbox Rows Matching Reference Layout */}
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-2 pt-1 border-t border-ide-border/50">
-                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-1 border-t border-ide-border/50">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
                       <input
                         type="checkbox"
                         checked={startTorrent}
                         onChange={(e) => setStartTorrent(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Start torrent</span>
                     </label>
 
-                    <div className="flex items-center gap-1.5 justify-end">
-                      <span className="text-slate-400 text-[11px]">Stop condition:</span>
+                    <div className="flex items-center gap-1 justify-end">
+                      <span className="text-slate-400 text-[10.5px]">Stop condition:</span>
                       <select
                         value={stopCondition}
                         onChange={(e) =>
                           setStopCondition(e.target.value as 'none' | 'metadata' | 'files')
                         }
-                        className={`${selectCls} text-[11px] px-1.5 py-0.5`}
+                        className={`${selectCls} text-[10.5px] px-1 py-0.5`}
                       >
                         <option value="none">None</option>
                         <option value="metadata">Metadata received</option>
@@ -541,42 +554,42 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                       </select>
                     </div>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
                       <input
                         type="checkbox"
                         checked={addToTopQueue}
                         onChange={(e) => setAddToTopQueue(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Add to top of queue</span>
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
                       <input
                         type="checkbox"
                         checked={skipHashCheck}
                         onChange={(e) => setSkipHashCheck(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Skip hash check</span>
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
                       <input
                         type="checkbox"
                         checked={sequentialDownload}
                         onChange={(e) => setSequentialDownload(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Download in sequential order</span>
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
                       <input
                         type="checkbox"
                         checked={firstLastPiecesFirst}
                         onChange={(e) => setFirstLastPiecesFirst(e.target.checked)}
-                        className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
                       />
                       <span>Download first and last pieces first</span>
                     </label>
@@ -590,7 +603,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                       onChange={(e) =>
                         setContentLayout(e.target.value as 'original' | 'subfolder' | 'nosubfolder')
                       }
-                      className={`${selectCls} w-44`}
+                      className={`${selectCls} w-36`}
                     >
                       <option value="original">Original</option>
                       <option value="subfolder">Create subfolder</option>
@@ -603,10 +616,10 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               {/* Torrent information Fieldset */}
               <fieldset className={fieldsetCls}>
                 <legend className={legendCls}>
-                  <Info className="h-3 w-3 inline mr-1 -mt-0.5" />
-                  Torrent information
+                  <Info className="h-3 w-3" />
+                  <span>Torrent information</span>
                 </legend>
-                <div className="space-y-1.5 text-xs text-slate-300 font-sans">
+                <div className="space-y-1 text-[11px] text-slate-300 font-sans">
                   <div className="flex justify-between">
                     <span className="w-24 text-slate-400">Size:</span>
                     <span className="text-slate-200 font-mono">
@@ -622,7 +635,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="w-24 text-slate-400 shrink-0">Info hash v1:</span>
-                    <span className="font-mono text-[11px] text-theme-bright truncate select-all">
+                    <span className="font-mono text-[10.5px] text-theme-bright truncate select-all">
                       004c2474042e2d9785bf0c097f69328e1a7fec86
                     </span>
                   </div>
@@ -638,29 +651,60 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               </fieldset>
             </div>
 
-            {/* ─── RIGHT PANEL: File Browser (Exact Match to Image) ─── */}
-            <div className="col-span-12 lg:col-span-7 flex flex-col bg-[#242424] border border-[#333333] rounded-none h-[490px]">
-              {/* Header Row: Name (with caret), Total Size, Download Priority */}
-              <div className="grid grid-cols-12 bg-[#202020] border-b border-[#303030] text-[12px] font-normal text-[#d1d5db] px-3 py-2 select-none shrink-0">
-                <div className="col-span-7 flex items-center justify-between pr-4">
-                  <span>Name</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-[#9ca3af]" />
+            {/* ─── RIGHT PANEL: File Browser (Exact Match to Reference Image) ─── */}
+            <div className="col-span-12 lg:col-span-7 flex flex-col bg-ide-bg border border-ide-border rounded-none min-h-[380px] h-full overflow-hidden">
+              {/* Toolbar: Select All / Select None & Search */}
+              <div className="p-2 border-b border-ide-border flex items-center justify-between shrink-0 bg-ide-surface">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleSelectAll(true)}
+                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 text-xs font-semibold rounded-none cursor-pointer transition"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSelectAll(false)}
+                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 text-xs font-semibold rounded-none cursor-pointer transition"
+                  >
+                    Select None
+                  </button>
                 </div>
-                <div className="col-span-2 text-right pr-2">Total Size</div>
-                <div className="col-span-3 text-left pl-3">Download Priority</div>
+
+                <div className="relative w-48">
+                  <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={fileFilter}
+                    onChange={(e) => setFileFilter(e.target.value)}
+                    placeholder="Filter files..."
+                    className="w-full bg-ide-bg text-slate-100 placeholder-slate-500 text-xs pl-8 pr-2 py-1 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-sans transition"
+                  />
+                </div>
               </div>
 
-              {/* File Browser Canvas (Exact match to screenshot) */}
-              <div className="flex-1 overflow-y-auto overflow-x-auto text-[13px] font-sans bg-[#2b2b2b] p-2 space-y-1">
+              {/* Table Header: Name, Total Size, Download Priority */}
+              <div className="grid grid-cols-12 bg-ide-surface border-b border-ide-border text-[12px] font-normal text-slate-300 px-3 py-1.5 select-none shrink-0">
+                <div className="col-span-7 flex items-center justify-between pr-4">
+                  <span>Name</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                </div>
+                <div className="col-span-2 text-right pr-2">Total Size</div>
+                <div className="col-span-3 text-left pl-4">Download Priority</div>
+              </div>
+
+              {/* File Browser Canvas */}
+              <div className="flex-1 overflow-y-auto overflow-x-auto text-[13px] font-sans bg-ide-bg/90 p-2 space-y-1">
                 {filesTree.map((rootNode) => (
                   <div key={rootNode.id} className="space-y-1">
                     {/* Row 1: Root Folder (House.of.the.Dragon.S03E07.1080p.x265-ELiTE) */}
-                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-[#383838] transition cursor-pointer select-none rounded-[2px]">
+                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px]">
                       <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                         <button
                           type="button"
                           onClick={(e) => toggleFolder(rootNode.id, e)}
-                          className="p-0.5 text-[#d1d5db] hover:text-white"
+                          className="p-0.5 text-slate-300 hover:text-white"
                         >
                           {expandedFolders[rootNode.id] ? (
                             <ChevronDown className="h-4 w-4" />
@@ -670,15 +714,15 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                         </button>
                         {renderCheckbox(rootNode.selected, () => toggleNodeSelect(rootNode.id))}
                         <FolderIcon />
-                        <span className="truncate text-[#f3f4f6] font-normal text-[13px]">
+                        <span className="truncate text-slate-100 font-normal text-[13px]">
                           {rootNode.name}
                         </span>
                       </div>
-                      <div className="col-span-2 text-right pr-2 text-[13px] text-[#e5e7eb] font-normal">
+                      <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
                         {formatBytes(rootNode.size)}
                       </div>
-                      <div className="col-span-3 text-left pl-3">
-                        <span className="text-[#f3f4f6] text-[13px]">Normal</span>
+                      <div className="col-span-3 text-left pl-4">
+                        <span className="text-slate-300 text-[13px]">Normal</span>
                       </div>
                     </div>
 
@@ -688,12 +732,12 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                         <React.Fragment key={child.id}>
                           {child.type === 'folder' ? (
                             // Row 2: Subfolder (Screens)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-[#383838] transition cursor-pointer select-none rounded-[2px] pl-6">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-6">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 <button
                                   type="button"
                                   onClick={(e) => toggleFolder(child.id, e)}
-                                  className="p-0.5 text-[#d1d5db] hover:text-white"
+                                  className="p-0.5 text-slate-300 hover:text-white"
                                 >
                                   {expandedFolders[child.id] ? (
                                     <ChevronDown className="h-4 w-4" />
@@ -703,48 +747,48 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                                 </button>
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <FolderIcon />
-                                <span className="truncate text-[#f3f4f6] font-normal text-[13px]">
+                                <span className="truncate text-slate-100 font-normal text-[13px]">
                                   {child.name}
                                 </span>
                               </div>
-                              <div className="col-span-2 text-right pr-2 text-[13px] text-[#e5e7eb] font-normal">
+                              <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
                                 {formatBytes(child.size)}
                               </div>
-                              <div className="col-span-3 text-left pl-3">
-                                <span className="text-[#f3f4f6] text-[13px]">Normal</span>
+                              <div className="col-span-3 text-left pl-4">
+                                <span className="text-slate-300 text-[13px]">Normal</span>
                               </div>
                             </div>
                           ) : child.name.endsWith('.mkv') ? (
                             // Row 3: Video File (.mkv with VLC Cone Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-[#383838] transition cursor-pointer select-none rounded-[2px] pl-10">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-10">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <VlcConeIcon />
-                                <span className="truncate text-[#f3f4f6] font-normal text-[13px]">
+                                <span className="truncate text-slate-100 font-normal text-[13px]">
                                   {child.name}
                                 </span>
                               </div>
-                              <div className="col-span-2 text-right pr-2 text-[13px] text-[#e5e7eb] font-normal">
+                              <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
                                 {formatBytes(child.size)}
                               </div>
-                              <div className="col-span-3 text-left pl-3">
+                              <div className="col-span-3 text-left pl-4">
                                 <select
                                   value={child.priority}
                                   onChange={(e) =>
                                     updateFilePriority(child.id, e.target.value as DownloadPriority)
                                   }
-                                  className="bg-transparent text-[#f3f4f6] text-[13px] focus:outline-none cursor-pointer"
+                                  className="bg-transparent text-slate-200 text-[13px] focus:outline-none cursor-pointer"
                                 >
-                                  <option value="normal" className="bg-[#242424]">
+                                  <option value="normal" className="bg-ide-surface">
                                     Normal
                                   </option>
-                                  <option value="high" className="bg-[#242424]">
+                                  <option value="high" className="bg-ide-surface">
                                     High
                                   </option>
-                                  <option value="low" className="bg-[#242424]">
+                                  <option value="low" className="bg-ide-surface">
                                     Low
                                   </option>
-                                  <option value="ignore" className="bg-[#242424]">
+                                  <option value="ignore" className="bg-ide-surface">
                                     Do not download
                                   </option>
                                 </select>
@@ -752,19 +796,19 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             </div>
                           ) : (
                             // Row 4: Document File (.nfo with Blue Doc Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-[#383838] transition cursor-pointer select-none rounded-[2px] pl-10">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-10">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <NfoDocIcon />
-                                <span className="truncate text-[#f3f4f6] font-normal text-[13px]">
+                                <span className="truncate text-slate-100 font-normal text-[13px]">
                                   {child.name}
                                 </span>
                               </div>
-                              <div className="col-span-2 text-right pr-2 text-[13px] text-[#e5e7eb] font-normal">
+                              <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
                                 {formatBytes(child.size)}
                               </div>
-                              <div className="col-span-3 text-left pl-3">
-                                <span className="text-[#f3f4f6] text-[13px]">Normal</span>
+                              <div className="col-span-3 text-left pl-4">
+                                <span className="text-slate-300 text-[13px]">Normal</span>
                               </div>
                             </div>
                           )}
@@ -775,22 +819,22 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             child.children?.map((nested) => (
                               <div
                                 key={nested.id}
-                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-[#383838] transition cursor-pointer select-none rounded-[2px] pl-14"
+                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-14"
                               >
                                 <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                   {renderCheckbox(nested.selected, () =>
                                     toggleNodeSelect(nested.id)
                                   )}
-                                  <FileText className="h-4 w-4 text-[#38bdf8] shrink-0" />
-                                  <span className="truncate text-[#e5e7eb] font-normal text-[13px]">
+                                  <NfoDocIcon />
+                                  <span className="truncate text-slate-200 font-normal text-[13px]">
                                     {nested.name}
                                   </span>
                                 </div>
-                                <div className="col-span-2 text-right pr-2 text-[13px] text-[#e5e7eb] font-normal">
+                                <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
                                   {formatBytes(nested.size)}
                                 </div>
-                                <div className="col-span-3 text-left pl-3">
-                                  <span className="text-[#f3f4f6] text-[13px]">Normal</span>
+                                <div className="col-span-3 text-left pl-4">
+                                  <span className="text-slate-300 text-[13px]">Normal</span>
                                 </div>
                               </div>
                             ))}
@@ -801,55 +845,56 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               </div>
             </div>
           </div>
-
-          {/* ─── Bottom Footer Action Bar ─── */}
-          <div className="pt-3 flex items-center justify-between border-t border-ide-border text-xs">
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-slate-300 hover:text-white cursor-pointer transition">
-                <input
-                  type="checkbox"
-                  checked={neverShowAgain}
-                  onChange={(e) => setNeverShowAgain(e.target.checked)}
-                  className="h-4 w-4 accent-theme-accent cursor-pointer rounded-none"
-                />
-                <span>Never show again</span>
-              </label>
-
-              <span className="text-emerald-400 font-medium flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5" />
-                Metadata retrieval complete
-              </span>
-
-              <button
-                type="button"
-                onClick={() => {
-                  window.api?.exportQueue()
-                }}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white rounded-none cursor-pointer transition"
-              >
-                Save as .torrent file...
-              </button>
-            </div>
-
-            {/* Themed Primary OK & Cancel Buttons */}
-            <div className="flex items-center gap-2.5">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-theme-accent hover:bg-theme-bright text-slate-950 font-bold text-xs rounded-none cursor-pointer transition shadow-lg shadow-theme-accent/20 active:scale-[0.98] flex items-center gap-1.5"
-              >
-                <Check className="h-4 w-4" />
-                <span>OK</span>
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-5 py-2 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white font-medium text-xs rounded-none cursor-pointer transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
         </form>
+
+        {/* ─── 3. Pinned Bottom Footer Action Bar (ALWAYS visible without scrolling!) ─── */}
+        <div className="px-4 py-2.5 bg-ide-surface/95 border-t border-ide-border flex items-center justify-between text-xs shrink-0 select-none">
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-slate-300 hover:text-white cursor-pointer transition">
+              <input
+                type="checkbox"
+                checked={neverShowAgain}
+                onChange={(e) => setNeverShowAgain(e.target.checked)}
+                className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+              />
+              <span>Never show again</span>
+            </label>
+
+            <span className="text-emerald-400 font-medium flex items-center gap-1.5">
+              <Check className="h-3.5 w-3.5" />
+              Metadata retrieval complete
+            </span>
+
+            <button
+              type="button"
+              onClick={() => {
+                window.api?.exportQueue()
+              }}
+              className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white rounded-none cursor-pointer transition text-xs"
+            >
+              Save as .torrent file...
+            </button>
+          </div>
+
+          {/* Themed Primary OK & Cancel Buttons */}
+          <div className="flex items-center gap-2.5">
+            <button
+              form="torrent-download-form"
+              type="submit"
+              className="px-6 py-1.5 bg-theme-accent hover:bg-theme-bright text-slate-950 font-bold text-xs rounded-none cursor-pointer transition shadow-lg shadow-theme-accent/20 active:scale-[0.98] flex items-center gap-1.5"
+            >
+              <Check className="h-4 w-4" />
+              <span>OK</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white font-medium text-xs rounded-none cursor-pointer transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
