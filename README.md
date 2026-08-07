@@ -1,3 +1,3 @@
-# neobit
+# Grabbit
 
-Client with modern cool UI
+Client with modern, cool UI
