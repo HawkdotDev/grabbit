@@ -24,11 +24,35 @@
 html,
 body {
   scroll-behavior: smooth;
-  background-color: #0d0e12;
+  background-color: var(--color-ide-bg);
   color: #f3f4f6;
   user-select: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light Theme Overrides */
+html[data-theme='light'] {
+  --color-ide-bg: #f8fafc;
+  --color-ide-surface: #ffffff;
+  --color-ide-card: #f1f5f9;
+  --color-ide-border: #cbd5e1;
+  --color-theme-accent: #7c3aed;
+  --color-theme-bright: #6d28d9;
+  --color-theme-tint: #ede9fe;
+  color: #0f172a;
+}
+
+/* High Contrast Theme Overrides */
+html[data-theme='contrast'] {
+  --color-ide-bg: #000000;
+  --color-ide-surface: #0a0a0a;
+  --color-ide-card: #121212;
+  --color-ide-border: #ffffff;
+  --color-theme-accent: #ffff00;
+  --color-theme-bright: #ffff55;
+  --color-theme-tint: #333300;
+  color: #ffffff;
 }
 
 *,

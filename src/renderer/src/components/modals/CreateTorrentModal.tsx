@@ -48,11 +48,27 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
 
     setIsGenerating(true)
 
-    setTimeout(() => {
+    try {
+      if (window.api?.createTorrent) {
+        const trackerList = trackers
+          .split('\n')
+          .map((t) => t.trim())
+          .filter(Boolean)
+        const res = await window.api.createTorrent({
+          sourcePath,
+          pieceSizeKb,
+          trackers: trackerList,
+          comment,
+          isPrivate,
+          startSeeding
+        })
+        if (res.success && res.torrentPath) {
+          setGeneratedPath(res.torrentPath)
+        }
+      }
+    } finally {
       setIsGenerating(false)
-      const outName = sourcePath.split(/[/\\]/).pop() || 'payload'
-      setGeneratedPath(`C:\\Downloads\\${outName}.torrent`)
-    }, 1500)
+    }
   }
 
   const inputCls =

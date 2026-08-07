@@ -27,6 +27,7 @@ interface TaskTableViewProps {
   setSearchQuery: (q: string) => void
   filterBy: 'name' | 'category' | 'tag'
   setFilterBy: (f: 'name' | 'category' | 'tag') => void
+  density?: 'compact' | 'default' | 'comfortable'
 }
 
 export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(

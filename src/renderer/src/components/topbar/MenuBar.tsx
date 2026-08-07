@@ -8,7 +8,6 @@ import {
   FileSpreadsheet,
   Sliders,
   Power,
-  Clock,
   Palette,
   LayoutGrid,
   AlignJustify,
@@ -39,6 +38,9 @@ interface MenuBarProps {
   onOpenPlugins?: () => void
   onOpenAutomations?: () => void
   onOpenScriptConsole?: () => void
+  onResumeAll?: () => void
+  onPauseAll?: () => void
+  onClearCompleted?: () => void
   activeView?: 'home' | 'analytics' | 'network'
   setActiveView?: (view: 'home' | 'analytics' | 'network') => void
 }
@@ -52,6 +54,9 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   onOpenPlugins,
   onOpenAutomations,
   onOpenScriptConsole,
+  onResumeAll,
+  onPauseAll,
+  onClearCompleted,
   activeView = 'home',
   setActiveView
 }) => {
@@ -259,16 +264,57 @@ export const MenuBar: React.FC<MenuBarProps> = ({
       // ─────────────────────────────────────────
       case 'Edit':
         return (
-          <div className="p-3 text-center space-y-2">
-            <div className="p-2 bg-theme-tint/40 rounded-none border border-theme-accent/20 flex flex-col items-center gap-1.5">
-              <Clock className="h-4 w-4 text-theme-accent animate-pulse" />
-              <span className="font-bold text-xs text-slate-200 block">Coming Soon...</span>
-              <p className="text-[10px] text-slate-400 leading-tight">
-                Batch task editing, clipboard actions, and queue manipulation tools will be
-                available in a future update.
-              </p>
-            </div>
-          </div>
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                if (onResumeAll) onResumeAll()
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Resume All Tasks</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+R
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onPauseAll) onPauseAll()
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Sliders className="h-3.5 w-3.5 text-amber-300" />
+                <span>Pause All Tasks</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+P
+              </span>
+            </button>
+
+            <div className="border-t border-ide-border my-1" />
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onClearCompleted) onClearCompleted()
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Power className="h-3.5 w-3.5 text-rose-300" />
+                <span>Clear Completed Tasks</span>
+              </div>
+            </button>
+          </>
         )
 
       // ─────────────────────────────────────────

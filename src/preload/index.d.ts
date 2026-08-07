@@ -76,6 +76,21 @@ export interface GrabbitAPI {
   setAlwaysOnTop: (flag?: boolean) => Promise<boolean>
   toggleFullscreen: () => Promise<boolean>
   exportLogs: () => Promise<boolean>
+  createTorrent: (options: {
+    sourcePath: string
+    pieceSizeKb?: number
+    trackers?: string[]
+    comment?: string
+    isPrivate?: boolean
+    startSeeding?: boolean
+  }) => Promise<{ success: boolean; torrentPath?: string; error?: string }>
+  checkForUpdates: () => Promise<{
+    hasUpdate: boolean
+    currentVersion: string
+    latestVersion: string
+    releaseNotes: string
+  }>
+  installNativeHost: () => Promise<{ success: boolean; manifestPath?: string; error?: string }>
 
   // Real-Time Push Events & Listeners
   onDownloadsUpdated: (callback: (downloads: DownloadItem[]) => void) => () => void

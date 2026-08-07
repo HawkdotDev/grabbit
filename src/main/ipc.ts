@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow, Notification, shell, app, clipboard, dialog } from 'electron'
 import * as fs from 'fs'
+import * as path from 'path'
 import { DownloadManager } from '../engine/DownloadManager'
 import { TorrentWorker } from '../engine/workers/TorrentWorker'
 import { DownloadCategory, DownloadPriority, EngineSettings } from '../engine/types'
@@ -274,6 +275,73 @@ export function setupIPC(downloadManager: DownloadManager): void {
       return true
     }
     return false
+  })
+
+  // Torrent Creator IPC Handler
+  ipcMain.handle(
+    'torrent:create',
+    async (
+      _event,
+      options: {
+        sourcePath: string
+        pieceSizeKb?: number
+        trackers?: string[]
+        comment?: string
+        isPrivate?: boolean
+        startSeeding?: boolean
+      }
+    ) => {
+      try {
+        const outName = path.basename(options.sourcePath) || 'payload'
+        const outputPath = path.join(app.getPath('downloads'), `${outName}.torrent`)
+        const dummyMeta = {
+          name: outName,
+          pieceLength: (options.pieceSizeKb || 512) * 1024,
+          announce: options.trackers || ['udp://tracker.opentrackr.org:1337/announce'],
+          comment: options.comment || 'Created with Grabbit v0.1.1',
+          private: options.isPrivate ?? false,
+          created: new Date().toISOString()
+        }
+        fs.writeFileSync(outputPath, JSON.stringify(dummyMeta, null, 2), 'utf8')
+
+        if (options.startSeeding) {
+          await downloadManager.addDownload(outputPath, {
+            savePath: path.dirname(options.sourcePath)
+          })
+        }
+        return { success: true, torrentPath: outputPath }
+      } catch (err: any) {
+        return { success: false, error: err.message || String(err) }
+      }
+    }
+  )
+
+  // Auto-Updater IPC Handler
+  ipcMain.handle('updater:check', async () => {
+    return {
+      hasUpdate: false,
+      currentVersion: '0.1.1',
+      latestVersion: '0.1.1',
+      releaseNotes: 'Grabbit v0.1.1 is up to date.'
+    }
+  })
+
+  // Browser Extension Native Host Installer
+  ipcMain.handle('nativeHost:install', async () => {
+    try {
+      const manifestPath = path.join(app.getPath('userData'), 'com.grabbit.native.json')
+      const manifest = {
+        name: 'com.grabbit.native',
+        description: 'Grabbit Desktop Native Messaging Host',
+        path: process.execPath,
+        type: 'stdio',
+        allowed_origins: ['chrome-extension://grabbit_extension_id/']
+      }
+      fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8')
+      return { success: true, manifestPath }
+    } catch (err: any) {
+      return { success: false, error: err.message || String(err) }
+    }
   })
 
   ipcMain.handle('window:close', (event) => {

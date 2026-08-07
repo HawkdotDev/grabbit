@@ -83,6 +83,23 @@ const api = {
     ipcRenderer.invoke('window:setAlwaysOnTop', flag),
   toggleFullscreen: (): Promise<boolean> => ipcRenderer.invoke('window:toggleFullscreen'),
   exportLogs: (): Promise<boolean> => ipcRenderer.invoke('logs:export'),
+  createTorrent: (options: {
+    sourcePath: string
+    pieceSizeKb?: number
+    trackers?: string[]
+    comment?: string
+    isPrivate?: boolean
+    startSeeding?: boolean
+  }): Promise<{ success: boolean; torrentPath?: string; error?: string }> =>
+    ipcRenderer.invoke('torrent:create', options),
+  checkForUpdates: (): Promise<{
+    hasUpdate: boolean
+    currentVersion: string
+    latestVersion: string
+    releaseNotes: string
+  }> => ipcRenderer.invoke('updater:check'),
+  installNativeHost: (): Promise<{ success: boolean; manifestPath?: string; error?: string }> =>
+    ipcRenderer.invoke('nativeHost:install'),
 
   // Listeners
   onDownloadProgress: (callback: (download: DownloadItem) => void): (() => void) => {

@@ -25,6 +25,8 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = React.memo(
   ({
     onOpenAddModal,
+    onPauseAll,
+    onResumeAll,
     onClearCompleted,
     onOpenSettingsModal,
     onOpenCreateTorrent,
@@ -53,6 +55,9 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
               onOpenPlugins={onOpenPlugins}
               onOpenAutomations={onOpenAutomations}
               onOpenScriptConsole={onOpenScriptConsole}
+              onResumeAll={onResumeAll}
+              onPauseAll={onPauseAll}
+              onClearCompleted={onClearCompleted}
               activeView={activeView}
               setActiveView={setActiveView}
             />

@@ -137,6 +137,10 @@ export function App(): React.JSX.Element {
     }
   }, [])
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.theme || 'dark')
+  }, [settings.theme])
+
   const handleSaveSettings = async (newSettings: Partial<EngineSettings>): Promise<void> => {
     if (window.api && window.api.updateSettings) {
       const updated = await window.api.updateSettings(newSettings)
