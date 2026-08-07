@@ -2,20 +2,90 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { ChunkInfo, DownloadFileItem } from '../types'
 
-let _WebTorrentClass: any = null
-async function getWebTorrentClass(): Promise<any> {
+export interface TorrentFileEntry {
+  path?: string
+  name?: string
+  length?: number
+  downloaded?: number
+  select?: () => void
+  deselect?: () => void
+}
+
+export interface TorrentWireEntry {
+  remoteAddress?: string
+  remotePort?: number
+  peerExtendedHandshake?: { v?: string }
+  downloadSpeed?: number
+  uploadSpeed?: number
+  peerChoked?: boolean
+}
+
+export interface TorrentTaskInstance {
+  name?: string
+  infoHash?: string
+  length: number
+  downloaded: number
+  downloadSpeed: number
+  uploadSpeed: number
+  uploaded: number
+  progress: number
+  numPeers: number
+  ratio?: number
+  timeRemaining: number
+  pieceLength?: number
+  pieces?: Array<{ missing?: number }>
+  announce: string[]
+  files: TorrentFileEntry[]
+  wires?: TorrentWireEntry[]
+  torrentFile?: Buffer
+  addPeer?: (addr: string) => void
+  addTracker?: (url: string) => void
+  removeTracker?: (url: string) => void
+  pause: () => void
+  resume: () => void
+  destroy: () => void
+  createServer?: () => {
+    listen: (port: number, cb: () => void) => void
+    address: () => { port: number } | null
+  }
+  on: (event: string, cb: (...args: unknown[]) => void) => void
+}
+
+export interface TorrentClientInstance {
+  add: (
+    source: string,
+    opts: { path: string },
+    callback: (torrent: TorrentTaskInstance) => void
+  ) => TorrentTaskInstance
+  seed: (
+    source: string,
+    opts: { path?: string },
+    callback: (torrent: TorrentTaskInstance) => void
+  ) => TorrentTaskInstance
+  on: (event: string, handler: (err: Error | string) => void) => void
+}
+
+type WebTorrentConstructor = new (opts?: Record<string, unknown>) => TorrentClientInstance
+type ParseTorrentFunction = (source: string | Buffer) => Promise<InstanceTorrentData>
+
+let _WebTorrentClass: WebTorrentConstructor | null = null
+async function getWebTorrentClass(): Promise<WebTorrentConstructor> {
   if (!_WebTorrentClass) {
-    const mod = await (new Function('m', 'return import(m)')('webtorrent') as Promise<any>)
-    _WebTorrentClass = mod.default || mod
+    const mod = await (new Function('m', 'return import(m)')('webtorrent') as Promise<{
+      default?: WebTorrentConstructor
+    }>)
+    _WebTorrentClass = (mod.default || mod) as unknown as WebTorrentConstructor
   }
   return _WebTorrentClass
 }
 
-let _parseTorrentFn: any = null
-async function getParseTorrentFn(): Promise<any> {
+let _parseTorrentFn: ParseTorrentFunction | null = null
+async function getParseTorrentFn(): Promise<ParseTorrentFunction> {
   if (!_parseTorrentFn) {
-    const mod = await (new Function('m', 'return import(m)')('parse-torrent') as Promise<any>)
-    _parseTorrentFn = mod.default || mod
+    const mod = await (new Function('m', 'return import(m)')('parse-torrent') as Promise<{
+      default?: ParseTorrentFunction
+    }>)
+    _parseTorrentFn = (mod.default || mod) as unknown as ParseTorrentFunction
   }
   return _parseTorrentFn
 }
@@ -77,8 +147,8 @@ export interface TorrentProgressEvent {
 }
 
 export class TorrentWorker {
-  private static client: any = null
-  private static torrentsMap: Map<string, any> = new Map()
+  private static client: TorrentClientInstance | null = null
+  private static torrentsMap: Map<string, TorrentTaskInstance> = new Map()
 
   public static generatePeerId(): string {
     const prefix = '-GR0110-' // GR = Grabbit, 0110 = v0.1.1
@@ -89,7 +159,7 @@ export class TorrentWorker {
   /**
    * Initializes or returns the shared WebTorrent client singleton instance asynchronously
    */
-  public static async getClient(): Promise<any> {
+  public static async getClient(): Promise<TorrentClientInstance> {
     if (!this.client) {
       const WebTorrent = await getWebTorrentClass()
       const customPeerId = this.generatePeerId()
@@ -243,7 +313,7 @@ export class TorrentWorker {
     savePath: string,
     onProgress: (event: TorrentProgressEvent) => void,
     onComplete: (event: TorrentProgressEvent) => void
-  ): Promise<any> {
+  ): Promise<TorrentTaskInstance> {
     const client = await this.getClient()
 
     return new Promise((resolve, reject) => {
@@ -261,7 +331,7 @@ export class TorrentWorker {
           {
             path: savePath
           },
-          (addedTorrent: any) => {
+          (addedTorrent: TorrentTaskInstance) => {
             this.torrentsMap.set(downloadId, addedTorrent)
 
             // Setup listeners
@@ -285,7 +355,7 @@ export class TorrentWorker {
           }
         )
 
-        torrent.on('error', (err: Error | string) => {
+        torrent.on('error', (err: unknown) => {
           console.error(`[WebTorrent Task Error ${downloadId}]`, err)
           reject(err)
         })
@@ -301,10 +371,10 @@ export class TorrentWorker {
   public static async seedTorrent(
     sourcePath: string,
     options?: { savePath?: string }
-  ): Promise<any> {
+  ): Promise<TorrentTaskInstance> {
     const client = await this.getClient()
     return new Promise((resolve) => {
-      client.seed(sourcePath, { path: options?.savePath }, (torrent: any) => {
+      client.seed(sourcePath, { path: options?.savePath }, (torrent: TorrentTaskInstance) => {
         resolve(torrent)
       })
     })
@@ -366,7 +436,9 @@ export class TorrentWorker {
     const torrent = this.torrentsMap.get(downloadId)
     if (!torrent || !Array.isArray(torrent.files)) return false
 
-    const targetFile = torrent.files.find((f: any) => f.path === filePath || f.name === filePath)
+    const targetFile = torrent.files.find(
+      (f: TorrentFileEntry) => f.path === filePath || f.name === filePath
+    )
     if (targetFile) {
       if (priority === 'ignore') {
         if (typeof targetFile.deselect === 'function') targetFile.deselect()
@@ -456,7 +528,7 @@ export class TorrentWorker {
    */
   private static emitProgressEvent(
     downloadId: string,
-    torrent: any,
+    torrent: TorrentTaskInstance,
     callback: (event: TorrentProgressEvent) => void
   ): void {
     const pieceCount = torrent.pieces ? torrent.pieces.length : 32
@@ -486,21 +558,20 @@ export class TorrentWorker {
       peers: torrent.numPeers || 0
     }))
 
-    const fileList: DownloadFileItem[] = (torrent.files || []).map((f: any) => ({
-      path: f.path || f.name,
+    const fileList: DownloadFileItem[] = (torrent.files || []).map((f: TorrentFileEntry) => ({
+      path: f.path || f.name || 'file',
       size: f.length || 0,
       downloaded: f.downloaded || 0,
       priority: 'normal' as const
     }))
 
     const wiresList = torrent.wires || []
-    const peersInfo: TorrentPeerInfo[] = wiresList.map((wire: any) => ({
-      ip: (wire.remoteAddress as string) || '127.0.0.1',
-      port: (wire.remotePort as number) || 6881,
-      clientName:
-        ((wire.peerExtendedHandshake as Record<string, unknown>)?.v as string) || 'BitTorrent Peer',
-      downloadSpeed: (wire.downloadSpeed as number) || 0,
-      uploadSpeed: (wire.uploadSpeed as number) || 0,
+    const peersInfo: TorrentPeerInfo[] = wiresList.map((wire: TorrentWireEntry) => ({
+      ip: wire.remoteAddress || '127.0.0.1',
+      port: wire.remotePort || 6881,
+      clientName: wire.peerExtendedHandshake?.v || 'BitTorrent Peer',
+      downloadSpeed: wire.downloadSpeed || 0,
+      uploadSpeed: wire.uploadSpeed || 0,
       choked: !!wire.peerChoked
     }))
 
