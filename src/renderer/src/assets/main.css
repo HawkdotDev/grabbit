@@ -55,15 +55,15 @@ html[data-theme='contrast'] {
   color: #ffffff;
 }
 
-/* Carrot Theme Overrides (#181818 Background, Multi-Shade Pastel Orange & Green Accents) */
+/* Carrot Theme Overrides (#101010 Background, Multi-Shade Pastel Orange & Green Accents) */
 html[data-theme='carrot'] {
-  --color-ide-bg: #181818;
-  --color-ide-surface: #20221f;
-  --color-ide-card: #262925;
-  --color-ide-border: #333b31;
+  --color-ide-bg: #101010;
+  --color-ide-surface: #161716;
+  --color-ide-card: #1c1e1b;
+  --color-ide-border: #283025;
   --color-theme-accent: #ff9e43;
   --color-theme-bright: #ffc085;
-  --color-theme-tint: #382414;
+  --color-theme-tint: #322012;
 
   /* Carrot Theme Specific Multi-Shade Palettes */
   --color-carrot-orange-deep: #f97316;
