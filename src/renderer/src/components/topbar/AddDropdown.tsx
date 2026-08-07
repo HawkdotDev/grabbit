@@ -26,8 +26,8 @@ export const AddDropdown: React.FC<AddDropdownProps> = React.memo(({ onOpenAddMo
 
       {isAddDropdownOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsAddDropdownOpen(false)} />
-          <div className="absolute right-0 top-full mt-1.5 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200 animate-in fade-in zoom-in duration-150">
+          <div className="fixed inset-0 z-[90]" onClick={() => setIsAddDropdownOpen(false)} />
+          <div className="absolute right-0 top-full mt-1.5 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[100] rounded-none text-slate-200 animate-in fade-in zoom-in duration-150">
             <button
               onClick={() => {
                 setIsAddDropdownOpen(false)

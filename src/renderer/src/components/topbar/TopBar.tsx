@@ -45,7 +45,7 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
     onThemeChange
   }) => {
     return (
-      <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none font-sans rounded-none">
+      <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none font-sans rounded-none relative z-50">
         {/* Upper Window Title & Menu Bar Row */}
         <div className="h-10 pl-3 pr-1.5 flex items-center justify-between border-b border-[#292929] style-drag">
           {/* Left App Logo & Menu Items */}

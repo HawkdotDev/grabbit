@@ -113,73 +113,76 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
 
         {/* Columns Customizer Dropdown Popover */}
         {isColumnsDropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 w-64 bg-ide-surface border border-ide-border shadow-2xl p-2 z-50 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150 space-y-2">
-            <div className="flex items-center justify-between px-1.5 py-1 border-b border-ide-border">
-              <div className="flex items-center gap-1.5">
-                <SlidersHorizontal className="h-3.5 w-3.5 text-theme-accent" />
-                <span className="font-bold text-xs text-slate-100">Table Columns</span>
+          <>
+            <div className="fixed inset-0 z-[90]" onClick={() => setIsColumnsDropdownOpen(false)} />
+            <div className="absolute right-0 top-full mt-1 w-64 bg-ide-surface border border-ide-border shadow-2xl p-2 z-[100] rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150 space-y-2">
+              <div className="flex items-center justify-between px-1.5 py-1 border-b border-ide-border">
+                <div className="flex items-center gap-1.5">
+                  <SlidersHorizontal className="h-3.5 w-3.5 text-theme-accent" />
+                  <span className="font-bold text-xs text-slate-100">Table Columns</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">{visibleCount} visible</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-mono">{visibleCount} visible</span>
-            </div>
 
-            {/* Quick Actions: Select All / Reset */}
-            <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
-              <button
-                type="button"
-                onClick={() => onSelectAllColumns?.()}
-                className="hover:text-theme-accent flex items-center gap-1 cursor-pointer transition"
-              >
-                <CheckSquare className="h-3 w-3" />
-                <span>Show All</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onResetDefaultColumns?.()}
-                className="hover:text-theme-accent flex items-center gap-1 cursor-pointer transition"
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span>Reset</span>
-              </button>
-            </div>
+              {/* Quick Actions: Select All / Reset */}
+              <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
+                <button
+                  type="button"
+                  onClick={() => onSelectAllColumns?.()}
+                  className="hover:text-theme-accent flex items-center gap-1 cursor-pointer transition"
+                >
+                  <CheckSquare className="h-3 w-3" />
+                  <span>Show All</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onResetDefaultColumns?.()}
+                  className="hover:text-theme-accent flex items-center gap-1 cursor-pointer transition"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span>Reset</span>
+                </button>
+              </div>
 
-            {/* Column Checkboxes List */}
-            <div className="space-y-0.5 max-h-60 overflow-y-auto pr-1">
-              {(Object.keys(COLUMN_LABELS) as ColumnKey[]).map((key) => {
-                const isChecked = visibleColumns[key] !== false
-                return (
-                  <label
-                    key={key}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      onToggleColumn?.(key)
-                    }}
-                    className={`flex items-center justify-between px-2 py-1 text-xs cursor-pointer select-none transition ${
-                      isChecked
-                        ? 'bg-ide-bg text-slate-100 hover:bg-white/5'
-                        : 'text-slate-500 hover:text-slate-300 hover:bg-white/5 opacity-70'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`h-3.5 w-3.5 flex items-center justify-center border transition ${
-                          isChecked
-                            ? 'bg-theme-accent border-theme-accent text-slate-950 font-bold'
-                            : 'border-slate-600 bg-transparent'
-                        }`}
-                      >
-                        {isChecked && <Check className="h-3 w-3 stroke-3" />}
+              {/* Column Checkboxes List */}
+              <div className="space-y-0.5 max-h-60 overflow-y-auto pr-1">
+                {(Object.keys(COLUMN_LABELS) as ColumnKey[]).map((key) => {
+                  const isChecked = visibleColumns[key] !== false
+                  return (
+                    <label
+                      key={key}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        onToggleColumn?.(key)
+                      }}
+                      className={`flex items-center justify-between px-2 py-1 text-xs cursor-pointer select-none transition ${
+                        isChecked
+                          ? 'bg-ide-bg text-slate-100 hover:bg-white/5'
+                          : 'text-slate-500 hover:text-slate-300 hover:bg-white/5 opacity-70'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`h-3.5 w-3.5 flex items-center justify-center border transition ${
+                            isChecked
+                              ? 'bg-theme-accent border-theme-accent text-slate-950 font-bold'
+                              : 'border-slate-600 bg-transparent'
+                          }`}
+                        >
+                          {isChecked && <Check className="h-3 w-3 stroke-3" />}
+                        </div>
+                        <span className="text-xs">{COLUMN_LABELS[key]}</span>
                       </div>
-                      <span className="text-xs">{COLUMN_LABELS[key]}</span>
-                    </div>
 
-                    <Eye
-                      className={`h-3 w-3 ${isChecked ? 'text-theme-bright' : 'text-slate-600'}`}
-                    />
-                  </label>
-                )
-              })}
+                      <Eye
+                        className={`h-3 w-3 ${isChecked ? 'text-theme-bright' : 'text-slate-600'}`}
+                      />
+                    </label>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

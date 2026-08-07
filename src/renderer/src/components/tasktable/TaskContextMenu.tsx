@@ -140,7 +140,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
     <div
       ref={menuRef}
       style={{ top: `${adjustedY}px`, left: `${adjustedX}px` }}
-      className="fixed z-50 w-64 bg-ide-surface/95 backdrop-blur-md border border-ide-border rounded-none shadow-2xl py-1 text-xs select-none animate-in fade-in zoom-in-95 duration-100 font-sans text-slate-200"
+      className="fixed z-[150] w-64 bg-ide-surface/95 backdrop-blur-md border border-ide-border rounded-none shadow-2xl py-1 text-xs select-none animate-in fade-in zoom-in-95 duration-100 font-sans text-slate-200"
     >
       {/* 1. Stop / Pause */}
       <button
@@ -226,7 +226,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
         {/* Category Submenu */}
         {activeSubmenu === 'category' && (
-          <div className="absolute left-full top-0 w-44 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-50">
+          <div className="absolute left-full top-0 w-44 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-[160]">
             {categoriesList.map((cat) => (
               <button
                 key={cat.id}
@@ -263,7 +263,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
         {/* Tags Submenu */}
         {activeSubmenu === 'tags' && (
-          <div className="absolute left-full top-0 w-40 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-50">
+          <div className="absolute left-full top-0 w-40 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-[160]">
             {['grabbit', 'untagged'].map((tag) => (
               <button
                 key={tag}
@@ -374,7 +374,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
         {/* Copy Submenu */}
         {activeSubmenu === 'copy' && (
-          <div className="absolute left-full top-0 w-48 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-50">
+          <div className="absolute left-full top-0 w-48 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-[160]">
             <button
               onClick={() => handleCopy(download.url)}
               className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-theme-tint hover:text-theme-accent cursor-pointer text-left"
