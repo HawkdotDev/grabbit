@@ -167,7 +167,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                             : 'border-slate-600 bg-transparent'
                         }`}
                       >
-                        {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                        {isChecked && <Check className="h-3 w-3 stroke-3" />}
                       </div>
                       <span className="text-xs">{COLUMN_LABELS[key]}</span>
                     </div>

@@ -303,13 +303,13 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
         e.stopPropagation()
         onChange()
       }}
-      className={`h-4 w-4 rounded-[3px] border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
+      className={`h-4 w-4 rounded-xs border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
         checked
           ? 'bg-theme-accent border-theme-accent text-slate-950 shadow-sm font-bold'
           : 'bg-ide-bg border-ide-border hover:border-slate-400'
       }`}
     >
-      {checked && <Check className="h-3 w-3 stroke-[3]" />}
+      {checked && <Check className="h-3 w-3 stroke-3" />}
     </div>
   )
 
@@ -321,7 +321,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-[720px] ${
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-180 ${
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
@@ -480,7 +480,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value as DownloadCategory)}
-                      className={`${selectCls} flex-1 max-w-[190px]`}
+                      className={`${selectCls} flex-1 max-w-47.5`}
                     >
                       <option value="other">Uncategorized</option>
                       <option value="video">Videos</option>
@@ -607,7 +607,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                     >
                       <option value="original">Original</option>
                       <option value="subfolder">Create subfolder</option>
-                      <option value="nosubfolder">Don't create subfolder</option>
+                      <option value="nosubfolder">Don&apos;t create subfolder</option>
                     </select>
                   </div>
                 </div>
@@ -652,7 +652,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
             </div>
 
             {/* ─── RIGHT PANEL: File Browser (Exact Match to Reference Image) ─── */}
-            <div className="col-span-12 lg:col-span-7 flex flex-col bg-ide-bg border border-ide-border rounded-none min-h-[380px] h-full overflow-hidden">
+            <div className="col-span-12 lg:col-span-7 flex flex-col bg-ide-bg border border-ide-border rounded-none min-h-95 h-full overflow-hidden">
               {/* Toolbar: Select All / Select None & Search */}
               <div className="p-2 border-b border-ide-border flex items-center justify-between shrink-0 bg-ide-surface">
                 <div className="flex items-center gap-1.5">
@@ -699,7 +699,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                 {filesTree.map((rootNode) => (
                   <div key={rootNode.id} className="space-y-1">
                     {/* Row 1: Root Folder (House.of.the.Dragon.S03E07.1080p.x265-ELiTE) */}
-                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px]">
+                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs">
                       <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                         <button
                           type="button"
@@ -732,7 +732,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                         <React.Fragment key={child.id}>
                           {child.type === 'folder' ? (
                             // Row 2: Subfolder (Screens)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-6">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-6">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 <button
                                   type="button"
@@ -760,7 +760,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             </div>
                           ) : child.name.endsWith('.mkv') ? (
                             // Row 3: Video File (.mkv with VLC Cone Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-10">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-10">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <VlcConeIcon />
@@ -796,7 +796,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             </div>
                           ) : (
                             // Row 4: Document File (.nfo with Blue Doc Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-10">
+                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-10">
                               <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                 {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
                                 <NfoDocIcon />
@@ -819,7 +819,7 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                             child.children?.map((nested) => (
                               <div
                                 key={nested.id}
-                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-[2px] pl-14"
+                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-xs pl-14"
                               >
                                 <div className="col-span-7 flex items-center gap-2 overflow-hidden">
                                   {renderCheckbox(nested.selected, () =>
