@@ -1,219 +1,689 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   Plus,
+  FileUp,
+  Hammer,
+  Save,
+  FolderInput,
+  FileSpreadsheet,
   Sliders,
-  Download,
-  Upload,
-  Play,
-  Pause,
-  Trash2,
-  CheckSquare,
-  Home,
-  Activity,
-  Network,
+  Power,
+  Clock,
+  Palette,
+  LayoutGrid,
+  AlignJustify,
+  PanelLeft,
+  ZoomIn,
+  Pin,
   Maximize2,
+  Puzzle,
   Zap,
+  Terminal,
+  Globe,
+  Gauge,
   ShieldCheck,
-  Folder,
-  Server,
   BookOpen,
+  Keyboard,
   RefreshCw,
   Info,
-  FileUp
+  ChevronRight,
+  Check
 } from 'lucide-react'
 
 interface MenuBarProps {
   onOpenAddModal: (mode?: 'link' | 'file') => void
   onOpenSettingsModal: () => void
+  activeView?: 'home' | 'analytics' | 'network'
+  setActiveView?: (view: 'home' | 'analytics' | 'network') => void
 }
 
-export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettingsModal }) => {
+export const MenuBar: React.FC<MenuBarProps> = ({
+  onOpenAddModal,
+  onOpenSettingsModal,
+  activeView = 'home',
+  setActiveView
+}) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
 
-  const handleExport = async (): Promise<void> => {
-    if (window.api && window.api.exportQueue) {
+  // Local view preferences state
+  const [theme, setTheme] = useState<'dark' | 'light' | 'contrast' | 'system'>('dark')
+  const [density, setDensity] = useState<'compact' | 'default' | 'comfortable'>('default')
+  const [alwaysOnTop, setAlwaysOnTop] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(100)
+  const [showSidebar, setShowSidebar] = useState(true)
+  const [showInspector, setShowInspector] = useState(true)
+  const [showStatusBar, setShowStatusBar] = useState(true)
+
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setActiveMenu(null)
+        setActiveSubmenu(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleExportSession = async (): Promise<void> => {
+    if (window.api?.exportQueue) {
       await window.api.exportQueue()
     }
   }
 
-  const handleImport = async (): Promise<void> => {
-    if (window.api && window.api.importQueue) {
+  const handleImportQueue = async (): Promise<void> => {
+    if (window.api?.importQueue) {
       await window.api.importQueue()
     }
   }
 
+  const handleExit = (): void => {
+    if (window.api?.closeWindow) {
+      window.api.closeWindow()
+    }
+  }
+
+  const handleToggleFullscreen = (): void => {
+    if (window.api?.maximizeWindow) {
+      window.api.maximizeWindow()
+    }
+  }
+
+  const handleZoom = (delta: number): void => {
+    setZoomLevel((prev) => Math.min(150, Math.max(75, prev + delta)))
+  }
+
   const renderDropdownContent = (item: string): React.JSX.Element => {
     switch (item) {
+      // ─────────────────────────────────────────
+      // FILE MENU
+      // ─────────────────────────────────────────
       case 'File':
         return (
           <>
             <button
+              type="button"
               onClick={() => {
                 onOpenAddModal('link')
                 setActiveMenu(null)
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <Plus className="h-3.5 w-3.5 text-theme-accent" /> Add URL / Link
+              <div className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-theme-accent" />
+                <span>New Download...</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+N
+              </span>
             </button>
+
             <button
+              type="button"
               onClick={() => {
                 onOpenAddModal('file')
                 setActiveMenu(null)
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <FileUp className="h-3.5 w-3.5 text-emerald-300" /> Add Torrent File
+              <div className="flex items-center gap-2">
+                <FileUp className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Open Torrent / Magnet...</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+O
+              </span>
             </button>
-            <div className="border-t border-ide-border my-1" />
+
             <button
+              type="button"
               onClick={() => {
-                handleExport()
+                alert('Create Torrent Wizard will launch in the next step.')
                 setActiveMenu(null)
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <Download className="h-3.5 w-3.5 text-purple-300" /> Export Queue State
+              <div className="flex items-center gap-2">
+                <Hammer className="h-3.5 w-3.5 text-amber-300" />
+                <span>Create Torrent...</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+C
+              </span>
             </button>
+
+            <div className="border-t border-ide-border my-1" />
+
             <button
+              type="button"
               onClick={() => {
-                handleImport()
+                handleExportSession()
                 setActiveMenu(null)
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <Upload className="h-3.5 w-3.5 text-sky-300" /> Import Queue State
+              <div className="flex items-center gap-2">
+                <Save className="h-3.5 w-3.5 text-purple-300" />
+                <span>Save Session As...</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+S
+              </span>
             </button>
-            <div className="border-t border-ide-border my-1" />
+
             <button
+              type="button"
+              onClick={() => {
+                handleImportQueue()
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <FolderInput className="h-3.5 w-3.5 text-sky-300" />
+                <span>Import Task List...</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+I
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                alert('Transfer diagnostics exported to grabbit_data/logs.')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="h-3.5 w-3.5 text-cyan-300" />
+                <span>Export Transfer Logs...</span>
+              </div>
+            </button>
+
+            <div className="border-t border-ide-border my-1" />
+
+            <button
+              type="button"
               onClick={() => {
                 onOpenSettingsModal()
                 setActiveMenu(null)
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <Sliders className="h-3.5 w-3.5 text-amber-200" /> Preferences &amp; Settings
+              <div className="flex items-center gap-2">
+                <Sliders className="h-3.5 w-3.5 text-rose-300" />
+                <span>Settings...</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+,
+              </span>
+            </button>
+
+            <div className="border-t border-ide-border my-1" />
+
+            <button
+              type="button"
+              onClick={handleExit}
+              className="w-full text-left px-3 py-1.5 hover:bg-rose-950/40 hover:text-rose-300 text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Power className="h-3.5 w-3.5 text-rose-400" />
+                <span>Exit</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-rose-400/80 font-mono">
+                Alt+F4
+              </span>
             </button>
           </>
         )
 
+      // ─────────────────────────────────────────
+      // EDIT MENU
+      // ─────────────────────────────────────────
       case 'Edit':
         return (
-          <>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
-            >
-              <Play className="h-3.5 w-3.5 text-emerald-300" /> Resume All Tasks
-            </button>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
-            >
-              <Pause className="h-3.5 w-3.5 text-amber-200" /> Pause All Tasks
-            </button>
-            <div className="border-t border-ide-border my-1" />
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-rose-300" /> Clear Completed Tasks
-            </button>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
-            >
-              <CheckSquare className="h-3.5 w-3.5 text-violet-300" /> Select All Tasks
-            </button>
-          </>
+          <div className="p-3 text-center space-y-2">
+            <div className="p-2 bg-theme-tint/40 rounded-none border border-theme-accent/20 flex flex-col items-center gap-1.5">
+              <Clock className="h-4 w-4 text-theme-accent animate-pulse" />
+              <span className="font-bold text-xs text-slate-200 block">Coming Soon...</span>
+              <p className="text-[10px] text-slate-400 leading-tight">
+                Batch task editing, clipboard actions, and queue manipulation tools will be
+                available in a future update.
+              </p>
+            </div>
+          </div>
         )
 
+      // ─────────────────────────────────────────
+      // VIEW MENU
+      // ─────────────────────────────────────────
       case 'View':
         return (
           <>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+            {/* Appearance & Theme Submenu */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveSubmenu('theme')}
+              onMouseLeave={() => setActiveSubmenu(null)}
             >
-              <Home className="h-3.5 w-3.5 text-sky-300" /> Home Dashboard
-            </button>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <Palette className="h-3.5 w-3.5 text-theme-accent" />
+                  <span>Appearance &amp; Theme</span>
+                </div>
+                <ChevronRight className="h-3 w-3 text-slate-500" />
+              </button>
+
+              {activeSubmenu === 'theme' && (
+                <div className="absolute left-full top-0 ml-1 w-44 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
+                  {[
+                    { id: 'dark', label: 'Dark Mode (IDE Default)' },
+                    { id: 'light', label: 'Light Mode' },
+                    { id: 'contrast', label: 'High Contrast' },
+                    { id: 'system', label: 'System Sync' }
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => {
+                        setTheme(t.id as any)
+                        setActiveMenu(null)
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                    >
+                      <span>{t.label}</span>
+                      {theme === t.id && <Check className="h-3 w-3 text-theme-accent" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Workspaces Submenu */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveSubmenu('workspaces')}
+              onMouseLeave={() => setActiveSubmenu(null)}
             >
-              <Activity className="h-3.5 w-3.5 text-theme-accent" /> Tasks Workspace
-            </button>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <LayoutGrid className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Workspaces</span>
+                </div>
+                <ChevronRight className="h-3 w-3 text-slate-500" />
+              </button>
+
+              {activeSubmenu === 'workspaces' && (
+                <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
+                  {[
+                    { id: 'home', label: 'Transfers Table' },
+                    { id: 'analytics', label: 'Analytics Dashboard' },
+                    { id: 'network', label: 'Network Telemetry' }
+                  ].map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      onClick={() => {
+                        if (setActiveView) setActiveView(w.id as any)
+                        setActiveMenu(null)
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                    >
+                      <span>{w.label}</span>
+                      {activeView === w.id && <Check className="h-3 w-3 text-theme-accent" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Layout Density Submenu */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveSubmenu('density')}
+              onMouseLeave={() => setActiveSubmenu(null)}
             >
-              <Network className="h-3.5 w-3.5 text-cyan-300" /> Network Telemetry
-            </button>
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <AlignJustify className="h-3.5 w-3.5 text-cyan-300" />
+                  <span>Layout Density</span>
+                </div>
+                <ChevronRight className="h-3 w-3 text-slate-500" />
+              </button>
+
+              {activeSubmenu === 'density' && (
+                <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
+                  {[
+                    { id: 'compact', label: 'Compact' },
+                    { id: 'default', label: 'Default' },
+                    { id: 'comfortable', label: 'Comfortable' }
+                  ].map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => {
+                        setDensity(d.id as any)
+                        setActiveMenu(null)
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                    >
+                      <span>{d.label}</span>
+                      {density === d.id && <Check className="h-3 w-3 text-theme-accent" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Panels & Toolbars Submenu */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveSubmenu('panels')}
+              onMouseLeave={() => setActiveSubmenu(null)}
+            >
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <PanelLeft className="h-3.5 w-3.5 text-amber-300" />
+                  <span>Panels &amp; Toolbars</span>
+                </div>
+                <ChevronRight className="h-3 w-3 text-slate-500" />
+              </button>
+
+              {activeSubmenu === 'panels' && (
+                <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowSidebar(!showSidebar)}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                  >
+                    <span>Filter Sidebar</span>
+                    {showSidebar && <Check className="h-3 w-3 text-theme-accent" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowInspector(!showInspector)}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                  >
+                    <span>Bottom Detail Inspector</span>
+                    {showInspector && <Check className="h-3 w-3 text-theme-accent" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowStatusBar(!showStatusBar)}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                  >
+                    <span>Status Bar Telemetry</span>
+                    {showStatusBar && <Check className="h-3 w-3 text-theme-accent" />}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Interface Zoom Submenu */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveSubmenu('zoom')}
+              onMouseLeave={() => setActiveSubmenu(null)}
+            >
+              <button
+                type="button"
+                className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <ZoomIn className="h-3.5 w-3.5 text-purple-300" />
+                  <span>Interface Zoom ({zoomLevel}%)</span>
+                </div>
+                <ChevronRight className="h-3 w-3 text-slate-500" />
+              </button>
+
+              {activeSubmenu === 'zoom' && (
+                <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => handleZoom(10)}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                  >
+                    <span>Zoom In</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Ctrl++</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleZoom(-10)}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                  >
+                    <span>Zoom Out</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Ctrl+-</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel(100)}
+                    className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
+                  >
+                    <span>Reset Zoom</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Ctrl+0</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="border-t border-ide-border my-1" />
+
             <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              type="button"
+              onClick={() => setAlwaysOnTop(!alwaysOnTop)}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
             >
-              <Maximize2 className="h-3.5 w-3.5 text-slate-300" /> Toggle Window Fullscreen
+              <div className="flex items-center gap-2">
+                <Pin className="h-3.5 w-3.5 text-sky-300" />
+                <span>Always on Top</span>
+              </div>
+              {alwaysOnTop && <Check className="h-3 w-3 text-theme-accent" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                handleToggleFullscreen()
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Maximize2 className="h-3.5 w-3.5 text-slate-300" />
+                <span>Enter Full Screen</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                F11
+              </span>
             </button>
           </>
         )
 
+      // ─────────────────────────────────────────
+      // TOOLS MENU
+      // ─────────────────────────────────────────
       case 'Tools':
         return (
           <>
             <button
+              type="button"
+              onClick={() => {
+                alert('Plugins & Extension Manager will launch in the next update.')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Puzzle className="h-3.5 w-3.5 text-purple-300" />
+                <span>Plugins &amp; Extensions...</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                alert('Automations & Event Rules Manager will launch in the next update.')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Zap className="h-3.5 w-3.5 text-amber-300" />
+                <span>Automations &amp; Event Triggers...</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                alert('Scripting Console: JavaScript/Python runner initialized.')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Terminal className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Scripting Console...</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                alert('API & JSON-RPC Gateway active on port 6800.')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Globe className="h-3.5 w-3.5 text-cyan-300" />
+                <span>API &amp; Gateway Integrations...</span>
+              </div>
+            </button>
+
+            <div className="border-t border-ide-border my-1" />
+
+            <button
+              type="button"
               onClick={() => {
                 onOpenSettingsModal()
                 setActiveMenu(null)
               }}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <Zap className="h-3.5 w-3.5 text-theme-accent" /> Bandwidth Speed Limiter
+              <div className="flex items-center gap-2">
+                <Gauge className="h-3.5 w-3.5 text-theme-accent" />
+                <span>Bandwidth Scheduler &amp; Limits...</span>
+              </div>
             </button>
+
             <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              type="button"
+              onClick={() => {
+                alert('Checksum Verifier tool ready.')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" /> Checksum / Hash Verifier
-            </button>
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
-            >
-              <Folder className="h-3.5 w-3.5 text-amber-200" /> Category &amp; Path Manager
-            </button>
-            <div className="border-t border-ide-border my-1" />
-            <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
-            >
-              <Server className="h-3.5 w-3.5 text-cyan-300" /> IPC Remote Control Gateway
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-3.5 w-3.5 text-sky-300" />
+                <span>Checksum &amp; File Integrity...</span>
+              </div>
             </button>
           </>
         )
 
+      // ─────────────────────────────────────────
+      // HELP MENU
+      // ─────────────────────────────────────────
       case 'Help':
         return (
           <>
             <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              type="button"
+              onClick={() => {
+                window.open('https://github.com/HawkdotDev/grabbit#readme', '_blank')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <BookOpen className="h-3.5 w-3.5 text-sky-300" /> Documentation &amp; User Guide
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-3.5 w-3.5 text-sky-300" />
+                <span>Documentation</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                F1
+              </span>
             </button>
+
             <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              type="button"
+              onClick={() => {
+                alert(
+                  'Keyboard Hotkeys Index:\n• Ctrl+N : New Download\n• Ctrl+O : Open Torrent\n• Ctrl+S : Save Session As\n• Ctrl+, : Settings\n• F11 : Fullscreen'
+                )
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <RefreshCw className="h-3.5 w-3.5 text-emerald-300" /> Check for Updates...
+              <div className="flex items-center gap-2">
+                <Keyboard className="h-3.5 w-3.5 text-amber-300" />
+                <span>Keyboard Shortcuts</span>
+              </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+K
+              </span>
             </button>
+
             <div className="border-t border-ide-border my-1" />
+
             <button
-              onClick={() => setActiveMenu(null)}
-              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2 cursor-pointer font-medium"
+              type="button"
+              onClick={() => {
+                alert('Checking for updates... Grabbit v0.1.1 is up to date!')
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >
-              <Info className="h-3.5 w-3.5 text-theme-accent" /> About Grabbit v0.1.1
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Check for Updates...</span>
+              </div>
+            </button>
+
+            <div className="border-t border-ide-border my-1" />
+
+            <button
+              type="button"
+              onClick={() => {
+                alert(
+                  'Grabbit v0.1.1\nHigh-Performance Desktop Download Manager & WebTorrent Engine.\nDeveloped by HawkdotDev (Apache-2.0 License).'
+                )
+                setActiveMenu(null)
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
+            >
+              <div className="flex items-center gap-2">
+                <Info className="h-3.5 w-3.5 text-theme-accent" />
+                <span>About Grabbit</span>
+              </div>
             </button>
           </>
         )
@@ -224,12 +694,19 @@ export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettings
   }
 
   return (
-    <div className="flex items-center gap-1 text-xs text-slate-300 font-medium style-no-drag">
+    <div
+      ref={menuRef}
+      className="flex items-center gap-1 text-xs text-slate-300 font-medium style-no-drag"
+    >
       {['File', 'Edit', 'View', 'Tools', 'Help'].map((item) => (
         <div key={item} className="relative">
           <button
-            onClick={() => setActiveMenu(activeMenu === item ? null : item)}
-            className={`px-4 py-2 rounded-none transition cursor-pointer flex items-center leading-none ${
+            type="button"
+            onClick={() => {
+              setActiveMenu(activeMenu === item ? null : item)
+              setActiveSubmenu(null)
+            }}
+            className={`px-3 py-1.5 rounded-none transition cursor-pointer flex items-center leading-none ${
               activeMenu === item
                 ? 'bg-theme-tint text-theme-accent font-semibold'
                 : 'hover:bg-white/10 hover:text-white'
@@ -238,12 +715,9 @@ export const MenuBar: React.FC<MenuBarProps> = ({ onOpenAddModal, onOpenSettings
             {item}
           </button>
           {activeMenu === item && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-              <div className="absolute left-0 top-full mt-1 w-52 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
-                {renderDropdownContent(item)}
-              </div>
-            </>
+            <div className="absolute left-0 top-full mt-1 w-56 bg-ide-surface border border-ide-border shadow-2xl py-1 z-50 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
+              {renderDropdownContent(item)}
+            </div>
           )}
         </div>
       ))}

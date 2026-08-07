@@ -26,7 +26,12 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
           <div className="flex items-center gap-4 style-no-drag">
             <AppLogo />
             <div className="h-4 w-px bg-ide-border" />
-            <MenuBar onOpenAddModal={onOpenAddModal} onOpenSettingsModal={onOpenSettingsModal} />
+            <MenuBar
+              onOpenAddModal={onOpenAddModal}
+              onOpenSettingsModal={onOpenSettingsModal}
+              activeView={activeView}
+              setActiveView={setActiveView}
+            />
           </div>
 
           {/* Right Status & Frameless Window Controls */}
