@@ -310,8 +310,8 @@ export function setupIPC(downloadManager: DownloadManager): void {
           })
         }
         return { success: true, torrentPath: outputPath }
-      } catch (err: any) {
-        return { success: false, error: err.message || String(err) }
+      } catch (err: unknown) {
+        return { success: false, error: (err as Error).message || String(err) }
       }
     }
   )
@@ -339,8 +339,8 @@ export function setupIPC(downloadManager: DownloadManager): void {
       }
       fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8')
       return { success: true, manifestPath }
-    } catch (err: any) {
-      return { success: false, error: err.message || String(err) }
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message || String(err) }
     }
   })
 

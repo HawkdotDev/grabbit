@@ -79,6 +79,16 @@ export interface DownloadItem {
   files?: DownloadFileItem[]
 }
 
+export interface CustomThemeColors {
+  bg: string
+  surface: string
+  card: string
+  border: string
+  accent: string
+  bright: string
+  tint: string
+}
+
 export interface EngineSettings {
   maxConcurrentDownloads: number
   defaultThreadCount: number

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { EngineSettings, DownloadItem } from '../../engine/types'
+import { EngineSettings, DownloadItem, CustomThemeColors } from '../../engine/types'
 import { useDownloads } from './hooks/useDownloads'
 import { useFilteredDownloads } from './hooks/useFilteredDownloads'
 import { useResizablePanes } from './hooks/useResizablePanes'
@@ -27,7 +27,7 @@ import {
   ClipboardBanner
 } from './components'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
-import { CustomThemeColors, PRESET_THEMES } from './components/modals/ThemeCustomizerModal'
+import { PRESET_THEMES } from './components/modals/ThemeCustomizerModal'
 
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook

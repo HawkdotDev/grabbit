@@ -198,7 +198,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="flex items-center gap-2">
                   <select
                     value={theme}
-                    onChange={(e) => setTheme(e.target.value as any)}
+                    onChange={(e) => setTheme(e.target.value as EngineSettings['theme'])}
                     className="flex-1 bg-ide-bg text-slate-100 text-xs px-3.5 py-2.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-mono cursor-pointer"
                   >
                     <option value="dark">Dark Mode (IDE Default)</option>

@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { X, Palette, GripHorizontal, RotateCcw, Check, Sparkles } from 'lucide-react'
+import { CustomThemeColors } from '../../../../engine/types'
 import { useDraggable } from '../../hooks/useDraggable'
-
-export interface CustomThemeColors {
-  bg: string
-  surface: string
-  card: string
-  border: string
-  accent: string
-  bright: string
-  tint: string
-}
 
 export const PRESET_THEMES: Record<string, { label: string; colors: CustomThemeColors }> = {
   carrot: {
@@ -89,12 +80,16 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
   onSave
 }) => {
   const [colors, setColors] = useState<CustomThemeColors>(
-    currentColors || PRESET_THEMES['carrot']!.colors
+    () => currentColors || PRESET_THEMES['carrot']!.colors
   )
+  const [prevPropColors, setPrevPropColors] = useState<CustomThemeColors | undefined>(currentColors)
 
-  useEffect(() => {
-    if (currentColors) setColors(currentColors)
-  }, [currentColors])
+  if (currentColors !== prevPropColors) {
+    setPrevPropColors(currentColors)
+    if (currentColors) {
+      setColors(currentColors)
+    }
+  }
 
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
