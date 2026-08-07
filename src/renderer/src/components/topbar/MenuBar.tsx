@@ -346,7 +346,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
               </button>
 
               {activeSubmenu === 'theme' && (
-                <div className="absolute left-full top-0 ml-1 w-52 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[110] rounded-none text-slate-200">
+                <div className="absolute left-full top-0 ml-1 w-52 bg-ide-surface border border-ide-border shadow-2xl py-1 z-110 rounded-none text-slate-200">
                   {(
                     [
                       { id: 'dark', label: 'Dark Mode (IDE Default)' },
@@ -403,7 +403,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
               </button>
 
               {activeSubmenu === 'workspaces' && (
-                <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[110] rounded-none text-slate-200">
+                <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-110 rounded-none text-slate-200">
                   {(
                     [
                       { id: 'home', label: 'Transfers Table' },
@@ -446,7 +446,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
               </button>
 
               {activeSubmenu === 'density' && (
-                <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[110] rounded-none text-slate-200">
+                <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-110 rounded-none text-slate-200">
                   {(
                     [
                       { id: 'compact', label: 'Compact' },
@@ -489,7 +489,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
               </button>
 
               {activeSubmenu === 'panels' && (
-                <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[110] rounded-none text-slate-200">
+                <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-110 rounded-none text-slate-200">
                   <button
                     type="button"
                     onClick={() => setShowSidebar(!showSidebar)}
@@ -536,7 +536,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
               </button>
 
               {activeSubmenu === 'zoom' && (
-                <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[110] rounded-none text-slate-200">
+                <div className="absolute left-full top-0 ml-1 w-40 bg-ide-surface border border-ide-border shadow-2xl py-1 z-110 rounded-none text-slate-200">
                   <button
                     type="button"
                     onClick={() => handleZoom(10)}
@@ -793,7 +793,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             {item}
           </button>
           {activeMenu === item && (
-            <div className="absolute left-0 top-full mt-1 w-56 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[100] rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute left-0 top-full mt-1 w-56 bg-ide-surface border border-ide-border shadow-2xl py-1 z-100 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
               {renderDropdownContent(item)}
             </div>
           )}

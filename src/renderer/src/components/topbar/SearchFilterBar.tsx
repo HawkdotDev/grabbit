@@ -114,8 +114,8 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         {/* Columns Customizer Dropdown Popover */}
         {isColumnsDropdownOpen && (
           <>
-            <div className="fixed inset-0 z-[90]" onClick={() => setIsColumnsDropdownOpen(false)} />
-            <div className="absolute right-0 top-full mt-1 w-64 bg-ide-surface border border-ide-border shadow-2xl p-2 z-[100] rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150 space-y-2">
+            <div className="fixed inset-0 z-90" onClick={() => setIsColumnsDropdownOpen(false)} />
+            <div className="absolute right-0 top-full mt-1 w-64 bg-ide-surface border border-ide-border shadow-2xl p-2 z-100 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150 space-y-2">
               <div className="flex items-center justify-between px-1.5 py-1 border-b border-ide-border">
                 <div className="flex items-center gap-1.5">
                   <SlidersHorizontal className="h-3.5 w-3.5 text-theme-accent" />

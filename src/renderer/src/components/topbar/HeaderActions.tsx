@@ -88,8 +88,8 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
 
         {isSettingsOpen && (
           <>
-            <div className="fixed inset-0 z-[90]" onClick={() => setIsSettingsOpen(false)} />
-            <div className="absolute right-0 top-full mt-1.5 w-56 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[100] rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="fixed inset-0 z-90" onClick={() => setIsSettingsOpen(false)} />
+            <div className="absolute right-0 top-full mt-1.5 w-56 bg-ide-surface border border-ide-border shadow-2xl py-1 z-100 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-ide-border/50">
                 Quick Preferences
               </div>
@@ -194,8 +194,8 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
 
         {isProfileOpen && (
           <>
-            <div className="fixed inset-0 z-[90]" onClick={() => setIsProfileOpen(false)} />
-            <div className="absolute right-0 top-full mt-1.5 w-60 bg-ide-surface border border-ide-border shadow-2xl py-1 z-[100] rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="fixed inset-0 z-90" onClick={() => setIsProfileOpen(false)} />
+            <div className="absolute right-0 top-full mt-1.5 w-60 bg-ide-surface border border-ide-border shadow-2xl py-1 z-100 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
               {/* Profile Card Header */}
               <div className="p-3 border-b border-ide-border flex items-center gap-3">
                 <div className="w-8 h-8 bg-theme-tint text-theme-accent border border-theme-accent/30 font-bold flex items-center justify-center text-xs rounded-none">
