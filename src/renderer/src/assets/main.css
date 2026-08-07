@@ -55,7 +55,7 @@ html[data-theme='contrast'] {
   color: #ffffff;
 }
 
-/* Carrot Theme Overrides (#101010 Background, 50% Pastel Orange & 50% Pastel Green Dual Balance) */
+/* Carrot Theme Overrides (#101010 Background, 50% Pastel Orange & 50% Pastel Green Element Balance) */
 html[data-theme='carrot'] {
   --color-ide-bg: #101010;
   --color-ide-surface: #171816;
@@ -94,6 +94,66 @@ html[data-theme='carrot'] {
   --color-pastel-mint: #4ade80;
   --color-pastel-peach: #ffc085;
   color: #f3f4f6;
+}
+
+/* 50% Green & 50% Orange UI Elements in Carrot Theme */
+html[data-theme='carrot'] .text-theme-accent {
+  color: #ff9e43;
+}
+
+html[data-theme='carrot'] .text-theme-bright {
+  color: #4ade80;
+}
+
+html[data-theme='carrot'] .bg-theme-accent {
+  background-color: #ff9e43;
+  color: #101010;
+}
+
+html[data-theme='carrot'] .bg-theme-bright {
+  background-color: #4ade80;
+  color: #101010;
+}
+
+html[data-theme='carrot'] .border-theme-accent {
+  border-color: #ff9e43;
+}
+
+html[data-theme='carrot'] .border-theme-bright {
+  border-color: #4ade80;
+}
+
+/* 50/50 Split for Action Buttons & Badges in Carrot Theme */
+html[data-theme='carrot'] button:nth-of-type(odd) .text-theme-accent,
+html[data-theme='carrot'] div:nth-of-type(odd) > .text-theme-accent {
+  color: #ff9e43;
+}
+
+html[data-theme='carrot'] button:nth-of-type(even) .text-theme-accent,
+html[data-theme='carrot'] div:nth-of-type(even) > .text-theme-accent {
+  color: #4ade80;
+}
+
+/* 50/50 Split for Speed Metrics: Download = Pastel Orange, Upload = Pastel Green */
+html[data-theme='carrot'] .speed-down,
+html[data-theme='carrot'] [data-metric='download-speed'] {
+  color: #ff9e43 !important;
+}
+
+html[data-theme='carrot'] .speed-up,
+html[data-theme='carrot'] [data-metric='upload-speed'] {
+  color: #4ade80 !important;
+}
+
+/* 50/50 Dual Progress Bar in Carrot Theme */
+html[data-theme='carrot'] .progress-active {
+  background: linear-gradient(90deg, #ff9e43 0%, #ffb86c 48%, #4ade80 52%, #86efac 100%) !important;
+}
+
+/* 50/50 Dual Glow & Selection Highlight */
+html[data-theme='carrot'] ::selection {
+  background: #341d0b;
+  color: #4ade80;
 }
 
 *,
