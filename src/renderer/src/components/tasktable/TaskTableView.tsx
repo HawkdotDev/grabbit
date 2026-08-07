@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { Inbox } from 'lucide-react'
 import { DownloadItem } from '../../../../engine/types'
 import { TaskTableHeader } from './TaskTableHeader'
@@ -7,7 +7,9 @@ import {
   ColumnKey,
   ColumnWidths,
   DEFAULT_COLUMN_WIDTHS,
-  MIN_COLUMN_WIDTHS
+  MIN_COLUMN_WIDTHS,
+  VisibleColumns,
+  DEFAULT_VISIBLE_COLUMNS
 } from './types'
 import { TaskTableRow } from './TaskTableRow'
 import { TaskContextMenu } from './TaskContextMenu'
@@ -30,6 +32,8 @@ interface TaskTableViewProps {
   density?: 'compact' | 'default' | 'comfortable'
 }
 
+const VISIBLE_COLUMNS_STORAGE_KEY = 'grabbit_visible_columns_v1'
+
 export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
   ({
     downloads,
@@ -49,11 +53,61 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
     const [sortField, setSortField] = useState<SortField>('name')
     const [sortAsc, setSortAsc] = useState(true)
     const [columnWidths, setColumnWidths] = useState<ColumnWidths>(DEFAULT_COLUMN_WIDTHS)
+    const [visibleColumns, setVisibleColumns] = useState<VisibleColumns>(() => {
+      try {
+        const saved = localStorage.getItem(VISIBLE_COLUMNS_STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          return { ...DEFAULT_VISIBLE_COLUMNS, ...parsed }
+        }
+      } catch {
+        // Fallback to default
+      }
+      return DEFAULT_VISIBLE_COLUMNS
+    })
+
     const [contextMenu, setContextMenu] = useState<{
       x: number
       y: number
       download: DownloadItem
     } | null>(null)
+
+    // Persist visible columns to localStorage
+    useEffect(() => {
+      try {
+        localStorage.setItem(VISIBLE_COLUMNS_STORAGE_KEY, JSON.stringify(visibleColumns))
+      } catch {
+        // Ignore localStorage error
+      }
+    }, [visibleColumns])
+
+    const handleToggleColumn = useCallback((key: ColumnKey): void => {
+      setVisibleColumns((prev) => ({
+        ...prev,
+        [key]: !prev[key]
+      }))
+    }, [])
+
+    const handleSelectAllColumns = useCallback((): void => {
+      const allTrue: VisibleColumns = {
+        num: true,
+        name: true,
+        totalSize: true,
+        progress: true,
+        status: true,
+        seeds: true,
+        speed: true,
+        upSpeed: true,
+        eta: true,
+        infoHash: true,
+        actions: true
+      }
+      setVisibleColumns(allTrue)
+    }, [])
+
+    const handleResetDefaultColumns = useCallback((): void => {
+      setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    }, [])
 
     const handleSort = useCallback((field: SortField): void => {
       setSortField((prevField) => {
@@ -126,6 +180,8 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
       })
     }, [downloads, sortField, sortAsc])
 
+    const visibleColsCount = Object.values(visibleColumns).filter(Boolean).length
+
     return (
       <div className="w-full h-full flex flex-col bg-ide-bg font-sans text-xs select-none overflow-hidden rounded-none">
         {/* Strip above Tasks Table */}
@@ -144,6 +200,10 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
             setSearchQuery={setSearchQuery}
             filterBy={filterBy}
             setFilterBy={setFilterBy}
+            visibleColumns={visibleColumns}
+            onToggleColumn={handleToggleColumn}
+            onSelectAllColumns={handleSelectAllColumns}
+            onResetDefaultColumns={handleResetDefaultColumns}
           />
         </div>
 
@@ -155,6 +215,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
               sortAsc={sortAsc}
               columnWidths={columnWidths}
               onResizeStart={handleResizeStart}
+              visibleColumns={visibleColumns}
             />
 
             <tbody className="divide-y divide-ide-border/50 text-slate-200">
@@ -171,12 +232,13 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
                   onCancel={onCancel}
                   onOpenHashModal={onOpenHashModal}
                   onContextMenu={handleContextMenu}
+                  visibleColumns={visibleColumns}
                 />
               ))}
 
               {downloads.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="p-16 text-center">
+                  <td colSpan={Math.max(1, visibleColsCount)} className="p-16 text-center">
                     <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-3">
                       <div className="w-12 h-12 rounded-none bg-theme-tint/40 border border-theme-accent/30 flex items-center justify-center text-theme-accent shadow-lg shadow-purple-950/20">
                         <Inbox className="h-6 w-6 opacity-90" />
