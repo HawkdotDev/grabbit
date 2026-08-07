@@ -16,7 +16,7 @@ export const ClipboardBanner: React.FC<ClipboardBannerProps> = ({
   if (!detectedLink) return null
 
   return (
-    <div className="bg-emerald-950/80 border-b border-emerald-300/30 px-4 py-2 text-xs flex items-center justify-between font-mono animate-in slide-in-from-top-2 duration-200 z-50">
+    <div className="bg-emerald-950/80 border-b border-emerald-300/30 px-4 py-2 text-xs flex items-center justify-between font-mono animate-in slide-in-from-top-2 duration-200 relative z-20">
       <div className="flex items-center gap-2 overflow-hidden mr-4">
         <Link className="h-3.5 w-3.5 text-emerald-300 shrink-0" />
         <span className="text-emerald-200 font-bold shrink-0">Clipboard Link Detected:</span>
