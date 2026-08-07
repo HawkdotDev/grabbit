@@ -238,6 +238,44 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return win?.isMaximized() ?? false
   })
 
+  ipcMain.handle('window:setAlwaysOnTop', (event, flag?: boolean) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      const nextFlag = flag ?? !win.isAlwaysOnTop()
+      win.setAlwaysOnTop(nextFlag)
+      return win.isAlwaysOnTop()
+    }
+    return false
+  })
+
+  ipcMain.handle('window:toggleFullscreen', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win) {
+      const isFS = win.isFullScreen()
+      win.setFullScreen(!isFS)
+      return win.isFullScreen()
+    }
+    return false
+  })
+
+  ipcMain.handle('logs:export', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return false
+    const { filePath } = await dialog.showSaveDialog(win, {
+      title: 'Export Transfer Diagnostics & Logs',
+      defaultPath: `grabbit_session_log_${Date.now()}.txt`,
+      filters: [{ name: 'Log File', extensions: ['txt', 'log'] }]
+    })
+
+    if (filePath) {
+      const logs = downloadManager.getSpeedHistory()
+      const content = `Grabbit v0.1.1 Session Log\nExported: ${new Date().toISOString()}\n\nTelemetry History:\n${JSON.stringify(logs, null, 2)}`
+      fs.writeFileSync(filePath, content, 'utf8')
+      return true
+    }
+    return false
+  })
+
   ipcMain.handle('window:close', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (win) win.close()

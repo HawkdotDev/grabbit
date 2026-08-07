@@ -79,6 +79,10 @@ const api = {
   maximizeWindow: (): Promise<boolean> => ipcRenderer.invoke('window:maximize'),
   closeWindow: (): Promise<boolean> => ipcRenderer.invoke('window:close'),
   isWindowMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:isMaximized'),
+  setAlwaysOnTop: (flag?: boolean): Promise<boolean> =>
+    ipcRenderer.invoke('window:setAlwaysOnTop', flag),
+  toggleFullscreen: (): Promise<boolean> => ipcRenderer.invoke('window:toggleFullscreen'),
+  exportLogs: (): Promise<boolean> => ipcRenderer.invoke('logs:export'),
 
   // Listeners
   onDownloadProgress: (callback: (download: DownloadItem) => void): (() => void) => {

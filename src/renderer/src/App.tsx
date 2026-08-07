@@ -15,10 +15,17 @@ import {
   SimpleAddDownloadModal,
   SettingsModal,
   HashModal,
+  CreateTorrentModal,
+  HotkeysModal,
+  AboutModal,
+  PluginsModal,
+  AutomationsModal,
+  ScriptConsoleModal,
   AnalyticsView,
   NetworkView,
   ClipboardBanner
 } from './components'
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 
 export function App(): React.JSX.Element {
   // 1. Download State & Handlers Hook
@@ -66,11 +73,46 @@ export function App(): React.JSX.Element {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
 
+  // Extra Features Modals
+  const [isCreateTorrentOpen, setIsCreateTorrentOpen] = useState(false)
+  const [isHotkeysOpen, setIsHotkeysOpen] = useState(false)
+  const [isAboutOpen, setIsAboutOpen] = useState(false)
+  const [isPluginsOpen, setIsPluginsOpen] = useState(false)
+  const [isAutomationsOpen, setIsAutomationsOpen] = useState(false)
+  const [isScriptConsoleOpen, setIsScriptConsoleOpen] = useState(false)
+
   const handleOpenAddModal = (mode: 'link' | 'file' = 'link', initialUrl = ''): void => {
     setAddModalMode(mode)
     setAddModalInitialUrl(initialUrl)
     setIsAddModalOpen(true)
   }
+
+  // Bind Global Application Keyboard Shortcuts
+  useGlobalShortcuts({
+    onNewDownload: () => handleOpenAddModal('link'),
+    onOpenTorrent: () => handleOpenAddModal('file'),
+    onCreateTorrent: () => setIsCreateTorrentOpen(true),
+    onSaveSession: () => window.api?.exportQueue(),
+    onImportTaskList: () => window.api?.importQueue(),
+    onExportLogs: () => window.api?.exportLogs(),
+    onOpenSettings: () => setIsSettingsModalOpen(true),
+    onOpenHotkeys: () => setIsHotkeysOpen(true),
+    onOpenDoc: () => window.open('https://github.com/HawkdotDev/grabbit#readme', '_blank'),
+    onToggleFullscreen: () => window.api?.toggleFullscreen(),
+    onSwitchView: (v) => setActiveMainView(v),
+    onDeleteSelected: () => {
+      if (selectedDownload) handleCancel(selectedDownload.id)
+    },
+    onTogglePauseSelected: () => {
+      if (selectedDownload) {
+        if (selectedDownload.status === 'downloading') {
+          handlePause(selectedDownload.id)
+        } else {
+          handleResume(selectedDownload.id)
+        }
+      }
+    }
+  })
 
   // 5. Clipboard Detector Hook
   const { detectedLink, dismiss, clear } = useClipboardDetector()
@@ -116,6 +158,12 @@ export function App(): React.JSX.Element {
         setActiveView={setActiveMainView}
         onOpenAddModal={handleOpenAddModal}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenCreateTorrent={() => setIsCreateTorrentOpen(true)}
+        onOpenHotkeys={() => setIsHotkeysOpen(true)}
+        onOpenAbout={() => setIsAboutOpen(true)}
+        onOpenPlugins={() => setIsPluginsOpen(true)}
+        onOpenAutomations={() => setIsAutomationsOpen(true)}
+        onOpenScriptConsole={() => setIsScriptConsoleOpen(true)}
         onResumeAll={handleResumeAll}
         onPauseAll={handlePauseAll}
         onClearCompleted={handleClearCompleted}
@@ -239,6 +287,24 @@ export function App(): React.JSX.Element {
         onClose={() => setHashModalDownload(null)}
         download={hashModalDownload}
         onVerify={(id, expectedHash, algo) => handleVerifyHash(id, expectedHash, algo)}
+      />
+
+      <CreateTorrentModal
+        isOpen={isCreateTorrentOpen}
+        onClose={() => setIsCreateTorrentOpen(false)}
+      />
+
+      <HotkeysModal isOpen={isHotkeysOpen} onClose={() => setIsHotkeysOpen(false)} />
+
+      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+
+      <PluginsModal isOpen={isPluginsOpen} onClose={() => setIsPluginsOpen(false)} />
+
+      <AutomationsModal isOpen={isAutomationsOpen} onClose={() => setIsAutomationsOpen(false)} />
+
+      <ScriptConsoleModal
+        isOpen={isScriptConsoleOpen}
+        onClose={() => setIsScriptConsoleOpen(false)}
       />
     </div>
   )

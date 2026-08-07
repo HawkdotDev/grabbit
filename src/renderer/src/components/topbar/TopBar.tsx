@@ -11,13 +11,31 @@ interface TopBarProps {
   onResumeAll: () => void
   onClearCompleted: () => void
   onOpenSettingsModal: () => void
+  onOpenCreateTorrent?: () => void
+  onOpenHotkeys?: () => void
+  onOpenAbout?: () => void
+  onOpenPlugins?: () => void
+  onOpenAutomations?: () => void
+  onOpenScriptConsole?: () => void
   activeView: 'home' | 'analytics' | 'network'
   setActiveView: (view: 'home' | 'analytics' | 'network') => void
   globalSpeed?: number
 }
 
 export const TopBar: React.FC<TopBarProps> = React.memo(
-  ({ onOpenAddModal, onClearCompleted, onOpenSettingsModal, activeView, setActiveView }) => {
+  ({
+    onOpenAddModal,
+    onClearCompleted,
+    onOpenSettingsModal,
+    onOpenCreateTorrent,
+    onOpenHotkeys,
+    onOpenAbout,
+    onOpenPlugins,
+    onOpenAutomations,
+    onOpenScriptConsole,
+    activeView,
+    setActiveView
+  }) => {
     return (
       <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none font-sans rounded-none">
         {/* Upper Window Title & Menu Bar Row */}
@@ -29,6 +47,12 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
             <MenuBar
               onOpenAddModal={onOpenAddModal}
               onOpenSettingsModal={onOpenSettingsModal}
+              onOpenCreateTorrent={onOpenCreateTorrent}
+              onOpenHotkeys={onOpenHotkeys}
+              onOpenAbout={onOpenAbout}
+              onOpenPlugins={onOpenPlugins}
+              onOpenAutomations={onOpenAutomations}
+              onOpenScriptConsole={onOpenScriptConsole}
               activeView={activeView}
               setActiveView={setActiveView}
             />

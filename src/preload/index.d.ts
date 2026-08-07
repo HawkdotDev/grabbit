@@ -73,6 +73,9 @@ export interface GrabbitAPI {
   maximizeWindow: () => Promise<boolean>
   closeWindow: () => Promise<boolean>
   isWindowMaximized: () => Promise<boolean>
+  setAlwaysOnTop: (flag?: boolean) => Promise<boolean>
+  toggleFullscreen: () => Promise<boolean>
+  exportLogs: () => Promise<boolean>
 
   // Real-Time Push Events & Listeners
   onDownloadsUpdated: (callback: (downloads: DownloadItem[]) => void) => () => void

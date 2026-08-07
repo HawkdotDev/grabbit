@@ -33,6 +33,12 @@ import {
 interface MenuBarProps {
   onOpenAddModal: (mode?: 'link' | 'file') => void
   onOpenSettingsModal: () => void
+  onOpenCreateTorrent?: () => void
+  onOpenHotkeys?: () => void
+  onOpenAbout?: () => void
+  onOpenPlugins?: () => void
+  onOpenAutomations?: () => void
+  onOpenScriptConsole?: () => void
   activeView?: 'home' | 'analytics' | 'network'
   setActiveView?: (view: 'home' | 'analytics' | 'network') => void
 }
@@ -40,6 +46,12 @@ interface MenuBarProps {
 export const MenuBar: React.FC<MenuBarProps> = ({
   onOpenAddModal,
   onOpenSettingsModal,
+  onOpenCreateTorrent,
+  onOpenHotkeys,
+  onOpenAbout,
+  onOpenPlugins,
+  onOpenAutomations,
+  onOpenScriptConsole,
   activeView = 'home',
   setActiveView
 }) => {
@@ -141,7 +153,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <button
               type="button"
               onClick={() => {
-                alert('Create Torrent Wizard will launch in the next step.')
+                if (onOpenCreateTorrent) onOpenCreateTorrent()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
@@ -531,7 +543,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <button
               type="button"
               onClick={() => {
-                alert('Plugins & Extension Manager will launch in the next update.')
+                if (onOpenPlugins) onOpenPlugins()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
@@ -545,7 +557,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <button
               type="button"
               onClick={() => {
-                alert('Automations & Event Rules Manager will launch in the next update.')
+                if (onOpenAutomations) onOpenAutomations()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
@@ -559,7 +571,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <button
               type="button"
               onClick={() => {
-                alert('Scripting Console: JavaScript/Python runner initialized.')
+                if (onOpenScriptConsole) onOpenScriptConsole()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
@@ -642,9 +654,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <button
               type="button"
               onClick={() => {
-                alert(
-                  'Keyboard Hotkeys Index:\n• Ctrl+N : New Download\n• Ctrl+O : Open Torrent\n• Ctrl+S : Save Session As\n• Ctrl+, : Settings\n• F11 : Fullscreen'
-                )
+                if (onOpenHotkeys) onOpenHotkeys()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
@@ -679,9 +689,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             <button
               type="button"
               onClick={() => {
-                alert(
-                  'Grabbit v0.1.1\nHigh-Performance Desktop Download Manager & WebTorrent Engine.\nDeveloped by HawkdotDev (Apache-2.0 License).'
-                )
+                if (onOpenAbout) onOpenAbout()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
