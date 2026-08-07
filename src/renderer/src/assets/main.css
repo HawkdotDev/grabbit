@@ -195,6 +195,32 @@ html[data-theme='carrot'] ::selection {
   background: #161522;
 }
 
+/* Green Scrollbars in Carrot Theme */
+html[data-theme='carrot'] ::-webkit-scrollbar-track {
+  background: #121411;
+}
+
+html[data-theme='carrot'] ::-webkit-scrollbar-thumb {
+  background: #274b2c;
+  border-radius: 4px;
+  border: 1px solid #1b331f;
+  transition: background 0.2s ease;
+}
+
+html[data-theme='carrot'] ::-webkit-scrollbar-thumb:hover {
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+html[data-theme='carrot'] ::-webkit-scrollbar-corner {
+  background: #121411;
+}
+
+html[data-theme='carrot'] {
+  scrollbar-color: #274b2c #121411;
+  scrollbar-width: thin;
+}
+
 /* Smooth Progress Fill Pulse Animation */
 @keyframes progressPulse {
   0% {
