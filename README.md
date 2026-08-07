@@ -28,6 +28,11 @@
       <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8.svg?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind" />
     </a>
   </p>
+
+  <br />
+
+  <img src="resources/Screenshot-Tasks-Dashboard.png" alt="Grabbit Tasks Dashboard Preview" width="100%" />
+
 </div>
 
 ## Overview
