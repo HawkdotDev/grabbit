@@ -5,15 +5,15 @@ import { useDraggable } from '../../hooks/useDraggable'
 
 export const PRESET_THEMES: Record<string, { label: string; colors: CustomThemeColors }> = {
   carrot: {
-    label: 'Carrot 🥕 (Pastel Orange & Mint Green on #1f1f1f Dark)',
+    label: 'Carrot 🥕 (Pastel Orange & Mint Green on #181818)',
     colors: {
-      bg: '#1f1f1f',
-      surface: '#262726',
-      card: '#2c2e2c',
-      border: '#3b423a',
+      bg: '#181818',
+      surface: '#20221f',
+      card: '#262925',
+      border: '#333b31',
       accent: '#ff9e43',
       bright: '#ffc085',
-      tint: '#3d2a1c'
+      tint: '#382414'
     }
   },
   dark: {
