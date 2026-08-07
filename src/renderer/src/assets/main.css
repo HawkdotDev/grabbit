@@ -171,59 +171,36 @@ html[data-theme='carrot'] ::selection {
   -webkit-app-region: no-drag;
 }
 
-/* Ultra-Hairline Sleek Scrollbars (1px - 1.5px) */
-* {
-  scrollbar-width: thin;
-}
-
+/* Slim Sleek Scrollbars */
 ::-webkit-scrollbar {
-  width: 1.5px !important;
-  height: 1.5px !important;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent !important;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 ::-webkit-scrollbar-corner {
-  background: transparent !important;
+  background: transparent;
 }
 
-/* Green Ultra-Hairline Scrollbars in Carrot Theme */
-html[data-theme='carrot'] ::-webkit-scrollbar {
-  width: 1.5px !important;
-  height: 1.5px !important;
-}
-
-html[data-theme='carrot'] ::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
+/* Green Slim Scrollbars in Carrot Theme */
 html[data-theme='carrot'] ::-webkit-scrollbar-thumb {
-  background: #274b2c !important;
-  border-radius: 9999px !important;
+  background: rgba(74, 222, 128, 0.15);
 }
 
 html[data-theme='carrot'] ::-webkit-scrollbar-thumb:hover {
-  background: #4ade80 !important;
-}
-
-html[data-theme='carrot'] ::-webkit-scrollbar-corner {
-  background: transparent !important;
-}
-
-html[data-theme='carrot'] {
-  scrollbar-color: #274b2c transparent;
-  scrollbar-width: thin;
+  background: rgba(74, 222, 128, 0.5);
 }
 
 /* Smooth Progress Fill Pulse Animation */
