@@ -90,6 +90,24 @@ async function getParseTorrentFn(): Promise<ParseTorrentFunction> {
   return _parseTorrentFn
 }
 
+type CreateTorrentCallback = (err: Error | null, torrentBuf: Buffer) => void
+type CreateTorrentFunction = (
+  input: string | Buffer | File | unknown,
+  opts: Record<string, unknown>,
+  cb: CreateTorrentCallback
+) => void
+
+let _createTorrentFn: CreateTorrentFunction | null = null
+async function getCreateTorrentFn(): Promise<CreateTorrentFunction> {
+  if (!_createTorrentFn) {
+    const mod = await (new Function('m', 'return import(m)')('create-torrent') as Promise<{
+      default?: CreateTorrentFunction
+    }>)
+    _createTorrentFn = (mod.default || mod) as unknown as CreateTorrentFunction
+  }
+  return _createTorrentFn
+}
+
 export interface MagnetInfo {
   infoHash: string
   name: string
@@ -130,6 +148,8 @@ export interface TorrentPeerInfo {
 
 export interface TorrentProgressEvent {
   downloadId: string
+  name?: string
+  infoHash?: string
   downloadedSize: number
   totalSize: number
   downloadSpeed: number
@@ -186,7 +206,7 @@ export class TorrentWorker {
   public static parseMagnetURI(magnetUrl: string): MagnetInfo {
     const info: MagnetInfo = {
       infoHash: '',
-      name: 'Torrent Download',
+      name: '',
       trackers: []
     }
 
@@ -222,6 +242,10 @@ export class TorrentWorker {
       if (nameMatch && nameMatch[1]) {
         info.name = decodeURIComponent(nameMatch[1])
       }
+    }
+
+    if (!info.name) {
+      info.name = info.infoHash ? `Magnet (${info.infoHash.substring(0, 8)})` : 'Magnet Download'
     }
 
     return info
@@ -335,6 +359,14 @@ export class TorrentWorker {
             this.torrentsMap.set(downloadId, addedTorrent)
 
             // Setup listeners
+            addedTorrent.on('metadata', () => {
+              this.emitProgressEvent(downloadId, addedTorrent, onProgress)
+            })
+
+            addedTorrent.on('ready', () => {
+              this.emitProgressEvent(downloadId, addedTorrent, onProgress)
+            })
+
             addedTorrent.on('download', () => {
               this.emitProgressEvent(downloadId, addedTorrent, onProgress)
             })
@@ -351,6 +383,8 @@ export class TorrentWorker {
               this.emitProgressEvent(downloadId, addedTorrent, onComplete)
             })
 
+            // Initial progress snapshot
+            this.emitProgressEvent(downloadId, addedTorrent, onProgress)
             resolve(addedTorrent)
           }
         )
@@ -362,6 +396,44 @@ export class TorrentWorker {
       } catch (err) {
         reject(err)
       }
+    })
+  }
+
+  /**
+   * Generates authentic bencoded BitTorrent .torrent metainfo buffer
+   */
+  public static async createTorrentFile(
+    sourcePath: string,
+    options?: {
+      pieceSizeKb?: number
+      trackers?: string[]
+      comment?: string
+      createdBy?: string
+      isPrivate?: boolean
+    }
+  ): Promise<Buffer> {
+    const createTorrent = await getCreateTorrentFn()
+    const pieceLength = (options?.pieceSizeKb || 512) * 1024
+    const announceList =
+      options?.trackers && options.trackers.length > 0
+        ? options.trackers.map((tr) => [tr])
+        : undefined
+
+    return new Promise((resolve, reject) => {
+      createTorrent(
+        sourcePath,
+        {
+          pieceLength,
+          announceList,
+          comment: options?.comment || 'Created with Grabbit v0.1.1',
+          createdBy: options?.createdBy || 'Grabbit Desktop Client v0.1.1',
+          private: options?.isPrivate ?? false
+        },
+        (err: Error | null, torrentBuf: Buffer) => {
+          if (err) return reject(err)
+          resolve(torrentBuf)
+        }
+      )
     })
   }
 
@@ -531,21 +603,47 @@ export class TorrentWorker {
     torrent: TorrentTaskInstance,
     callback: (event: TorrentProgressEvent) => void
   ): void {
-    const pieceCount = torrent.pieces ? torrent.pieces.length : 32
-    const pieceLength = torrent.pieceLength || 524288
+    const totalSize = torrent.length || 0
+    const virtualBlocks = 32
     const chunks: ChunkInfo[] = []
 
-    if (torrent.pieces) {
-      for (let i = 0; i < torrent.pieces.length; i++) {
-        const p = torrent.pieces[i] as { missing?: number } | undefined
-        const isDone = p && p.missing === 0
+    if (torrent.pieces && torrent.pieces.length > 0 && totalSize > 0) {
+      const totalPieces = torrent.pieces.length
+      const blockByteSize = Math.max(1, Math.floor(totalSize / virtualBlocks))
+
+      for (let b = 0; b < virtualBlocks; b++) {
+        const startPieceIdx = Math.floor((b * totalPieces) / virtualBlocks)
+        const endPieceIdx = Math.min(
+          totalPieces - 1,
+          Math.floor(((b + 1) * totalPieces) / virtualBlocks) - 1
+        )
+        const piecesInSlice = Math.max(1, endPieceIdx - startPieceIdx + 1)
+
+        let completedInSlice = 0
+        for (let p = startPieceIdx; p <= endPieceIdx; p++) {
+          const piece = torrent.pieces[p] as { missing?: number } | undefined
+          if (piece && piece.missing === 0) {
+            completedInSlice++
+          }
+        }
+
+        const startByte = b * blockByteSize
+        const endByte = b === virtualBlocks - 1 ? totalSize - 1 : (b + 1) * blockByteSize - 1
+        const sliceByteSize = Math.max(1, endByte - startByte + 1)
+        const downloadedBytes = Math.min(
+          sliceByteSize,
+          Math.round((completedInSlice / piecesInSlice) * sliceByteSize)
+        )
+        const isDone = completedInSlice === piecesInSlice
+        const status = isDone ? 'completed' : downloadedBytes > 0 ? 'downloading' : 'queued'
+
         chunks.push({
-          id: i,
-          startByte: i * pieceLength,
-          endByte: Math.min(torrent.length - 1, (i + 1) * pieceLength - 1),
-          downloadedBytes: isDone ? pieceLength : 0,
-          speed: torrent.downloadSpeed / pieceCount,
-          status: isDone ? 'completed' : 'downloading'
+          id: b,
+          startByte,
+          endByte,
+          downloadedBytes,
+          speed: isDone ? 0 : Math.round(torrent.downloadSpeed / virtualBlocks),
+          status
         })
       }
     } else {
@@ -577,6 +675,8 @@ export class TorrentWorker {
 
     const event: TorrentProgressEvent = {
       downloadId,
+      name: torrent.name,
+      infoHash: torrent.infoHash,
       downloadedSize: torrent.downloaded || 0,
       totalSize: torrent.length || 0,
       downloadSpeed: torrent.downloadSpeed || 0,

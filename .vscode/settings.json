@@ -10,6 +10,6 @@
   },
   "css.lint.unknownAtRules": "ignore",
   "files.associations": {
-    "bun.lock": "jsonc"
+    "bun.lock": "plaintext"
   }
 }

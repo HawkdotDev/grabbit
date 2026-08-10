@@ -76,6 +76,16 @@ export class DownloadManager extends EventEmitter {
     return this.statsCollector.getHistory()
   }
 
+  public static isTorrentSource(url: string): boolean {
+    return (
+      url.startsWith('magnet:') ||
+      url.includes('magnet:') ||
+      url.endsWith('.torrent') ||
+      url.endsWith('.meta') ||
+      url.endsWith('.metalink')
+    )
+  }
+
   public async addDownload(
     url: string,
     options?: {
@@ -86,7 +96,7 @@ export class DownloadManager extends EventEmitter {
       threadCount?: number
     }
   ): Promise<DownloadItem> {
-    const isMagnet = url.startsWith('magnet:?') || url.includes('magnet:')
+    const isTorrent = DownloadManager.isTorrentSource(url)
     let totalSize = 0
     let acceptRanges = true
     let etag = ''
@@ -94,29 +104,45 @@ export class DownloadManager extends EventEmitter {
     let infoHash = ''
     let trackersList: { url: string; status: 'working' | 'error' | 'disabled'; peers: number }[] =
       []
+    let fileEntries: Array<{ path: string; size: number; downloaded: number; priority: 'high' | 'normal' | 'low' | 'ignore' }> = []
 
-    if (isMagnet) {
-      const magnetInfo = TorrentWorker.parseMagnetURI(url)
-      if (!filename || filename === 'download') {
-        filename = magnetInfo.name || 'Spider-Man.Brand.New.Day.2026.1080p.TELESYNC.x265'
+    if (isTorrent) {
+      if (url.startsWith('magnet:') || url.includes('magnet:')) {
+        const magnetInfo = TorrentWorker.parseMagnetURI(url)
+        infoHash = magnetInfo.infoHash
+        if (!filename) {
+          filename = magnetInfo.name || (infoHash ? `Magnet (${infoHash.substring(0, 8)})` : 'Magnet Download')
+        }
+        totalSize = 0
+        acceptRanges = true
+        trackersList = magnetInfo.trackers.map((trUrl) => ({
+          url: trUrl,
+          status: 'working' as const,
+          peers: 0
+        }))
+        fileEntries = [{ path: filename, size: 0, downloaded: 0, priority: 'normal' }]
+      } else {
+        // Local or remote .torrent metadata
+        try {
+          const meta = await TorrentWorker.parseTorrentMetadata(url)
+          if (!filename) filename = meta.name
+          infoHash = meta.infoHash
+          totalSize = meta.totalSize
+          trackersList = meta.trackers.map((trUrl) => ({
+            url: trUrl,
+            status: 'working' as const,
+            peers: 0
+          }))
+          fileEntries = (meta.files || []).map((f) => ({
+            path: f.path || f.name,
+            size: f.size,
+            downloaded: 0,
+            priority: 'normal' as const
+          }))
+        } catch {
+          if (!filename) filename = path.basename(url)
+        }
       }
-      infoHash = magnetInfo.infoHash || 'bed7342b40bf3e299359efee4459a04fe9f5604b'
-      totalSize = 1845493760 // ~1.72 GB estimated size for magnet torrents
-      acceptRanges = true
-
-      trackersList = (
-        magnetInfo.trackers.length > 0
-          ? magnetInfo.trackers
-          : [
-              'udp://tracker.opentrackr.org:1337/announce',
-              'udp://open.ftorrent.com:443/announce',
-              'udp://tracker.bittor.pw:1337/announce'
-            ]
-      ).map((trUrl) => ({
-        url: trUrl,
-        status: 'working',
-        peers: Math.floor(Math.random() * 80) + 12
-      }))
     } else {
       try {
         const info = await this.chunkEngine.getFileInfo(url)
@@ -128,11 +154,9 @@ export class DownloadManager extends EventEmitter {
         if (!filename) filename = 'download_' + Date.now()
       }
 
-      infoHash = 'e44232' + Math.random().toString(16).substring(2, 14)
-      trackersList = [
-        { url: 'udp://tracker.grabbit.io:6969/announce', status: 'working', peers: 45 },
-        { url: 'https://tracker.openbittorrent.com:443/announce', status: 'working', peers: 12 }
-      ]
+      infoHash = ''
+      trackersList = []
+      fileEntries = [{ path: filename, size: totalSize, downloaded: 0, priority: 'normal' }]
     }
 
     const category =
@@ -145,7 +169,9 @@ export class DownloadManager extends EventEmitter {
     const fullSavePath = path.join(saveDir, filename)
     const threadCount =
       options?.threadCount || (acceptRanges ? this.settings.defaultThreadCount : 1)
-    const chunks = this.chunkEngine.createChunks(totalSize, threadCount)
+    const chunks = isTorrent
+      ? TorrentWorker.createTorrentChunks(32)
+      : this.chunkEngine.createChunks(totalSize, threadCount)
 
     const download: DownloadItem = {
       id: 'dl_' + Math.random().toString(36).substring(2, 9),
@@ -166,12 +192,12 @@ export class DownloadManager extends EventEmitter {
       upSpeed: 0,
       uploadedSize: 0,
       ratio: 0.0,
-      seedsCount: isMagnet ? 34 : 12,
-      peersCount: isMagnet ? 128 : 45,
+      seedsCount: 0,
+      peersCount: 0,
       infoHash,
       tags: ['grabbit', category],
       trackers: trackersList,
-      files: [{ path: filename, size: totalSize, downloaded: 0, priority: 'normal' }]
+      files: fileEntries
     }
 
     this.downloads.set(download.id, download)
@@ -190,12 +216,7 @@ export class DownloadManager extends EventEmitter {
     this.saveStateImmediate()
     this.emit('downloadUpdated', download)
 
-    const isTorrent =
-      download.url.startsWith('magnet:') ||
-      download.url.endsWith('.torrent') ||
-      download.url.endsWith('.meta') ||
-      download.url.endsWith('.metalink') ||
-      !!download.infoHash
+    const isTorrent = DownloadManager.isTorrentSource(download.url)
 
     if (isTorrent) {
       const saveDir = path.dirname(download.savePath)
@@ -206,8 +227,16 @@ export class DownloadManager extends EventEmitter {
         (event) => {
           const d = this.downloads.get(event.downloadId)
           if (!d) return
+
+          if (event.name && (!d.name || d.name.startsWith('Magnet ('))) {
+            d.name = event.name
+            d.savePath = path.join(path.dirname(d.savePath), event.name)
+          }
+          if (event.infoHash && !d.infoHash) {
+            d.infoHash = event.infoHash
+          }
           d.downloadedSize = event.downloadedSize
-          d.totalSize = event.totalSize || d.totalSize
+          if (event.totalSize > 0) d.totalSize = event.totalSize
           d.speed = event.downloadSpeed
           d.upSpeed = event.uploadSpeed
           d.uploadedSize = event.uploadedSize
@@ -216,8 +245,8 @@ export class DownloadManager extends EventEmitter {
           d.peersCount = event.peersCount
           d.seedsCount = event.seedsCount
           d.chunks = event.chunks
-          d.trackers = event.trackers
-          d.files = event.files.length > 0 ? event.files : d.files
+          if (event.trackers && event.trackers.length > 0) d.trackers = event.trackers
+          if (event.files && event.files.length > 0) d.files = event.files
 
           this.saveStateDebounced()
           this.emit('progress', d)
@@ -299,12 +328,7 @@ export class DownloadManager extends EventEmitter {
     const d = this.downloads.get(id)
     if (!d || d.status !== 'downloading') return
 
-    const isTorrent =
-      d.url.startsWith('magnet:') ||
-      d.url.endsWith('.torrent') ||
-      d.url.endsWith('.meta') ||
-      d.url.endsWith('.metalink') ||
-      !!d.infoHash
+    const isTorrent = DownloadManager.isTorrentSource(d.url)
 
     if (isTorrent) {
       TorrentWorker.pauseTorrent(id)
@@ -327,12 +351,7 @@ export class DownloadManager extends EventEmitter {
     const d = this.downloads.get(id)
     if (!d || (d.status !== 'paused' && d.status !== 'error')) return
 
-    const isTorrent =
-      d.url.startsWith('magnet:') ||
-      d.url.endsWith('.torrent') ||
-      d.url.endsWith('.meta') ||
-      d.url.endsWith('.metalink') ||
-      !!d.infoHash
+    const isTorrent = DownloadManager.isTorrentSource(d.url)
 
     if (isTorrent) {
       TorrentWorker.resumeTorrent(id)
@@ -352,12 +371,7 @@ export class DownloadManager extends EventEmitter {
     const d = this.downloads.get(id)
     if (!d) return
 
-    const isTorrent =
-      d.url.startsWith('magnet:') ||
-      d.url.endsWith('.torrent') ||
-      d.url.endsWith('.meta') ||
-      d.url.endsWith('.metalink') ||
-      !!d.infoHash
+    const isTorrent = DownloadManager.isTorrentSource(d.url)
 
     if (isTorrent) {
       TorrentWorker.removeTorrent(id)

@@ -40,7 +40,7 @@ export interface DownloadFileItem {
   path: string
   size: number
   downloaded: number
-  priority: 'ignore' | 'normal' | 'high'
+  priority: 'ignore' | 'normal' | 'high' | 'low'
 }
 
 export interface TrackerInfo {

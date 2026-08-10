@@ -292,17 +292,20 @@ export function setupIPC(downloadManager: DownloadManager): void {
       }
     ) => {
       try {
+        if (!options.sourcePath || !fs.existsSync(options.sourcePath)) {
+          throw new Error(`Source path does not exist: ${options?.sourcePath}`)
+        }
         const outName = path.basename(options.sourcePath) || 'payload'
         const outputPath = path.join(app.getPath('downloads'), `${outName}.torrent`)
-        const dummyMeta = {
-          name: outName,
-          pieceLength: (options.pieceSizeKb || 512) * 1024,
-          announce: options.trackers || ['udp://tracker.opentrackr.org:1337/announce'],
-          comment: options.comment || 'Created with Grabbit v0.1.1',
-          private: options.isPrivate ?? false,
-          created: new Date().toISOString()
-        }
-        fs.writeFileSync(outputPath, JSON.stringify(dummyMeta, null, 2), 'utf8')
+
+        const torrentBuffer = await TorrentWorker.createTorrentFile(options.sourcePath, {
+          pieceSizeKb: options.pieceSizeKb,
+          trackers: options.trackers,
+          comment: options.comment,
+          isPrivate: options.isPrivate
+        })
+
+        fs.writeFileSync(outputPath, torrentBuffer)
 
         if (options.startSeeding) {
           await downloadManager.addDownload(outputPath, {
@@ -311,6 +314,7 @@ export function setupIPC(downloadManager: DownloadManager): void {
         }
         return { success: true, torrentPath: outputPath }
       } catch (err: unknown) {
+        console.error('[torrent:create Error]', err)
         return { success: false, error: (err as Error).message || String(err) }
       }
     }
