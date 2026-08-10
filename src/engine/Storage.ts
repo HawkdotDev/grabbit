@@ -21,6 +21,8 @@ export class Storage {
   private static downloadsFile: string
   private static settingsFile: string
   private static historyFile: string
+  private static pluginsFile: string
+  private static automationsFile: string
   private static saveTimeout?: NodeJS.Timeout
   private static pendingDownloads?: DownloadItem[]
 
@@ -34,6 +36,52 @@ export class Storage {
     this.downloadsFile = path.join(this.storageDir, 'downloads.json')
     this.settingsFile = path.join(this.storageDir, 'settings.json')
     this.historyFile = path.join(this.storageDir, 'speed_history.json')
+    this.pluginsFile = path.join(this.storageDir, 'plugins.json')
+    this.automationsFile = path.join(this.storageDir, 'automations.json')
+  }
+
+  public static loadPlugins<T>(defaultPlugins: T[]): T[] {
+    if (!this.storageDir) this.init()
+    try {
+      if (fs.existsSync(this.pluginsFile)) {
+        const raw = fs.readFileSync(this.pluginsFile, 'utf8').trim()
+        if (raw) return JSON.parse(raw)
+      }
+    } catch {
+      // Return defaults on parse error
+    }
+    return defaultPlugins
+  }
+
+  public static async savePlugins<T>(plugins: T[]): Promise<void> {
+    if (!this.storageDir) this.init()
+    try {
+      fs.writeFileSync(this.pluginsFile, JSON.stringify(plugins, null, 2), 'utf8')
+    } catch (err) {
+      console.error('Failed to save plugins:', err)
+    }
+  }
+
+  public static loadAutomations<T>(defaultRules: T[]): T[] {
+    if (!this.storageDir) this.init()
+    try {
+      if (fs.existsSync(this.automationsFile)) {
+        const raw = fs.readFileSync(this.automationsFile, 'utf8').trim()
+        if (raw) return JSON.parse(raw)
+      }
+    } catch {
+      // Return defaults on parse error
+    }
+    return defaultRules
+  }
+
+  public static async saveAutomations<T>(rules: T[]): Promise<void> {
+    if (!this.storageDir) this.init()
+    try {
+      fs.writeFileSync(this.automationsFile, JSON.stringify(rules, null, 2), 'utf8')
+    } catch (err) {
+      console.error('Failed to save automations:', err)
+    }
   }
 
   public static loadDownloads(): DownloadItem[] {

@@ -9,8 +9,17 @@ interface AboutModalProps {
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
+  const [version, setVersion] = React.useState('0.1.1')
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
+
+  React.useEffect(() => {
+    if (window.api?.getAppVersion) {
+      window.api.getAppVersion().then((v) => {
+        if (v) setVersion(v)
+      })
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -51,7 +60,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           <div>
             <h2 className="text-base font-bold text-slate-100 tracking-tight">Grabbit</h2>
             <span className="text-[11px] text-theme-accent font-mono font-semibold block mt-0.5">
-              v0.1.1 (Desktop Build)
+              v{version} (Desktop Build)
             </span>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed max-w-xs">
               High-performance, hyper-fast desktop download manager &amp; WebTorrent protocol

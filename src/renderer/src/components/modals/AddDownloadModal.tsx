@@ -867,8 +867,15 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                window.api?.exportQueue()
+              onClick={async () => {
+                if (savePath && window.api?.createTorrent) {
+                  const res = await window.api.createTorrent({ sourcePath: savePath })
+                  if (res.success && res.torrentPath) {
+                    alert(`Torrent metainfo saved to:\n${res.torrentPath}`)
+                  } else {
+                    alert(`Failed to save .torrent: ${res.error || 'Unknown error'}`)
+                  }
+                }
               }}
               className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white rounded-none cursor-pointer transition text-xs"
             >

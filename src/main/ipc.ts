@@ -1,8 +1,13 @@
 import { ipcMain, BrowserWindow, Notification, shell, app, clipboard, dialog } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as https from 'https'
+import * as crypto from 'crypto'
 import { DownloadManager } from '../engine/DownloadManager'
 import { TorrentWorker } from '../engine/workers/TorrentWorker'
+import { PluginManager } from '../engine/PluginManager'
+import { PostProcessor, AutomationRule } from '../engine/PostProcessor'
+import { Storage } from '../engine/Storage'
 import { DownloadCategory, DownloadPriority, EngineSettings } from '../engine/types'
 
 export function setupIPC(downloadManager: DownloadManager): void {
@@ -103,6 +108,33 @@ export function setupIPC(downloadManager: DownloadManager): void {
   ipcMain.handle('download:cancel', (_, id: string) => {
     downloadManager.cancelDownload(id)
     return true
+  })
+
+  ipcMain.handle('download:pauseAll', () => {
+    downloadManager.pauseAll()
+    return true
+  })
+
+  ipcMain.handle('download:resumeAll', () => {
+    downloadManager.resumeAll()
+    return true
+  })
+
+  ipcMain.handle('download:clearCompleted', () => {
+    downloadManager.clearCompleted()
+    return true
+  })
+
+  ipcMain.handle('queue:getStats', () => {
+    return downloadManager.getQueueStats()
+  })
+
+  ipcMain.handle('queue:promote', (_, id: string) => {
+    return downloadManager.promoteQueueItem(id)
+  })
+
+  ipcMain.handle('queue:demote', (_, id: string) => {
+    return downloadManager.demoteQueueItem(id)
   })
 
   ipcMain.handle('download:getAll', () => {
@@ -320,13 +352,187 @@ export function setupIPC(downloadManager: DownloadManager): void {
     }
   )
 
+  // App Version IPC Handler
+  ipcMain.handle('app:getVersion', () => {
+    return app.getVersion() || '0.1.1'
+  })
+
   // Auto-Updater IPC Handler
   ipcMain.handle('updater:check', async () => {
+    const currentVersion = app.getVersion() || '0.1.1'
+
+    try {
+      const response = await new Promise<{
+        tag_name?: string
+        body?: string
+        html_url?: string
+      }>((resolve, reject) => {
+        const req = https.get(
+          'https://api.github.com/repos/HawkdotDev/grabbit/releases/latest',
+          {
+            headers: {
+              'User-Agent': `Grabbit/${currentVersion} (Electron Desktop Client)`
+            }
+          },
+          (res) => {
+            if (res.statusCode && res.statusCode >= 400) {
+              return reject(new Error(`HTTP ${res.statusCode}`))
+            }
+            let data = ''
+            res.on('data', (chunk) => (data += chunk))
+            res.on('end', () => {
+              try {
+                resolve(JSON.parse(data))
+              } catch (e) {
+                reject(e)
+              }
+            })
+          }
+        )
+        req.on('error', reject)
+        req.setTimeout(5000, () => {
+          req.destroy()
+          reject(new Error('Update check timeout'))
+        })
+      })
+
+      const latestTag = (response.tag_name || '').replace(/^v/, '')
+      const isNewer =
+        latestTag &&
+        latestTag.localeCompare(currentVersion, undefined, { numeric: true, sensitivity: 'base' }) > 0
+
+      if (isNewer) {
+        return {
+          hasUpdate: true,
+          currentVersion,
+          latestVersion: latestTag,
+          releaseNotes: response.body || `New release v${latestTag} is available!`,
+          downloadUrl: response.html_url || 'https://github.com/HawkdotDev/grabbit/releases/latest'
+        }
+      }
+    } catch {
+      // Offline or development mode fallback
+    }
+
     return {
       hasUpdate: false,
-      currentVersion: '0.1.1',
-      latestVersion: '0.1.1',
-      releaseNotes: 'Grabbit v0.1.1 is up to date.'
+      currentVersion,
+      latestVersion: currentVersion,
+      releaseNotes: `Grabbit v${currentVersion} is up to date.`
+    }
+  })
+
+  // Plugins IPC Handlers
+  ipcMain.handle('plugins:getAll', () => {
+    return PluginManager.getPlugins()
+  })
+
+  ipcMain.handle('plugins:toggleInstall', (_, id: string) => {
+    return PluginManager.toggleInstall(id)
+  })
+
+  ipcMain.handle('plugins:toggleEnabled', (_, args: { id: string; enabled?: boolean }) => {
+    return PluginManager.toggleEnabled(args.id, args.enabled)
+  })
+
+  // Automations IPC Handlers
+  ipcMain.handle('automations:getRules', () => {
+    return PostProcessor.getRules()
+  })
+
+  ipcMain.handle('automations:addRule', (_, rule: Omit<AutomationRule, 'id'>) => {
+    return PostProcessor.addRule(rule)
+  })
+
+  ipcMain.handle('automations:deleteRule', (_, id: string) => {
+    return PostProcessor.deleteRule(id)
+  })
+
+  ipcMain.handle('automations:toggleRule', (_, args: { id: string; enabled?: boolean }) => {
+    return PostProcessor.toggleRule(args.id, args.enabled)
+  })
+
+  // Script Console Execution IPC Handler
+  ipcMain.handle('script:execute', async (_, code: string) => {
+    const logs: Array<{ type: 'log' | 'warn' | 'error'; message: string }> = []
+    const startTime = Date.now()
+
+    const customConsole = {
+      log: (...args: unknown[]) => {
+        logs.push({
+          type: 'log',
+          message: args
+            .map((a) => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)))
+            .join(' ')
+        })
+      },
+      warn: (...args: unknown[]) => {
+        logs.push({
+          type: 'warn',
+          message: args
+            .map((a) => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)))
+            .join(' ')
+        })
+      },
+      error: (...args: unknown[]) => {
+        logs.push({
+          type: 'error',
+          message: args
+            .map((a) => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)))
+            .join(' ')
+        })
+      }
+    }
+
+    try {
+      const sandbox = {
+        console: customConsole,
+        downloadManager,
+        Storage,
+        PluginManager,
+        PostProcessor,
+        TorrentWorker,
+        fs,
+        path,
+        https,
+        crypto,
+        Buffer,
+        setTimeout,
+        clearTimeout
+      }
+
+      const scriptFunction = new Function(
+        'sandbox',
+        `with(sandbox) {
+          return (async () => {
+            ${code}
+          })()
+        }`
+      )
+
+      const result = await scriptFunction(sandbox)
+      const executionTimeMs = Date.now() - startTime
+
+      let resultFormatted: string | undefined
+      if (result !== undefined) {
+        resultFormatted =
+          typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)
+      }
+
+      return {
+        success: true,
+        logs,
+        result: resultFormatted,
+        executionTimeMs
+      }
+    } catch (err: unknown) {
+      const executionTimeMs = Date.now() - startTime
+      return {
+        success: false,
+        logs,
+        error: (err as Error).message || String(err),
+        executionTimeMs
+      }
     }
   })
 

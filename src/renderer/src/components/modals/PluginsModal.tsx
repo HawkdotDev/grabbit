@@ -16,51 +16,33 @@ interface PluginItem {
   installed: boolean
 }
 
-const SAMPLE_PLUGINS: PluginItem[] = [
-  {
-    id: 'p_unpacker',
-    name: 'Auto Archive Unpacker',
-    version: '1.2.0',
-    author: 'HawkdotDev',
-    description: 'Automatically extracts .zip, .rar, and .7z archives upon download completion.',
-    installed: true
-  },
-  {
-    id: 'p_telegram',
-    name: 'Telegram Bot Notifier',
-    version: '2.0.1',
-    author: 'Community',
-    description: 'Sends download status notifications directly to your Telegram channel or bot.',
-    installed: false
-  },
-  {
-    id: 'p_checksum',
-    name: 'Automatic Hasher',
-    version: '1.0.4',
-    author: 'HawkdotDev',
-    description: 'Calculates SHA-256 integrity hash for all completed files.',
-    installed: true
-  },
-  {
-    id: 'p_media',
-    name: 'FFmpeg Transcoder',
-    version: '0.9.5',
-    author: 'MediaTools',
-    description: 'Transcodes downloaded video files to H.264/MP4 format automatically.',
-    installed: false
-  }
-]
-
 export const PluginsModal: React.FC<PluginsModalProps> = ({ isOpen, onClose }) => {
-  const [plugins, setPlugins] = useState<PluginItem[]>(SAMPLE_PLUGINS)
+  const [plugins, setPlugins] = useState<PluginItem[]>([])
   const [query, setQuery] = useState('')
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
 
+  React.useEffect(() => {
+    if (isOpen && window.api?.getPlugins) {
+      window.api.getPlugins().then((items) => {
+        if (Array.isArray(items)) {
+          setPlugins(items as PluginItem[])
+        }
+      })
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
-  const toggleInstall = (id: string): void => {
-    setPlugins((prev) => prev.map((p) => (p.id === id ? { ...p, installed: !p.installed } : p)))
+  const toggleInstall = async (id: string): Promise<void> => {
+    if (window.api?.togglePluginInstall) {
+      const updated = (await window.api.togglePluginInstall(id)) as PluginItem
+      if (updated) {
+        setPlugins((prev) => prev.map((p) => (p.id === id ? updated : p)))
+      }
+    } else {
+      setPlugins((prev) => prev.map((p) => (p.id === id ? { ...p, installed: !p.installed } : p)))
+    }
   }
 
   const filtered = plugins.filter(

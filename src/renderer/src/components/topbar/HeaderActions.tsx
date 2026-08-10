@@ -23,38 +23,65 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
-      id: '1',
-      title: 'Download Task Completed',
-      message: 'Ubuntu 24.04 LTS Desktop ISO (5.8 GB) finished downloading and verified checksum.',
-      timestamp: '2 mins ago',
-      read: false,
-      type: 'success'
-    },
-    {
-      id: '2',
-      title: 'Zero-Copy Allocation',
-      message: 'Pre-allocated disk buffer for Linux_Kernel_6.8.tar.xz (1.2 GB).',
-      timestamp: '15 mins ago',
-      read: false,
-      type: 'info'
-    },
-    {
-      id: '3',
-      title: 'Bandwidth Peak Reached',
-      message: 'Engine achieved peak acceleration of 48.2 MB/s with 32 active worker threads.',
-      timestamp: '1 hour ago',
-      read: false,
-      type: 'success'
-    },
-    {
-      id: '4',
-      title: 'Tracker Timeout Notice',
-      message: 'udp://tracker.openbittorrent.com:443 timed out. Switched to DHT peer discovery.',
-      timestamp: '3 hours ago',
+      id: 'welcome',
+      title: 'Grabbit Engine Active',
+      message: 'Multi-threaded chunk engine and WebTorrent swarm ready.',
+      timestamp: 'Just now',
       read: true,
-      type: 'warning'
+      type: 'info'
     }
   ])
+
+  React.useEffect(() => {
+    const unsubAdded = window.api?.onDownloadAdded?.((download) => {
+      setNotifications((prev) => [
+        {
+          id: `added_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+          title: 'Download Queued',
+          message: `${download.name || 'New download'} added to transfer queue.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          read: false,
+          type: 'info'
+        },
+        ...prev.slice(0, 49)
+      ])
+    })
+
+    const unsubCompleted = window.api?.onDownloadCompleted?.((download) => {
+      const sizeMb = ((download.totalSize || 0) / 1048576).toFixed(1)
+      setNotifications((prev) => [
+        {
+          id: `comp_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+          title: 'Download Completed',
+          message: `${download.name} (${sizeMb} MB) finished downloading successfully.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          read: false,
+          type: 'success'
+        },
+        ...prev.slice(0, 49)
+      ])
+    })
+
+    const unsubError = window.api?.onDownloadError?.((data) => {
+      setNotifications((prev) => [
+        {
+          id: `err_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+          title: 'Download Interrupted',
+          message: data.error || 'Transfer failed due to a network or connection error.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          read: false,
+          type: 'error'
+        },
+        ...prev.slice(0, 49)
+      ])
+    })
+
+    return () => {
+      if (unsubAdded) unsubAdded()
+      if (unsubCompleted) unsubCompleted()
+      if (unsubError) unsubError()
+    }
+  }, [])
 
   const handleMarkAsRead = (id?: string): void => {
     setNotifications((prev) =>

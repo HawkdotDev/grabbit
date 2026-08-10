@@ -75,6 +75,16 @@ export interface GrabbitAPI {
   isWindowMaximized: () => Promise<boolean>
   setAlwaysOnTop: (flag?: boolean) => Promise<boolean>
   toggleFullscreen: () => Promise<boolean>
+  getQueueStats: () => Promise<{
+    active: number
+    queued: number
+    paused: number
+    completed: number
+    error: number
+    total: number
+  }>
+  promoteQueueItem: (id: string) => Promise<boolean>
+  demoteQueueItem: (id: string) => Promise<boolean>
   exportLogs: () => Promise<boolean>
   createTorrent: (options: {
     sourcePath: string
@@ -84,13 +94,60 @@ export interface GrabbitAPI {
     isPrivate?: boolean
     startSeeding?: boolean
   }) => Promise<{ success: boolean; torrentPath?: string; error?: string }>
+  getAppVersion: () => Promise<string>
   checkForUpdates: () => Promise<{
     hasUpdate: boolean
     currentVersion: string
     latestVersion: string
     releaseNotes: string
+    downloadUrl?: string
   }>
   installNativeHost: () => Promise<{ success: boolean; manifestPath?: string; error?: string }>
+
+  // Plugins API
+  getPlugins: () => Promise<
+    Array<{
+      id: string
+      name: string
+      version: string
+      author: string
+      description: string
+      installed: boolean
+      enabled: boolean
+    }>
+  >
+  togglePluginInstall: (id: string) => Promise<unknown>
+  togglePluginEnabled: (id: string, enabled?: boolean) => Promise<unknown>
+
+  // Automations API
+  getAutomationRules: () => Promise<
+    Array<{
+      id: string
+      name: string
+      trigger: string
+      action: string
+      actionConfig?: { webhookUrl?: string; scriptCommand?: string; targetFolder?: string }
+      enabled: boolean
+    }>
+  >
+  addAutomationRule: (rule: {
+    name: string
+    trigger: string
+    action: string
+    actionConfig?: { webhookUrl?: string; scriptCommand?: string; targetFolder?: string }
+    enabled: boolean
+  }) => Promise<unknown>
+  deleteAutomationRule: (id: string) => Promise<boolean>
+  toggleAutomationRule: (id: string, enabled?: boolean) => Promise<unknown>
+
+  // Script Console API
+  executeScript: (code: string) => Promise<{
+    success: boolean
+    logs: Array<{ type: 'log' | 'warn' | 'error'; message: string }>
+    result?: string
+    error?: string
+    executionTimeMs: number
+  }>
 
   // Real-Time Push Events & Listeners
   onDownloadsUpdated: (callback: (downloads: DownloadItem[]) => void) => () => void

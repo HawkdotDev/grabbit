@@ -7,13 +7,42 @@ interface ScriptConsoleModalProps {
   onClose: () => void
 }
 
+const PRESETS: Record<string, string> = {
+  'downloads-summary': `// Inspect all downloads and active speeds
+const downloads = downloadManager.getDownloads();
+console.log("Total downloads:", downloads.length);
+downloads.forEach(d => {
+  console.log(\`[\${d.status}] \${d.name} - \${(d.downloadedSize / 1048576).toFixed(2)} MB / \${(d.totalSize / 1048576).toFixed(2)} MB (Speed: \${(d.speed / 1024).toFixed(1)} KB/s)\`);
+});
+return { count: downloads.length, timestamp: Date.now() };`,
+
+  'queue-stats': `// Query queue manager statistics
+const stats = downloadManager.getQueueStats();
+console.log("Queue Statistics:", stats);
+return stats;`,
+
+  'engine-settings': `// View engine configuration & storage
+const settings = downloadManager.getSettings();
+console.log("Engine Settings:", settings);
+return settings;`,
+
+  'storage-inspect': `// Inspect grabbit_data storage files
+const storageDir = path.join(process.cwd(), 'grabbit_data');
+if (fs.existsSync(storageDir)) {
+  const files = fs.readdirSync(storageDir);
+  console.log("Storage Files:", files);
+  return files;
+} else {
+  console.log("Storage directory path:", storageDir);
+}`
+}
+
 export const ScriptConsoleModal: React.FC<ScriptConsoleModalProps> = ({ isOpen, onClose }) => {
-  const [code, setCode] = useState(
-    '// Grabbit User Script Console\n// Access transfer engine via window.api\n\nconsole.log("Grabbit Engine Status:", await window.api.getSettings());'
-  )
-  const [output, setOutput] = useState<string[]>([
-    '[System] Scripting engine ready. Type JavaScript or API commands above.'
+  const [code, setCode] = useState<string>(PRESETS['downloads-summary'] || '')
+  const [output, setOutput] = useState<Array<{ type: 'log' | 'warn' | 'error' | 'info'; text: string }>>([
+    { type: 'info', text: '[System] Backend scripting sandbox ready. Select a preset or type JavaScript below.' }
   ])
+  const [isRunning, setIsRunning] = useState(false)
 
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
@@ -21,14 +50,50 @@ export const ScriptConsoleModal: React.FC<ScriptConsoleModalProps> = ({ isOpen, 
   if (!isOpen) return null
 
   const handleRun = async (): Promise<void> => {
-    setOutput((prev) => [...prev, `> Executing script...`])
+    setIsRunning(true)
+    setOutput((prev) => [...prev, { type: 'info', text: `> Executing script in engine sandbox...` }])
+
     try {
-      // Evaluate user script safely
-      const fn = new Function(`return (async () => { ${code} })()`)
-      await fn()
-      setOutput((prev) => [...prev, `✔ Execution finished successfully.`])
-    } catch (err: any) {
-      setOutput((prev) => [...prev, `✖ Error: ${err.message || err}`])
+      if (window.api?.executeScript) {
+        const res = await window.api.executeScript(code)
+
+        if (res.logs && res.logs.length > 0) {
+          setOutput((prev) => [
+            ...prev,
+            ...res.logs.map((l) => ({ type: l.type, text: l.message || '' }))
+          ])
+        }
+
+        if (res.result !== undefined) {
+          setOutput((prev) => [...prev, { type: 'log', text: `Result: ${res.result}` }])
+        }
+
+        if (res.success) {
+          setOutput((prev) => [
+            ...prev,
+            { type: 'info', text: `✔ Finished successfully in ${res.executionTimeMs}ms.` }
+          ])
+        } else {
+          setOutput((prev) => [
+            ...prev,
+            { type: 'error', text: `✖ Error (${res.executionTimeMs}ms): ${res.error || 'Execution failed'}` }
+          ])
+        }
+      } else {
+        const fn = new Function(`return (async () => { ${code} })()`)
+        const result = await fn()
+        setOutput((prev) => [
+          ...prev,
+          { type: 'info', text: `✔ Executed in renderer: ${String(result)}` }
+        ])
+      }
+    } catch (err: unknown) {
+      setOutput((prev) => [
+        ...prev,
+        { type: 'error', text: `✖ Error: ${(err as Error).message || String(err)}` }
+      ])
+    } finally {
+      setIsRunning(false)
     }
   }
 
@@ -55,9 +120,9 @@ export const ScriptConsoleModal: React.FC<ScriptConsoleModalProps> = ({ isOpen, 
               <Terminal className="h-4 w-4 text-emerald-400" />
             </div>
             <div>
-              <span className="font-bold text-slate-100 text-xs block">Scripting Console</span>
+              <span className="font-bold text-slate-100 text-xs block">Scripting Console &amp; REPL</span>
               <span className="text-[10px] text-slate-500 block">
-                Execute or debug custom JavaScript user scripts against Grabbit API
+                Execute custom automation scripts directly against Grabbit engine sandbox
               </span>
             </div>
           </div>
@@ -70,41 +135,68 @@ export const ScriptConsoleModal: React.FC<ScriptConsoleModalProps> = ({ isOpen, 
           </button>
         </div>
 
+        {/* Presets & Actions Toolbar */}
+        <div className="p-2 bg-slate-950 border-b border-ide-border/80 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto">
+            <span className="text-[10px] text-slate-500 font-mono">Presets:</span>
+            {Object.keys(PRESETS).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setCode(PRESETS[key] || '')}
+                className="px-2 py-0.5 bg-white/5 hover:bg-white/10 text-[10px] text-slate-300 rounded-none border border-ide-border font-mono cursor-pointer"
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setOutput([])}
+              className="text-[10px] text-slate-400 hover:text-slate-200 flex items-center gap-1 cursor-pointer"
+            >
+              <RotateCcw className="h-3 w-3" /> Clear
+            </button>
+            <button
+              type="button"
+              disabled={isRunning}
+              onClick={handleRun}
+              className="px-3 py-1 bg-emerald-400 text-slate-950 font-bold hover:bg-emerald-300 rounded-none transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Play className="h-3 w-3 fill-slate-950" />
+              <span>{isRunning ? 'Running...' : 'Run Script'}</span>
+            </button>
+          </div>
+        </div>
+
         {/* Code Editor Area */}
         <div className="p-3 bg-slate-950 border-b border-ide-border/80 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-emerald-400 font-mono font-bold">script.js</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setOutput([])}
-                className="text-[10px] text-slate-400 hover:text-slate-200 flex items-center gap-1 cursor-pointer"
-              >
-                <RotateCcw className="h-3 w-3" /> Clear Output
-              </button>
-              <button
-                type="button"
-                onClick={handleRun}
-                className="px-3 py-1 bg-emerald-400 text-slate-950 font-bold hover:bg-emerald-300 rounded-none transition cursor-pointer flex items-center gap-1.5"
-              >
-                <Play className="h-3 w-3 fill-slate-950" />
-                <span>Run Script</span>
-              </button>
-            </div>
-          </div>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            rows={6}
+            rows={7}
             className="w-full bg-ide-surface text-emerald-300 font-mono text-xs p-3 rounded-none border border-ide-border focus:outline-none focus:border-emerald-500/60 resize-none"
           />
         </div>
 
         {/* Console Log Output */}
-        <div className="p-3 bg-slate-950/90 font-mono text-[11px] h-40 overflow-y-auto space-y-1 text-slate-300 border-t border-ide-border/60">
-          {output.map((line, i) => (
-            <div key={i} className="leading-tight">
-              {line}
+        <div className="p-3 bg-slate-950/90 font-mono text-[11px] h-44 overflow-y-auto space-y-1 text-slate-300 border-t border-ide-border/60">
+          {output.map((item, i) => (
+            <div
+              key={i}
+              className={`leading-tight ${
+                item.type === 'error'
+                  ? 'text-rose-400'
+                  : item.type === 'warn'
+                    ? 'text-amber-400'
+                    : item.type === 'info'
+                      ? 'text-sky-400'
+                      : 'text-emerald-300'
+              }`}
+            >
+              {item.text}
             </div>
           ))}
         </div>

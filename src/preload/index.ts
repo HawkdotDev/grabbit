@@ -21,6 +21,19 @@ const api = {
   pauseDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:pause', id),
   resumeDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:resume', id),
   cancelDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:cancel', id),
+  pauseAll: (): Promise<boolean> => ipcRenderer.invoke('download:pauseAll'),
+  resumeAll: (): Promise<boolean> => ipcRenderer.invoke('download:resumeAll'),
+  clearCompleted: (): Promise<boolean> => ipcRenderer.invoke('download:clearCompleted'),
+  getQueueStats: (): Promise<{
+    active: number
+    queued: number
+    paused: number
+    completed: number
+    error: number
+    total: number
+  }> => ipcRenderer.invoke('queue:getStats'),
+  promoteQueueItem: (id: string): Promise<boolean> => ipcRenderer.invoke('queue:promote', id),
+  demoteQueueItem: (id: string): Promise<boolean> => ipcRenderer.invoke('queue:demote', id),
   exportQueue: (): Promise<boolean> => ipcRenderer.invoke('download:exportQueue'),
   importQueue: (): Promise<number> => ipcRenderer.invoke('download:importQueue'),
   getDownloads: (): Promise<DownloadItem[]> => ipcRenderer.invoke('download:getAll'),
@@ -92,14 +105,61 @@ const api = {
     startSeeding?: boolean
   }): Promise<{ success: boolean; torrentPath?: string; error?: string }> =>
     ipcRenderer.invoke('torrent:create', options),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke('app:getVersion'),
   checkForUpdates: (): Promise<{
     hasUpdate: boolean
     currentVersion: string
     latestVersion: string
     releaseNotes: string
+    downloadUrl?: string
   }> => ipcRenderer.invoke('updater:check'),
   installNativeHost: (): Promise<{ success: boolean; manifestPath?: string; error?: string }> =>
     ipcRenderer.invoke('nativeHost:install'),
+
+  // Plugins API
+  getPlugins: (): Promise<Array<{
+    id: string
+    name: string
+    version: string
+    author: string
+    description: string
+    installed: boolean
+    enabled: boolean
+  }>> => ipcRenderer.invoke('plugins:getAll'),
+  togglePluginInstall: (id: string): Promise<unknown> =>
+    ipcRenderer.invoke('plugins:toggleInstall', id),
+  togglePluginEnabled: (id: string, enabled?: boolean): Promise<unknown> =>
+    ipcRenderer.invoke('plugins:toggleEnabled', { id, enabled }),
+
+  // Automations API
+  getAutomationRules: (): Promise<Array<{
+    id: string
+    name: string
+    trigger: string
+    action: string
+    actionConfig?: { webhookUrl?: string; scriptCommand?: string; targetFolder?: string }
+    enabled: boolean
+  }>> => ipcRenderer.invoke('automations:getRules'),
+  addAutomationRule: (rule: {
+    name: string
+    trigger: string
+    action: string
+    actionConfig?: { webhookUrl?: string; scriptCommand?: string; targetFolder?: string }
+    enabled: boolean
+  }): Promise<unknown> => ipcRenderer.invoke('automations:addRule', rule),
+  deleteAutomationRule: (id: string): Promise<boolean> =>
+    ipcRenderer.invoke('automations:deleteRule', id),
+  toggleAutomationRule: (id: string, enabled?: boolean): Promise<unknown> =>
+    ipcRenderer.invoke('automations:toggleRule', { id, enabled }),
+
+  // Script Console API
+  executeScript: (code: string): Promise<{
+    success: boolean
+    logs: Array<{ type: 'log' | 'warn' | 'error'; message: string }>
+    result?: string
+    error?: string
+    executionTimeMs: number
+  }> => ipcRenderer.invoke('script:execute', code),
 
   // Listeners
   onDownloadProgress: (callback: (download: DownloadItem) => void): (() => void) => {

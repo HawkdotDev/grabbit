@@ -1,100 +1,32 @@
-# Grabbit — Unimplemented / Stub Features (Full Verified Analysis)
+# Grabbit — Unimplemented / Stub Features (Remaining Work)
 
 > Verified by reading every source file in full across:  
-> `src/engine/`, `src/main/`, `src/preload/`, `src/server/`, `src/renderer/`
+> `src/engine/`, `src/main/`, `src/preload/`, `src/server/`, `src/renderer/`  
+>  
+> 💡 **For completed & verified features, see [completed_features.md](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/completed_features.md)**
 
 ---
 
 ## 🔴 Critical — Fake / Broken Behaviour
 
-These produce **wrong results right now** and must be fixed before the app is production-ready.
+All initial Critical items (#1 to #7) and UI Shells (#8 to #11) have been **fully resolved and verified**. See [completed_features.md](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/completed_features.md) for details:
+- ✅ **#1 Real WebTorrent Download Flow**
+- ✅ **#2 Authentic BitTorrent (.torrent) Metainfo Generation**
+- ✅ **#3 Real Auto-Updater & GitHub Releases Integration**
+- ✅ **#4 Dynamic Magnet Swarm Metadata Discovery**
+- ✅ **#5 DownloadQueueManager Priority Scheduling & Concurrency**
+- ✅ **#6 Menu Bar Export Transfer Logs IPC**
+- ✅ **#7 Torrent Export / Creation IPC Wiring**
+- ✅ **#8 Plugins Modal & Persistent Plugin Registry Lifecycle**
+- ✅ **#9 Automations Engine & PostProcessor Event Dispatches**
+- ✅ **#10 Script Console Backend Sandboxed Execution REPL**
+- ✅ **#11 Notifications Panel Real-Time Push Event Bus**
 
 ---
 
-### 1. Magnet Chunk Download Writes Zero-Filled Dummy Bytes
-
-**File:** [`ChunkEngine.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/ChunkEngine.ts)  
-**Problem:** `downloadMagnetChunkRange()` does not use WebTorrent. It writes `Buffer.alloc(chunkSize, 0)` — zeroed buffers — to disk, simulating progress at a random speed of 12–20 MB/s. Any file "downloaded" via this path is empty/corrupted. Real torrent data lives in `TorrentWorker`, but the `DownloadManager` sometimes falls through to this path for magnets.
-
----
-
-### 2. Torrent Creator Writes Plain JSON, Not a Real `.torrent`
-
-**File:** [`ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts) — `torrent:create` handler  
-**Problem:** The handler builds a plain JavaScript object and `JSON.stringify()`s it to a file with a `.torrent` extension. No piece-hashing or BitTorrent metainfo V1/V2 encoding is done. The resulting file is rejected by every torrent client.
-
----
-
-### 3. Auto-Updater Always Returns "No Update Available"
-
-**File:** [`ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts) — `updater:check`  
-**Problem:** Returns a hardcoded object `{ hasUpdate: false, currentVersion: '0.1.1', latestVersion: '0.1.1', releaseNotes: '' }`. The `electron-updater` package is installed in `package.json` but is never imported, configured, or called anywhere in the codebase.
-
----
-
-### 4. All Magnet Metadata Is Hardcoded / Fake
-
-**File:** [`DownloadManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadManager.ts)  
-**Problem:** When a magnet link is added:
-- Filename defaults to the hardcoded string `"Spider-Man.Brand.New.Day.2026.1080p.TELESYNC.x265"`.
-- `infoHash` is hardcoded to `'bed7342b40bf3e299359efee4459a04fe9f5604b'`.
-- `totalSize` is hardcoded to `1845493760` bytes (~1.72 GB) for every single magnet, regardless of actual content.
-- `seedsCount` and `peersCount` are hardcoded random numbers — not fetched from any tracker.
-
----
-
-### 5. `DownloadQueueManager` Is Dead Code
-
-**File:** [`DownloadQueueManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadQueueManager.ts)  
-**Problem:** The class is fully implemented with priority-weighted queue logic, but it is **never imported or used** anywhere. `DownloadManager` has its own private `processQueue()` method which does the same thing but more simply. This entire file is orphaned.
-
----
-
-### 6. Menu Bar "Export Transfer Logs..." Fires `alert()` Instead of the IPC
-
-**File:** [`MenuBar.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/topbar/MenuBar.tsx)  
-**Problem:** Clicking `File → Export Transfer Logs...` executes `alert('Transfer diagnostics exported to grabbit_data/logs.')` and nothing else. The `window.api.exportLogs()` IPC exists and is wired to the `Ctrl+L` keyboard shortcut, but is not called by this menu item. No actual log data is written.
-
----
-
-### 7. `AddDownloadModal` "Save as .torrent file..." Button Calls the Wrong IPC
-
-**File:** [`AddDownloadModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/AddDownloadModal.tsx)  
-**Problem:** The bottom footer bar has a "Save as .torrent file..." button that calls `window.api?.exportQueue()`. This exports the entire download list JSON — not the `.torrent` file for the current download. The correct IPC is `window.api.exportTorrentFile(download.id)`.
-
----
-
-## 🟠 UI Shells — No Backend Wiring
+## 🟠 UI Shells — Remaining Tasks
 
 These have complete UIs but their actions either only mutate local React state or silently do nothing.
-
----
-
-### 8. Plugins Modal — Static Mock Data, No Runtime
-
-**File:** [`PluginsModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/PluginsModal.tsx)  
-**Problem:** The plugin list is a hardcoded `SAMPLE_PLUGINS` constant. "Install" / "Uninstall" only toggles a boolean inside local state. No IPC handler exists for plugin management, and no extension loading mechanism exists in the engine.
-
----
-
-### 9. Automations Modal — Rules Are Not Wired to the Engine
-
-**File:** [`AutomationsModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/AutomationsModal.tsx)  
-**Problem:** Automation rules are stored in hardcoded static state — no persistence to disk, no IPC. `PostProcessor.ts` exists in the engine with `executeWebhook()` and archive auto-extraction stubs, but `DownloadManager` never calls it when a download completes. "Add Rule" creates an object in local React state only.
-
----
-
-### 10. Script Console — Runs `eval` in the Renderer, No Engine Access
-
-**File:** [`ScriptConsoleModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/ScriptConsoleModal.tsx)  
-**Problem:** Uses `new Function(code)()` to execute user-entered JavaScript inside the renderer process. This has no access to Node.js APIs (no `fs`, no `child_process`). `window.api` is accessible, but there is no IPC-backed scripting REPL that can interact with the engine internals.
-
----
-
-### 11. Notifications Panel — Hardcoded Dummy Data, Never Fed by Real Events
-
-**File:** [`HeaderActions.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/topbar/HeaderActions.tsx)  
-**Problem:** The notifications array is initialised with 4 hardcoded items about "Ubuntu 24.04", "Linux Kernel", etc. Download completion events that flow through `download:onCompleted` IPC are **not forwarded** to the `NotificationPanel`. The Bell badge animates based on the static dummy data, not real download activity.
 
 ---
 

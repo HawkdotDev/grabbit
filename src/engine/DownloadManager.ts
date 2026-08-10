@@ -8,6 +8,8 @@ import { Storage } from './Storage'
 import { CategoryManager } from './CategoryManager'
 import { HashVerifier } from './HashVerifier'
 import { TorrentWorker } from './workers/TorrentWorker'
+import { PostProcessor } from './PostProcessor'
+import { PluginManager } from './PluginManager'
 import {
   DownloadCategory,
   DownloadItem,
@@ -15,12 +17,14 @@ import {
   EngineSettings,
   SpeedSample
 } from './types'
+import { DownloadQueueManager, QueueStatistics } from './DownloadQueueManager'
 
 export class DownloadManager extends EventEmitter {
   private downloads: Map<string, DownloadItem> = new Map()
   private chunkEngine: ChunkEngine
   private rateLimiter: RateLimiter
   private statsCollector: StatsCollector
+  private queueManager: DownloadQueueManager
   private settings: EngineSettings
 
   constructor() {
@@ -30,6 +34,7 @@ export class DownloadManager extends EventEmitter {
     this.rateLimiter = new RateLimiter(this.settings.maxGlobalSpeedLimitKbps)
     this.chunkEngine = new ChunkEngine()
     this.statsCollector = new StatsCollector()
+    this.queueManager = new DownloadQueueManager(this.settings.maxConcurrentDownloads)
 
     this.statsCollector.on('tick', (sample: SpeedSample) => {
       this.emit('statsTick', sample)
@@ -65,7 +70,37 @@ export class DownloadManager extends EventEmitter {
     if (newSettings.maxGlobalSpeedLimitKbps !== undefined) {
       this.rateLimiter.setLimitKbps(this.settings.maxGlobalSpeedLimitKbps)
     }
+    if (newSettings.maxConcurrentDownloads !== undefined) {
+      this.queueManager.setMaxConcurrentDownloads(this.settings.maxConcurrentDownloads)
+    }
     Storage.saveSettings(this.settings)
+    this.processQueue()
+  }
+
+  public getQueueStats(): QueueStatistics {
+    return this.queueManager.getQueueStats(this.downloads)
+  }
+
+  public promoteQueueItem(id: string): boolean {
+    const ok = this.queueManager.promoteQueueItem(this.downloads, id)
+    if (ok) {
+      this.saveStateImmediate()
+      const d = this.downloads.get(id)
+      if (d) this.emit('downloadUpdated', d)
+      this.processQueue()
+    }
+    return ok
+  }
+
+  public demoteQueueItem(id: string): boolean {
+    const ok = this.queueManager.demoteQueueItem(this.downloads, id)
+    if (ok) {
+      this.saveStateImmediate()
+      const d = this.downloads.get(id)
+      if (d) this.emit('downloadUpdated', d)
+      this.processQueue()
+    }
+    return ok
   }
 
   public getDownloads(): DownloadItem[] {
@@ -163,10 +198,18 @@ export class DownloadManager extends EventEmitter {
       options?.category ||
       (this.settings.autoCategorize ? CategoryManager.detectCategory(filename) : 'other')
 
-    const saveDir = options?.savePath || this.settings.defaultSavePath
-    DiskAllocator.ensureDirectory(saveDir)
+    let fullSavePath: string
+    if (options?.savePath) {
+      if (path.extname(options.savePath)) {
+        fullSavePath = options.savePath
+      } else {
+        fullSavePath = path.join(options.savePath, filename)
+      }
+    } else {
+      fullSavePath = path.join(this.settings.defaultSavePath, filename)
+    }
+    DiskAllocator.ensureDirectory(path.dirname(fullSavePath))
 
-    const fullSavePath = path.join(saveDir, filename)
     const threadCount =
       options?.threadCount || (acceptRanges ? this.settings.defaultThreadCount : 1)
     const chunks = isTorrent
@@ -203,6 +246,7 @@ export class DownloadManager extends EventEmitter {
     this.downloads.set(download.id, download)
     this.saveStateImmediate()
     this.emit('downloadAdded', download)
+    PostProcessor.handleDownloadEvent('onAdded', download).catch(() => {})
 
     this.processQueue()
     return download
@@ -262,6 +306,8 @@ export class DownloadManager extends EventEmitter {
           d.downloadedSize = d.totalSize
           this.saveStateImmediate()
           this.emit('downloadCompleted', d)
+          PostProcessor.handleDownloadEvent('onCompleted', d).catch(() => {})
+          PluginManager.executeHook('onDownloadCompleted', d).catch(() => {})
           this.processQueue()
         }
       ).catch((err) => {
@@ -272,6 +318,8 @@ export class DownloadManager extends EventEmitter {
         d.speed = 0
         this.saveStateImmediate()
         this.emit('downloadUpdated', d)
+        PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
+        PluginManager.executeHook('onDownloadError', d).catch(() => {})
         this.processQueue()
       })
       return
@@ -307,6 +355,8 @@ export class DownloadManager extends EventEmitter {
           DiskAllocator.closeFile(d.savePath)
           this.saveStateImmediate()
           this.emit('downloadCompleted', d)
+          PostProcessor.handleDownloadEvent('onCompleted', d).catch(() => {})
+          PluginManager.executeHook('onDownloadCompleted', d).catch(() => {})
           this.processQueue()
         }
       },
@@ -319,6 +369,8 @@ export class DownloadManager extends EventEmitter {
         DiskAllocator.closeFile(d.savePath)
         this.saveStateImmediate()
         this.emit('downloadUpdated', d)
+        PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
+        PluginManager.executeHook('onDownloadError', d).catch(() => {})
         this.processQueue()
       }
     )
@@ -386,6 +438,32 @@ export class DownloadManager extends EventEmitter {
     this.processQueue()
   }
 
+  public pauseAll(): void {
+    this.downloads.forEach((d) => {
+      if (d.status === 'downloading' || d.status === 'queued') {
+        this.pauseDownload(d.id)
+      }
+    })
+  }
+
+  public resumeAll(): void {
+    this.downloads.forEach((d) => {
+      if (d.status === 'paused' || d.status === 'error') {
+        this.resumeDownload(d.id)
+      }
+    })
+  }
+
+  public clearCompleted(): void {
+    const toRemove: string[] = []
+    this.downloads.forEach((d) => {
+      if (d.status === 'completed') {
+        toRemove.push(d.id)
+      }
+    })
+    toRemove.forEach((id) => this.cancelDownload(id))
+  }
+
   public async verifyDownloadHash(
     id: string,
     expectedHash: string,
@@ -404,21 +482,7 @@ export class DownloadManager extends EventEmitter {
   }
 
   private processQueue(): void {
-    const active = Array.from(this.downloads.values()).filter(
-      (d) => d.status === 'downloading'
-    ).length
-    const availableSlots = this.settings.maxConcurrentDownloads - active
-
-    if (availableSlots <= 0) return
-
-    const queued = Array.from(this.downloads.values())
-      .filter((d) => d.status === 'queued')
-      .sort((a, b) => {
-        const priorityOrder: Record<DownloadPriority, number> = { high: 3, normal: 2, low: 1 }
-        return priorityOrder[b.priority] - priorityOrder[a.priority]
-      })
-
-    const toStart = queued.slice(0, availableSlots)
+    const toStart = this.queueManager.getNextQueuedDownloads(this.downloads)
     toStart.forEach((d) => this.startDownload(d.id))
   }
 

@@ -102,6 +102,32 @@ export const MenuBar: React.FC<MenuBarProps> = ({
     }
   }
 
+  const handleExportLogs = async (): Promise<void> => {
+    if (window.api?.exportLogs) {
+      await window.api.exportLogs()
+    }
+  }
+
+  const handleCheckForUpdates = async (): Promise<void> => {
+    if (window.api?.checkForUpdates) {
+      try {
+        const res = await window.api.checkForUpdates()
+        if (res.hasUpdate) {
+          const confirmOpen = confirm(
+            `A new update is available!\n\nCurrent Version: v${res.currentVersion}\nLatest Version: v${res.latestVersion}\n\nRelease Notes:\n${res.releaseNotes}\n\nWould you like to visit the release page?`
+          )
+          if (confirmOpen && res.downloadUrl) {
+            window.open(res.downloadUrl, '_blank')
+          }
+        } else {
+          alert(`You are up to date! Grabbit v${res.currentVersion} is currently the latest release.`)
+        }
+      } catch (err: unknown) {
+        alert(`Failed to check for updates: ${(err as Error).message || String(err)}`)
+      }
+    }
+  }
+
   const handleExit = (): void => {
     if (window.api?.closeWindow) {
       window.api.closeWindow()
@@ -215,8 +241,8 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                alert('Transfer diagnostics exported to grabbit_data/logs.')
+              onClick={async () => {
+                await handleExportLogs()
                 setActiveMenu(null)
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
@@ -225,6 +251,9 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                 <FileSpreadsheet className="h-3.5 w-3.5 text-cyan-300" />
                 <span>Export Transfer Logs...</span>
               </div>
+              <span className="text-[10px] text-slate-500 group-hover:text-theme-accent/70 font-mono">
+                Ctrl+L
+              </span>
             </button>
 
             <div className="border-t border-ide-border my-1" />
@@ -736,9 +765,9 @@ export const MenuBar: React.FC<MenuBarProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                alert('Checking for updates... Grabbit v0.1.1 is up to date!')
+              onClick={async () => {
                 setActiveMenu(null)
+                await handleCheckForUpdates()
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium group"
             >

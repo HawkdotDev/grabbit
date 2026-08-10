@@ -411,8 +411,10 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
       {/* 17. Export .torrent... */}
       <button
-        onClick={() => {
-          window.api?.exportQueue()
+        onClick={async () => {
+          if (window.api?.exportTorrentFile) {
+            await window.api.exportTorrentFile(download.id)
+          }
           onClose()
         }}
         className="w-full px-3 py-1.5 flex items-center gap-2.5 hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
