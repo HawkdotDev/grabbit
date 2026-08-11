@@ -170,7 +170,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-4xl h-[620px] shadow-2xl overflow-hidden flex flex-col font-sans text-slate-100 ${
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-4xl h-155 shadow-2xl overflow-hidden flex flex-col font-sans text-slate-100 ${
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
