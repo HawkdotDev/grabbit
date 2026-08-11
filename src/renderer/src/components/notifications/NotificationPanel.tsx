@@ -150,31 +150,28 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               <Filter className="h-3.5 w-3.5 text-theme-accent ml-2" />
               <button
                 onClick={() => setFilterType('all')}
-                className={`px-3 py-1 text-xs font-semibold transition cursor-pointer ${
-                  filterType === 'all'
+                className={`px-3 py-1 text-xs font-semibold transition cursor-pointer ${filterType === 'all'
                     ? 'bg-theme-accent text-white font-bold'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 All ({notifications.length})
               </button>
               <button
                 onClick={() => setFilterType('unread')}
-                className={`px-3 py-1 text-xs font-semibold transition cursor-pointer ${
-                  filterType === 'unread'
+                className={`px-3 py-1 text-xs font-semibold transition cursor-pointer ${filterType === 'unread'
                     ? 'bg-theme-accent text-white font-bold'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 Unread ({unreadCount})
               </button>
               <button
                 onClick={() => setFilterType('warning')}
-                className={`px-3 py-1 text-xs font-semibold transition cursor-pointer ${
-                  filterType === 'warning'
+                className={`px-3 py-1 text-xs font-semibold transition cursor-pointer ${filterType === 'warning'
                     ? 'bg-theme-accent text-white font-bold'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 Warnings &amp; Alerts
               </button>
@@ -193,11 +190,10 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                 <div
                   key={n.id}
                   onClick={() => onMarkAsRead(n.id)}
-                  className={`p-3.5 mb-1 flex items-start justify-between gap-4 border transition cursor-pointer ${
-                    !n.read
+                  className={`p-3.5 mb-1 flex items-start justify-between gap-4 border transition cursor-pointer ${!n.read
                       ? 'bg-theme-tint/30 border-l-2 border-l-theme-accent border-ide-border/60'
                       : 'bg-ide-surface/60 border-ide-border/40 hover:bg-white/5 opacity-80'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="mt-0.5">{getNotificationIcon(n.type)}</div>
@@ -295,11 +291,10 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               <div
                 key={n.id}
                 onClick={() => onMarkAsRead(n.id)}
-                className={`p-3 mb-1 flex items-start gap-3 border transition cursor-pointer ${
-                  !n.read
+                className={`p-3 mb-1 flex items-start gap-3 border transition cursor-pointer ${!n.read
                     ? 'bg-theme-tint/30 border-l-2 border-l-theme-accent border-ide-border/60'
                     : 'bg-ide-surface/60 border-ide-border/40 hover:bg-white/5 opacity-75'
-                }`}
+                  }`}
               >
                 <div className="mt-0.5">{getNotificationIcon(n.type)}</div>
                 <div className="flex-1 min-w-0">

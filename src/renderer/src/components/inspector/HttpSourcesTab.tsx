@@ -154,7 +154,7 @@ export const HttpSourcesTab: React.FC<HttpSourcesTabProps> = ({ download }) => {
                 <div className="w-full bg-slate-800 h-1.5 overflow-hidden">
                   <div
                     className={`h-full transition-all duration-200 ${
-                      chunk.status === 'completed' ? 'bg-emerald-400' : 'bg-cyan-400'
+                      chunk.status === 'completed' ? 'bg-emerald-400' : 'progress-active'
                     }`}
                     style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
                   />

@@ -279,7 +279,7 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
           <TaskContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
-            download={contextMenu.download}
+            download={downloads.find((d) => d.id === contextMenu.download.id) || contextMenu.download}
             availableTags={Array.from(new Set(downloads.flatMap((d) => d.tags || [])))}
             onClose={handleCloseContextMenu}
             onPause={onPause}

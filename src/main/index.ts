@@ -7,6 +7,33 @@ import { setupIPC } from './ipc'
 import { RemoteServer } from '../server/RemoteServer'
 import { registerWindowsNativeMessagingHost } from './browser-integration/native_messaging_host'
 
+process.on('uncaughtException', (err: Error | unknown) => {
+  const msg = typeof err === 'string' ? err : (err as Error)?.message || ''
+  if (
+    msg.includes('length 20') ||
+    msg.includes('PeerConnection') ||
+    msg.includes('handshake') ||
+    msg.includes('bittorrent') ||
+    msg.includes('Wire')
+  ) {
+    return
+  }
+  console.error('[Main Uncaught Exception]', err)
+})
+
+process.on('unhandledRejection', (reason: unknown) => {
+  const msg = typeof reason === 'string' ? reason : (reason as Error)?.message || ''
+  if (
+    msg.includes('length 20') ||
+    msg.includes('PeerConnection') ||
+    msg.includes('handshake') ||
+    msg.includes('bittorrent')
+  ) {
+    return
+  }
+  console.error('[Main Unhandled Rejection]', reason)
+})
+
 let downloadManager: DownloadManager | null = null
 let remoteServer: RemoteServer | null = null
 

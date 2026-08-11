@@ -182,9 +182,8 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Title Bar */}
         <div
@@ -335,11 +334,10 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
                   key={key}
                   type="button"
                   onClick={() => handleApplyPreset(key)}
-                  className={`px-2.5 py-1 text-[10px] font-medium border transition cursor-pointer flex items-center gap-1 ${
-                    activeTrackerPreset === key
+                  className={`px-2.5 py-1 text-[10px] font-medium border transition cursor-pointer flex items-center gap-1 ${activeTrackerPreset === key
                       ? 'bg-theme-tint text-theme-accent border-theme-accent/60 font-bold'
                       : 'bg-ide-surface text-slate-400 border-ide-border hover:text-white hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <Zap className="h-2.5 w-2.5" />
                   <span>{item.label}</span>
@@ -459,11 +457,10 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
               <button
                 type="submit"
                 disabled={isGenerating || !sourcePath}
-                className={`px-5 py-2 text-xs font-bold rounded-none transition cursor-pointer flex items-center gap-2 ${
-                  !sourcePath || isGenerating
+                className={`px-5 py-2 text-xs font-bold rounded-none transition cursor-pointer flex items-center gap-2 ${!sourcePath || isGenerating
                     ? 'text-slate-500 bg-white/5 border border-ide-border cursor-not-allowed'
                     : 'text-slate-950 bg-theme-accent hover:bg-theme-bright active:scale-[0.98] shadow-lg shadow-theme-accent/20'
-                }`}
+                  }`}
               >
                 {isGenerating ? (
                   <>

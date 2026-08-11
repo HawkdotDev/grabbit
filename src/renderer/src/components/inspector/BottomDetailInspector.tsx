@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { DownloadItem, SpeedSample } from '../../../../engine/types'
-import { ChunkProgress } from './ChunkProgress'
 import { GeneralTab } from './GeneralTab'
 import { TrackersTab } from './TrackersTab'
 import { ContentFilesTab } from './ContentFilesTab'
 import { HttpSourcesTab } from './HttpSourcesTab'
-import { Info, Globe, Users, Link, FileText, ChevronDown, ChevronUp } from 'lucide-react'
+import { PeersTab } from './PeersTab'
+import { ThreadsTab } from './ThreadsTab'
+import { Info, Globe, Users, Cpu, Link, FileText, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface BottomDetailInspectorProps {
   height?: number
@@ -13,19 +14,55 @@ interface BottomDetailInspectorProps {
   speedHistory: SpeedSample[]
 }
 
+class InspectorErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; errorMsg: string }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false, errorMsg: '' }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, errorMsg: error?.message || 'Component render exception' }
+  }
+
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[Inspector Tab Error]', error, errorInfo)
+  }
+
+  override render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-ide-surface border border-zinc-800 text-xs font-mono text-slate-400 flex items-center justify-between">
+          <div>
+            <div className="font-bold text-slate-200">Inspector Diagnostics Notice</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">{this.state.errorMsg}</div>
+          </div>
+          <button
+            onClick={() => this.setState({ hasError: false, errorMsg: '' })}
+            className="px-2.5 py-1 bg-theme-tint hover:bg-white/10 text-theme-accent border border-theme-accent/40 font-bold transition cursor-pointer"
+          >
+            Retry Tab
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React.memo(
   ({ height = 240, download }) => {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [activeTab, setActiveTab] = useState<
-      'general' | 'trackers' | 'peers' | 'sources' | 'content'
+      'general' | 'peers' | 'threads' | 'trackers' | 'sources' | 'content'
     >('general')
 
     const tabs = [
       { id: 'general', label: 'General', icon: Info },
+      { id: 'peers', label: 'Peers', icon: Users },
+      { id: 'threads', label: 'Threads', icon: Cpu },
       { id: 'trackers', label: 'Trackers', icon: Globe },
-      { id: 'peers', label: 'Peers / Threads', icon: Users },
-      { id: 'sources', label: 'HTTP Sources', icon: Link },
-      { id: 'content', label: 'Content / Files', icon: FileText }
+      { id: 'sources', label: 'Sources', icon: Link },
+      { id: 'content', label: 'Files', icon: FileText }
     ]
 
     return (
@@ -43,7 +80,7 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React
                 <button
                   key={t.id}
                   onClick={() => {
-                    setActiveTab(t.id as 'general' | 'trackers' | 'peers' | 'sources' | 'content')
+                    setActiveTab(t.id as 'general' | 'peers' | 'threads' | 'trackers' | 'sources' | 'content')
                     if (isCollapsed) setIsCollapsed(false)
                   }}
                   className={`px-3 py-1 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer rounded-none border-b-2 ${
@@ -84,22 +121,23 @@ export const BottomDetailInspector: React.FC<BottomDetailInspectorProps> = React
         {/* Tab Body Container (Hidden when collapsed) */}
         {!isCollapsed && (
           <div className="flex-1 overflow-y-auto px-3 py-2 bg-ide-bg text-slate-300 font-sans">
-            {activeTab === 'trackers' ? (
-              <TrackersTab download={download} />
-            ) : !download ? (
-              <div className="h-full flex items-center justify-center text-slate-500 italic text-xs">
-                Select a task in the table above to view detailed diagnostics and peers.
-              </div>
-            ) : (
-              <>
-                {activeTab === 'general' && <GeneralTab download={download} />}
-                {activeTab === 'peers' && (
-                  <ChunkProgress chunks={download.chunks} totalSize={download.totalSize} />
-                )}
-                {activeTab === 'sources' && <HttpSourcesTab download={download} />}
-                {activeTab === 'content' && <ContentFilesTab download={download} />}
-              </>
-            )}
+            <InspectorErrorBoundary key={activeTab}>
+              {activeTab === 'trackers' ? (
+                <TrackersTab download={download} />
+              ) : !download ? (
+                <div className="h-full flex items-center justify-center text-slate-500 italic text-xs">
+                  Select a task in the table above to view detailed diagnostics and peers.
+                </div>
+              ) : (
+                <>
+                  {activeTab === 'general' && <GeneralTab download={download} />}
+                  {activeTab === 'peers' && <PeersTab download={download} />}
+                  {activeTab === 'threads' && <ThreadsTab download={download} />}
+                  {activeTab === 'sources' && <HttpSourcesTab download={download} />}
+                  {activeTab === 'content' && <ContentFilesTab download={download} />}
+                </>
+              )}
+            </InspectorErrorBoundary>
           </div>
         )}
       </div>

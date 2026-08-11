@@ -123,9 +123,8 @@ export const SimpleAddDownloadModal: React.FC<SimpleAddDownloadModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* ─── Title Bar ─── */}
         <div

@@ -114,9 +114,8 @@ export const ProfileGatewayModal: React.FC<ProfileGatewayModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Title Bar */}
         <div
@@ -185,11 +184,10 @@ export const ProfileGatewayModal: React.FC<ProfileGatewayModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('gateway')}
-                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                  activeTab === 'gateway'
+                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === 'gateway'
                     ? 'border-cyan-400 text-cyan-400 bg-white/5'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <Server className="h-3.5 w-3.5" />
                 <span>Remote Server</span>
@@ -198,11 +196,10 @@ export const ProfileGatewayModal: React.FC<ProfileGatewayModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('tokens')}
-                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                  activeTab === 'tokens'
+                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === 'tokens'
                     ? 'border-amber-400 text-amber-400 bg-white/5'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <Key className="h-3.5 w-3.5" />
                 <span>API Keys &amp; Tokens</span>
@@ -211,11 +208,10 @@ export const ProfileGatewayModal: React.FC<ProfileGatewayModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('browser')}
-                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                  activeTab === 'browser'
+                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === 'browser'
                     ? 'border-emerald-400 text-emerald-400 bg-white/5'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <Activity className="h-3.5 w-3.5" />
                 <span>Browser Connections</span>
@@ -224,11 +220,10 @@ export const ProfileGatewayModal: React.FC<ProfileGatewayModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('lock')}
-                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${
-                  activeTab === 'lock'
+                className={`px-3 py-2 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition cursor-pointer ${activeTab === 'lock'
                     ? 'border-rose-400 text-rose-400 bg-white/5'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span>Security &amp; Lock</span>
@@ -248,11 +243,10 @@ export const ProfileGatewayModal: React.FC<ProfileGatewayModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setServerEnabled(!serverEnabled)}
-                        className={`px-2.5 py-1 text-xs font-bold rounded-none cursor-pointer transition ${
-                          serverEnabled
+                        className={`px-2.5 py-1 text-xs font-bold rounded-none cursor-pointer transition ${serverEnabled
                             ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30'
                             : 'bg-white/5 text-slate-500 border border-ide-border'
-                        }`}
+                          }`}
                       >
                         {serverEnabled ? 'Running' : 'Stopped'}
                       </button>

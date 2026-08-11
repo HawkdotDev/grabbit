@@ -215,7 +215,7 @@ export const DownloadCard: React.FC<DownloadCardProps> = ({
                 ? 'bg-rose-500'
                 : download.status === 'paused'
                   ? 'bg-amber-500'
-                  : 'bg-theme-accent'
+                  : 'progress-active'
           }`}
           style={{ width: `${pct}%` }}
         />

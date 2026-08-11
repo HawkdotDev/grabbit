@@ -64,9 +64,8 @@ export const TorrentOptionsModal: React.FC<TorrentOptionsModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Header */}
         <div
@@ -109,11 +108,10 @@ export const TorrentOptionsModal: React.FC<TorrentOptionsModalProps> = ({
                   key={p}
                   type="button"
                   onClick={() => setPriority(p)}
-                  className={`py-1.5 px-3 uppercase font-bold border transition cursor-pointer ${
-                    priority === p
+                  className={`py-1.5 px-3 uppercase font-bold border transition cursor-pointer ${priority === p
                       ? 'bg-theme-accent text-slate-950 border-theme-accent'
                       : 'bg-ide-bg text-slate-400 border-ide-border hover:text-slate-200'
-                  }`}
+                    }`}
                 >
                   {p}
                 </button>

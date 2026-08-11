@@ -183,10 +183,15 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return true
   })
 
-  ipcMain.handle('download:cancel', (_, id: string) => {
-    downloadManager.cancelDownload(id)
-    return true
-  })
+  ipcMain.handle(
+    'download:cancel',
+    (_, args: string | { id: string; deleteFiles?: boolean }) => {
+      const id = typeof args === 'string' ? args : args.id
+      const deleteFiles = typeof args === 'object' ? !!args.deleteFiles : false
+      downloadManager.cancelDownload(id, deleteFiles)
+      return true
+    }
+  )
 
   ipcMain.handle('download:pauseAll', () => {
     downloadManager.pauseAll()

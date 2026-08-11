@@ -101,9 +101,8 @@ export const AutomationsModal: React.FC<AutomationsModalProps> = ({ isOpen, onCl
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Title Bar */}
         <div
@@ -241,11 +240,10 @@ export const AutomationsModal: React.FC<AutomationsModalProps> = ({ isOpen, onCl
                 <button
                   type="button"
                   onClick={() => toggleRule(rule.id)}
-                  className={`px-3 py-1 text-xs font-bold rounded-none cursor-pointer transition ${
-                    rule.enabled
+                  className={`px-3 py-1 text-xs font-bold rounded-none cursor-pointer transition ${rule.enabled
                       ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30'
                       : 'bg-white/5 text-slate-500 border border-ide-border'
-                  }`}
+                    }`}
                 >
                   {rule.enabled ? 'Enabled' : 'Disabled'}
                 </button>

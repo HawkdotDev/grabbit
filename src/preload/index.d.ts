@@ -30,7 +30,7 @@ export interface GrabbitAPI {
   }) => Promise<DownloadItem>
   pauseDownload: (id: string) => Promise<boolean>
   resumeDownload: (id: string) => Promise<boolean>
-  cancelDownload: (id: string) => Promise<boolean>
+  cancelDownload: (id: string, deleteFiles?: boolean) => Promise<boolean>
   pauseAll: () => Promise<boolean>
   resumeAll: () => Promise<boolean>
   clearCompleted: () => Promise<boolean>
@@ -54,6 +54,8 @@ export interface GrabbitAPI {
     totalSize: number
     files: Array<{ name: string; path: string; size: number }>
     trackers: string[]
+    created?: string
+    comment?: string
   }>
   reannounceTorrent: (id: string) => Promise<boolean>
   updateTorrentOptions: (id: string, options: Partial<DownloadItem>) => Promise<boolean>
@@ -65,6 +67,7 @@ export interface GrabbitAPI {
   // Category & Filter IPC
   getCategories: () => Promise<Record<DownloadCategory, string[]>>
   setCategory: (id: string, category: DownloadCategory) => Promise<boolean>
+  setDownloadCategory: (id: string, category: DownloadCategory) => Promise<boolean>
 
   // Settings IPC
   getSettings: () => Promise<EngineSettings>

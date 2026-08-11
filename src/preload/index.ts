@@ -29,7 +29,8 @@ const api = {
 
   pauseDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:pause', id),
   resumeDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:resume', id),
-  cancelDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:cancel', id),
+  cancelDownload: (id: string, deleteFiles?: boolean): Promise<boolean> =>
+    ipcRenderer.invoke('download:cancel', { id, deleteFiles }),
   pauseAll: (): Promise<boolean> => ipcRenderer.invoke('download:pauseAll'),
   resumeAll: (): Promise<boolean> => ipcRenderer.invoke('download:resumeAll'),
   clearCompleted: (): Promise<boolean> => ipcRenderer.invoke('download:clearCompleted'),
@@ -82,6 +83,8 @@ const api = {
     ipcRenderer.invoke('download:rename', { id, newName }),
   setDownloadLocation: (id: string, newPath: string): Promise<boolean> =>
     ipcRenderer.invoke('download:setLocation', { id, newPath }),
+  setDownloadCategory: (id: string, category: DownloadCategory): Promise<boolean> =>
+    ipcRenderer.invoke('download:setCategory', { id, category }),
   setDownloadTags: (id: string, tags: string[]): Promise<boolean> =>
     ipcRenderer.invoke('download:setTags', { id, tags }),
   toggleDownloadTag: (id: string, tag: string): Promise<boolean> =>

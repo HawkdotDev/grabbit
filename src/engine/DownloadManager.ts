@@ -143,12 +143,14 @@ export class DownloadManager extends EventEmitter {
   }
 
   public static isTorrentSource(url: string): boolean {
+    if (!url) return false
+    const clean = url.trim().toLowerCase()
     return (
-      url.startsWith('magnet:') ||
-      url.includes('magnet:') ||
-      url.endsWith('.torrent') ||
-      url.endsWith('.meta') ||
-      url.endsWith('.metalink')
+      clean.startsWith('magnet:') ||
+      clean.includes('magnet:') ||
+      /\.torrent(\?.*)?$/.test(clean) ||
+      /\.meta(\?.*)?$/.test(clean) ||
+      /\.metalink(\?.*)?$/.test(clean)
     )
   }
 
@@ -156,22 +158,22 @@ export class DownloadManager extends EventEmitter {
     urlOrOptions:
       | string
       | {
-          url: string
-          savePath?: string
-          filename?: string
-          category?: DownloadCategory
-          priority?: DownloadPriority
-          threadCount?: number
-          tags?: string[]
-          startPaused?: boolean
-          addToTopQueue?: boolean
-          sequentialDownload?: boolean
-          firstLastPiecesFirst?: boolean
-          skipHashCheck?: boolean
-          stopCondition?: 'none' | 'metadata' | 'files'
-          contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
-          managementMode?: 'manual' | 'automatic'
-        },
+        url: string
+        savePath?: string
+        filename?: string
+        category?: DownloadCategory
+        priority?: DownloadPriority
+        threadCount?: number
+        tags?: string[]
+        startPaused?: boolean
+        addToTopQueue?: boolean
+        sequentialDownload?: boolean
+        firstLastPiecesFirst?: boolean
+        skipHashCheck?: boolean
+        stopCondition?: 'none' | 'metadata' | 'files'
+        contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+        managementMode?: 'manual' | 'automatic'
+      },
     maybeOptions?: {
       savePath?: string
       filename?: string
@@ -203,53 +205,40 @@ export class DownloadManager extends EventEmitter {
     let fileEntries: Array<{ path: string; size: number; downloaded: number; priority: 'high' | 'normal' | 'low' | 'ignore' }> = []
 
     if (isTorrent) {
-      if (url.startsWith('magnet:') || url.includes('magnet:')) {
-        const magnetInfo = TorrentWorker.parseMagnetURI(url)
-        infoHash = magnetInfo.infoHash
-        if (!filename) {
-          filename = magnetInfo.name || (infoHash ? `Magnet (${infoHash.substring(0, 8)})` : 'Magnet Download')
-        }
-        totalSize = 0
-        acceptRanges = true
-        trackersList = magnetInfo.trackers.map((trUrl) => ({
-          url: trUrl,
-          status: 'working' as const,
-          peers: 0
-        }))
-        fileEntries = [{ path: filename, size: 0, downloaded: 0, priority: 'normal' }]
-      } else {
-        // Local or remote .torrent metadata
-        try {
-          const meta = await TorrentWorker.parseTorrentMetadata(url)
-          if (!filename) filename = meta.name
-          infoHash = meta.infoHash
-          totalSize = meta.totalSize
-          trackersList = meta.trackers.map((trUrl) => ({
-            url: trUrl,
-            status: 'working' as const,
-            peers: 0
-          }))
-          fileEntries = (meta.files || []).map((f) => ({
-            path: f.path || f.name,
-            size: f.size,
-            downloaded: 0,
-            priority: 'normal' as const
-          }))
-        } catch {
-          if (!filename) filename = path.basename(url)
-        }
-      }
-    } else {
-      try {
-        const info = await this.chunkEngine.getFileInfo(url)
-        totalSize = info.totalSize
-        acceptRanges = info.acceptRanges
-        etag = info.etag
-        if (!filename) filename = info.filename
-      } catch {
-        if (!filename) filename = 'download_' + Date.now()
+      acceptRanges = true
+      const magInfo = url.startsWith('magnet:') || url.includes('magnet:') ? TorrentWorker.parseMagnetURI(url) : null
+      infoHash = magInfo?.infoHash || ''
+
+      // Use the fast synchronous magnet parser for initial state.
+      // Skip the expensive parseTorrentMetadata() call here — startTorrentDownload()
+      // will resolve full metadata (name, files, size) from the live swarm.
+      // This avoids a 10-24 second blocking delay and prevents duplicate torrent
+      // collisions when client.add() is called both here and in startTorrentDownload().
+      if (!filename) {
+        filename = magInfo?.name || (infoHash ? `Magnet (${infoHash.substring(0, 8)})` : 'Magnet Download')
       }
 
+      const combinedTrackers = Array.from(
+        new Set([...(magInfo?.trackers || []), ...TorrentWorker.DEFAULT_PUBLIC_TRACKERS])
+      )
+      trackersList = combinedTrackers.map((trUrl) => ({
+        url: trUrl,
+        status: 'working' as const,
+        peers: 0
+      }))
+
+      if (fileEntries.length === 0) {
+        fileEntries = [{ path: filename, size: totalSize, downloaded: 0, priority: 'normal' }]
+      }
+    } else {
+      if (!filename) {
+        try {
+          const parsed = new URL(url)
+          filename = path.basename(parsed.pathname) || 'download_' + Date.now()
+        } catch {
+          filename = 'download_' + Date.now()
+        }
+      }
       infoHash = ''
       trackersList = []
       fileEntries = [{ path: filename, size: totalSize, downloaded: 0, priority: 'normal' }]
@@ -318,7 +307,7 @@ export class DownloadManager extends EventEmitter {
 
     this.saveStateImmediate()
     this.emit('downloadAdded', download)
-    PostProcessor.handleDownloadEvent('onAdded', download).catch(() => {})
+    PostProcessor.handleDownloadEvent('onAdded', download).catch(() => { })
 
     if (!options?.startPaused) {
       this.processQueue()
@@ -338,6 +327,7 @@ export class DownloadManager extends EventEmitter {
 
     if (isTorrent) {
       const saveDir = path.dirname(download.savePath)
+      DiskAllocator.ensureDirectory(saveDir)
       TorrentWorker.startTorrentDownload(
         download.id,
         download.url,
@@ -365,6 +355,7 @@ export class DownloadManager extends EventEmitter {
           d.chunks = event.chunks
           if (event.trackers && event.trackers.length > 0) d.trackers = event.trackers
           if (event.files && event.files.length > 0) d.files = event.files
+          if (event.peersInfo) d.peersInfo = event.peersInfo
 
           this.saveStateDebounced()
           this.emit('progress', d)
@@ -380,8 +371,8 @@ export class DownloadManager extends EventEmitter {
           d.downloadedSize = d.totalSize
           this.saveStateImmediate()
           this.emit('downloadCompleted', d)
-          PostProcessor.handleDownloadEvent('onCompleted', d).catch(() => {})
-          PluginManager.executeHook('onDownloadCompleted', d).catch(() => {})
+          PostProcessor.handleDownloadEvent('onCompleted', d).catch(() => { })
+          PluginManager.executeHook('onDownloadCompleted', d).catch(() => { })
           this.processQueue()
         }
       ).catch((err) => {
@@ -393,11 +384,27 @@ export class DownloadManager extends EventEmitter {
         this.saveStateImmediate()
         this.emit('downloadUpdated', d)
         this.emit('downloadError', { id: d.id, error: d.error })
-        PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
-        PluginManager.executeHook('onDownloadError', d).catch(() => {})
+        PostProcessor.handleDownloadEvent('onError', d).catch(() => { })
+        PluginManager.executeHook('onDownloadError', d).catch(() => { })
         this.processQueue()
       })
       return
+    }
+
+    if (download.totalSize === 0) {
+      try {
+        const info = await this.chunkEngine.getFileInfo(download.url)
+        download.totalSize = info.totalSize
+        if (info.filename && download.name.startsWith('download_')) {
+          download.name = info.filename
+          download.savePath = path.join(path.dirname(download.savePath), info.filename)
+        }
+        download.chunks = this.chunkEngine.createChunks(download.totalSize, download.threadCount)
+        this.saveStateImmediate()
+        this.emit('downloadUpdated', download)
+      } catch {
+        // Proceed even if HEAD request timed out
+      }
     }
 
     this.chunkEngine.startChunkDownload(
@@ -434,8 +441,8 @@ export class DownloadManager extends EventEmitter {
           DiskAllocator.closeFile(d.savePath)
           this.saveStateImmediate()
           this.emit('downloadCompleted', d)
-          PostProcessor.handleDownloadEvent('onCompleted', d).catch(() => {})
-          PluginManager.executeHook('onDownloadCompleted', d).catch(() => {})
+          PostProcessor.handleDownloadEvent('onCompleted', d).catch(() => { })
+          PluginManager.executeHook('onDownloadCompleted', d).catch(() => { })
           this.processQueue()
         }
       },
@@ -449,8 +456,8 @@ export class DownloadManager extends EventEmitter {
         this.saveStateImmediate()
         this.emit('downloadUpdated', d)
         this.emit('downloadError', { id: d.id, error: d.error })
-        PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
-        PluginManager.executeHook('onDownloadError', d).catch(() => {})
+        PostProcessor.handleDownloadEvent('onError', d).catch(() => { })
+        PluginManager.executeHook('onDownloadError', d).catch(() => { })
         this.processQueue()
       },
       {
@@ -505,17 +512,27 @@ export class DownloadManager extends EventEmitter {
     this.processQueue()
   }
 
-  public cancelDownload(id: string): void {
+  public cancelDownload(id: string, deleteFiles: boolean = false): void {
     const d = this.downloads.get(id)
     if (!d) return
 
     const isTorrent = DownloadManager.isTorrentSource(d.url)
 
     if (isTorrent) {
-      TorrentWorker.removeTorrent(id)
+      TorrentWorker.removeTorrent(id, deleteFiles)
     } else {
       this.chunkEngine.cancelDownload(id)
       DiskAllocator.closeFile(d.savePath)
+    }
+
+    if (deleteFiles && d.savePath) {
+      try {
+        if (fs.existsSync(d.savePath)) {
+          fs.rmSync(d.savePath, { recursive: true, force: true })
+        }
+      } catch (err) {
+        console.error(`[DownloadManager] Failed to delete file at ${d.savePath}:`, err)
+      }
     }
 
     this.downloads.delete(id)

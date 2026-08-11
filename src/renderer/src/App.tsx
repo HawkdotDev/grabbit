@@ -13,6 +13,7 @@ import {
   BottomStatusBar,
   AddDownloadModal,
   SimpleAddDownloadModal,
+  AddTorrentSourceModal,
   SettingsModal,
   HashModal,
   CreateTorrentModal,
@@ -25,6 +26,7 @@ import {
   EditTrackersModal,
   TorrentOptionsModal,
   RenameModal,
+  ConfirmRemoveModal,
   AnalyticsView,
   NetworkView,
   ClipboardBanner
@@ -74,12 +76,14 @@ export function App(): React.JSX.Element {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [addModalMode, setAddModalMode] = useState<'link' | 'file'>('link')
   const [addModalInitialUrl, setAddModalInitialUrl] = useState('')
+  const [isTorrentSourceModalOpen, setIsTorrentSourceModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
   const [trackersModalDownload, setTrackersModalDownload] = useState<DownloadItem | null>(null)
   const [torrentOptionsModalDownload, setTorrentOptionsModalDownload] =
     useState<DownloadItem | null>(null)
   const [renameModalDownload, setRenameModalDownload] = useState<DownloadItem | null>(null)
+  const [removeConfirmDownload, setRemoveConfirmDownload] = useState<DownloadItem | null>(null)
 
   // Extra Features Modals
   const [isCreateTorrentOpen, setIsCreateTorrentOpen] = useState(false)
@@ -107,10 +111,39 @@ export function App(): React.JSX.Element {
   const [showStatusBar, setShowStatusBar] = useState(true)
 
   const handleOpenAddModal = (mode: 'link' | 'file' = 'link', initialUrl = ''): void => {
-    setAddModalMode(mode)
+    const isTorrent =
+      initialUrl &&
+      (initialUrl.startsWith('magnet:') ||
+        initialUrl.includes('magnet:') ||
+        initialUrl.endsWith('.torrent'))
+    const effectiveMode = isTorrent ? 'file' : mode
+
+    if (effectiveMode === 'file' && !initialUrl) {
+      // Show intermediate torrent source modal first
+      setIsTorrentSourceModalOpen(true)
+      return
+    }
+    setAddModalMode(effectiveMode)
     setAddModalInitialUrl(initialUrl)
     setIsAddModalOpen(true)
   }
+
+  const handleTorrentSourceProceed = (source: string): void => {
+    setIsTorrentSourceModalOpen(false)
+    setAddModalMode('file')
+    setAddModalInitialUrl(source)
+    setIsAddModalOpen(true)
+  }
+
+  const handleRequestRemove = useCallback(
+    (id: string): void => {
+      const target = downloads.find((d) => d.id === id)
+      if (target) {
+        setRemoveConfirmDownload(target)
+      }
+    },
+    [downloads]
+  )
 
   // Bind Global Application Keyboard Shortcuts
   useGlobalShortcuts({
@@ -126,7 +159,7 @@ export function App(): React.JSX.Element {
     onToggleFullscreen: () => window.api?.toggleFullscreen(),
     onSwitchView: (v) => setActiveMainView(v),
     onDeleteSelected: () => {
-      if (selectedDownload) handleCancel(selectedDownload.id)
+      if (selectedDownload) setRemoveConfirmDownload(selectedDownload)
     },
     onTogglePauseSelected: () => {
       if (selectedDownload) {
@@ -284,7 +317,7 @@ export function App(): React.JSX.Element {
           onSelectDownload={(id) => setSelectedId(id)}
           onPause={handlePause}
           onResume={handleResume}
-          onCancel={handleCancel}
+          onCancel={handleRequestRemove}
         />
       ) : activeMainView === 'network' ? (
         <NetworkView downloads={downloads} speedHistory={speedHistory} globalSpeed={globalSpeed} />
@@ -325,7 +358,7 @@ export function App(): React.JSX.Element {
                 onSelect={(id) => setSelectedId(id)}
                 onPause={handlePause}
                 onResume={handleResume}
-                onCancel={handleCancel}
+                onCancel={handleRequestRemove}
                 onOpenHashModal={(item) => setHashModalDownload(item)}
                 onOpenTrackersModal={(item) => setTrackersModalDownload(item)}
                 onOpenTorrentOptionsModal={(item) => setTorrentOptionsModalDownload(item)}
@@ -363,6 +396,12 @@ export function App(): React.JSX.Element {
       {showStatusBar && <BottomStatusBar downloads={downloads} globalSpeed={globalSpeed} />}
 
       {/* Floating Action Modals */}
+      <AddTorrentSourceModal
+        isOpen={isTorrentSourceModalOpen}
+        onClose={() => setIsTorrentSourceModalOpen(false)}
+        onProceed={handleTorrentSourceProceed}
+      />
+
       {addModalMode === 'file' ? (
         <AddDownloadModal
           isOpen={isAddModalOpen}
@@ -415,6 +454,13 @@ export function App(): React.JSX.Element {
         download={renameModalDownload}
         onClose={() => setRenameModalDownload(null)}
         onRenamed={(id, newName) => handleUpdateDownload(id, { name: newName })}
+      />
+
+      <ConfirmRemoveModal
+        isOpen={!!removeConfirmDownload}
+        download={removeConfirmDownload}
+        onClose={() => setRemoveConfirmDownload(null)}
+        onConfirm={(id, deleteFiles) => handleCancel(id, deleteFiles)}
       />
 
       <CreateTorrentModal

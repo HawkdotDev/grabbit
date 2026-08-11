@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { DownloadCategory, DownloadPriority } from '../../../../engine/types'
 import {
   X,
@@ -15,6 +15,7 @@ import {
   Search
 } from 'lucide-react'
 import { useDraggable } from '../../hooks/useDraggable'
+
 
 interface FileTreeNode {
   id: string
@@ -175,6 +176,88 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     }
   }
 
+  // ─── Metadata Fetching ───
+  const [metaLoading, setMetaLoading] = useState(false)
+  const [metaError, setMetaError] = useState<string | null>(null)
+  const [torrentMeta, setTorrentMeta] = useState<{
+    name: string
+    infoHash: string
+    totalSize: number
+    files: Array<{ name: string; path: string; size: number }>
+    trackers: string[]
+    created?: string
+    comment?: string
+  } | null>(null)
+
+  useEffect(() => {
+    const targetUrl = (url || initialUrl).trim()
+    if (!isOpen || !targetUrl) return
+
+    const isMagnet = targetUrl.startsWith('magnet:')
+    const isTorrentFile = targetUrl.endsWith('.torrent')
+    const isTorrentUrl =
+      (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) && targetUrl.includes('.torrent')
+
+    if (!isMagnet && !isTorrentFile && !isTorrentUrl) return
+    if (!window.api?.parseTorrentMetadata) return
+
+    let cancelled = false
+    setMetaLoading(true)
+    setMetaError(null)
+    setTorrentMeta(null)
+
+    window.api
+      .parseTorrentMetadata(targetUrl)
+      .then((meta) => {
+        if (cancelled) return
+
+        setTorrentMeta(meta)
+
+        if (meta.name && meta.name !== 'Magnet Download') {
+          setFilename(meta.name)
+        }
+
+        if (meta.files && meta.files.length > 0) {
+          // Build the file tree from metadata
+          const rootChildren: FileTreeNode[] = meta.files.map((f, i) => ({
+            id: `file_${i}`,
+            name: f.name,
+            size: f.size,
+            selected: true,
+            priority: 'normal' as DownloadPriority,
+            type: 'file' as const
+          }))
+
+          const rootNode: FileTreeNode = {
+            id: 'f_root',
+            name: meta.name || 'Torrent',
+            size: meta.totalSize,
+            selected: true,
+            priority: 'normal',
+            type: 'folder',
+            children: rootChildren
+          }
+
+          setFilesTree([rootNode])
+          setExpandedFolders((prev) => ({ ...prev, f_root: true }))
+        }
+
+        setMetaLoading(false)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        console.warn('[AddDownloadModal] Metadata fetch failed:', err)
+        setMetaError(
+          err instanceof Error ? err.message : 'Failed to fetch torrent metadata'
+        )
+        setMetaLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isOpen, url, initialUrl])
+
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
 
@@ -325,11 +408,10 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
         e.stopPropagation()
         onChange()
       }}
-      className={`h-4 w-4 rounded-none border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${
-        checked
+      className={`h-4 w-4 rounded-none border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${checked
           ? 'bg-theme-accent border-theme-accent text-slate-950 shadow-sm font-bold'
           : 'bg-ide-bg border-ide-border hover:border-slate-400'
-      }`}
+        }`}
     >
       {checked && <Check className="h-3 w-3 stroke-3" />}
     </div>
@@ -343,9 +425,8 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-180 ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-180 ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* ─── 1. Pinned Header with Drag Grip (shrink-0) ─── */}
         <div
@@ -565,11 +646,10 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                                 key={t}
                                 type="button"
                                 onClick={() => handleTagChipClick(t)}
-                                className={`px-2 py-0.5 text-[10px] font-mono border transition cursor-pointer ${
-                                  isSelected
+                                className={`px-2 py-0.5 text-[10px] font-mono border transition cursor-pointer ${isSelected
                                     ? 'bg-cyan-950/70 text-cyan-300 border-cyan-500/50 font-bold'
                                     : 'bg-white/5 text-slate-400 border-ide-border hover:text-slate-200'
-                                }`}
+                                  }`}
                               >
                                 {isSelected ? `✓ ${t}` : `+ ${t}`}
                               </button>
@@ -676,20 +756,23 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   <div className="flex justify-between">
                     <span className="w-24 text-slate-400">Size:</span>
                     <span className="text-slate-200 font-mono">
-                      943.4 MiB{' '}
-                      <span className="text-slate-500 font-sans">
-                        (Free space on disk: 31.34 GiB)
-                      </span>
+                      {torrentMeta && torrentMeta.totalSize > 0
+                        ? formatBytes(torrentMeta.totalSize)
+                        : metaLoading
+                          ? 'Resolving...'
+                          : 'Magnet metadata pending'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="w-24 text-slate-400">Date:</span>
-                    <span className="text-slate-300">Not available</span>
+                    <span className="w-24 text-slate-400">Upload date:</span>
+                    <span className="text-slate-300">
+                      {torrentMeta?.created || (metaLoading ? 'Resolving...' : 'N/A')}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="w-24 text-slate-400 shrink-0">Info hash v1:</span>
                     <span className="font-mono text-[10.5px] text-theme-bright truncate select-all">
-                      004c2474042e2d9785bf0c097f69328e1a7fec86
+                      {torrentMeta?.infoHash || (metaLoading ? 'Resolving...' : 'N/A')}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -697,8 +780,20 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                     <span className="text-slate-400">N/A</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="w-24 text-slate-400">Trackers:</span>
+                    <span className="text-slate-300 font-mono text-[10.5px]">
+                      {torrentMeta?.trackers
+                        ? `${torrentMeta.trackers.length} tracker${torrentMeta.trackers.length !== 1 ? 's' : ''}`
+                        : metaLoading
+                          ? 'Resolving...'
+                          : 'None'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="w-24 text-slate-400">Comment:</span>
-                    <span className="text-slate-400"></span>
+                    <span className="text-slate-400">
+                      {url.startsWith('magnet:') ? 'Magnet link' : ''}
+                    </span>
                   </div>
                 </div>
               </fieldset>
@@ -751,13 +846,37 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               <div className="flex-1 overflow-y-auto overflow-x-auto text-[13px] font-sans bg-ide-bg/90 p-2 space-y-1">
                 {filesTree.length === 0 ? (
                   <div className="h-full min-h-48 flex flex-col items-center justify-center p-6 text-center text-slate-500 font-sans select-none">
-                    <FolderOpen className="h-8 w-8 text-slate-600 mb-2 opacity-50" />
-                    <div className="text-xs font-semibold text-slate-400">
-                      {url ? (url.startsWith('magnet:') ? 'Magnet swarm metadata pending...' : 'Payload structure ready') : 'No download payload loaded'}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
-                      Files will be organized and downloaded automatically into the destination folder upon transfer start.
-                    </div>
+                    {metaLoading ? (
+                      <>
+                        <div className="h-8 w-8 border-2 border-theme-accent/30 border-t-theme-accent rounded-full animate-spin mb-2" />
+                        <div className="text-xs font-semibold text-theme-accent/80">
+                          Fetching torrent metadata...
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                          Connecting to peers and resolving file information.
+                        </div>
+                      </>
+                    ) : metaError ? (
+                      <>
+                        <FolderOpen className="h-8 w-8 text-red-400/60 mb-2" />
+                        <div className="text-xs font-semibold text-red-400">
+                          Metadata fetch failed
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                          {metaError}. The download will still proceed — file info will resolve after connecting to the swarm.
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <FolderOpen className="h-8 w-8 text-slate-600 mb-2 opacity-50" />
+                        <div className="text-xs font-semibold text-slate-400">
+                          {url ? (url.startsWith('magnet:') ? 'Magnet swarm metadata pending...' : 'Payload structure ready') : 'No download payload loaded'}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                          Files will be organized and downloaded automatically into the destination folder upon transfer start.
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   filesTree.map((rootNode) => (
@@ -927,10 +1046,25 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
               <span>Never show again</span>
             </label>
 
-            <span className="text-emerald-400 font-medium flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5" />
-              Metadata retrieval complete
-            </span>
+            {metaLoading ? (
+              <span className="text-theme-accent font-medium flex items-center gap-1.5">
+                <div className="h-3 w-3 border-2 border-theme-accent/30 border-t-theme-accent rounded-full animate-spin" />
+                Fetching metadata...
+              </span>
+            ) : metaError ? (
+              <span className="text-amber-400 font-medium flex items-center gap-1.5">
+                Metadata fetch incomplete
+              </span>
+            ) : torrentMeta && filesTree.length > 0 ? (
+              <span className="text-emerald-400 font-medium flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5" />
+                Metadata retrieval complete
+              </span>
+            ) : (
+              <span className="text-amber-400 font-medium flex items-center gap-1.5">
+                Swarm metadata pending
+              </span>
+            )}
 
             <button
               type="button"

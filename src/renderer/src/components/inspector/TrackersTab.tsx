@@ -25,8 +25,9 @@ export const TrackersTab: React.FC<TrackersTabProps> = ({ download }) => {
   const [newTrackerUrl, setNewTrackerUrl] = useState('')
   const [localTrackers, setLocalTrackers] = useState<TrackerEntry[]>([])
 
+  const url = download?.url || ''
   const isTorrent =
-    download && (download.url.startsWith('magnet:') || download.url.endsWith('.torrent'))
+    download && (url.startsWith('magnet:') || url.endsWith('.torrent') || !!download.infoHash)
 
   // Synchronize trackers
   React.useEffect(() => {

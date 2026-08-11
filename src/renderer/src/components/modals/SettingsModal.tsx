@@ -742,11 +742,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div
           ref={modalRef}
           style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-          className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl h-160 shadow-2xl overflow-hidden flex flex-col font-sans text-slate-100 ${
-            isDragging ? 'transition-none duration-0' : ''
-          } ${isBlinking ? 'animate-modal-blink' : ''}`}
+          className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl h-160 shadow-2xl overflow-hidden flex flex-col font-sans text-slate-100 ${isDragging ? 'transition-none duration-0' : ''
+            } ${isBlinking ? 'animate-modal-blink' : ''}`}
         >
-          {/* ─── Neobit IDE Title Bar ─── */}
+          {/* ─── Grabbit Title Bar ─── */}
           <div
             onMouseDown={handleMouseDown}
             className="px-4 py-2 bg-linear-to-r from-ide-surface to-ide-bg border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
@@ -787,11 +786,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      isActive
+                    className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${isActive
                         ? 'bg-theme-tint/60 text-theme-bright font-semibold border-l-2 border-theme-accent shadow-xs'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-ide-surface/60'
-                    }`}
+                      }`}
                   >
                     <Icon className={`h-5 w-5 ${isActive ? 'text-theme-accent' : 'text-slate-400'}`} />
                     <span className="text-[11px] leading-tight text-center">{tab.label}</span>
@@ -827,9 +825,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </FieldsetGroup>
 
                     <FieldsetGroup title="Desktop">
-                      <CheckboxField label="Start qBittorrent on Windows startup" checked={startOnStartup} onChange={setStartOnStartup} />
+                      <CheckboxField label="Start Grabbit on Windows startup" checked={startOnStartup} onChange={setStartOnStartup} />
                       <CheckboxField label="Show splash screen on startup" checked={showSplashScreen} onChange={setShowSplashScreen} />
-                      <CheckboxField label="Start qBittorrent minimized" checked={startMinimized} onChange={setStartMinimized} />
+                      <CheckboxField label="Start Grabbit minimized" checked={startMinimized} onChange={setStartMinimized} />
                       <CheckboxField label="Show option to change program language" checked={showLanguageOption} onChange={setShowLanguageOption} />
                       <CheckboxField label="Confirm when deleting torrents" checked={confirmDeleteTorrents} onChange={setConfirmDeleteTorrents} />
                       <CheckboxField label="Ask for program exit confirmation" checked={confirmExit} onChange={setConfirmExit} />
@@ -842,7 +840,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <CheckboxField label="Show icon in system tray" checked={showTrayIcon} onChange={setShowTrayIcon} />
                       <CheckboxField label="Minimize to tray" checked={minimizeToTray} onChange={setMinimizeToTray} indent />
                       <CheckboxField label="Close to tray" checked={closeToTray} onChange={setCloseToTray} indent />
-                      <CheckboxField label="Minimize qBittorrent to notification area when clicking minimize button" checked={minimizeToNotificationAreaOnMinimize} onChange={setMinimizeToNotificationAreaOnMinimize} />
+                      <CheckboxField label="Minimize Grabbit to notification area when clicking minimize button" checked={minimizeToNotificationAreaOnMinimize} onChange={setMinimizeToNotificationAreaOnMinimize} />
                     </FieldsetGroup>
 
                     <FieldsetGroup title="File Association">
@@ -1667,7 +1665,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {/* ────────────────────────────────────────────────────────── */}
                 {activeTab === 'advanced' && (
                   <>
-                    <FieldsetGroup title="qBittorrent Section">
+                    <FieldsetGroup title="Grabbit Client Section">
                       <FieldRow label="Resume data storage type (requires restart):">
                         <select className="w-56 bg-ide-bg border border-ide-border text-slate-100 px-2.5 py-1 text-xs cursor-pointer focus:border-theme-accent focus:outline-none">
                           <option>Fastresume files</option>
@@ -1755,7 +1753,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <FieldRow label="Customize application instance name:">
                         <input
                           type="text"
-                          placeholder="Grabbit / qBittorrent"
+                          placeholder="Grabbit v1.0.0"
                           className="w-56 bg-ide-bg border border-ide-border text-slate-100 px-2.5 py-1 text-xs font-mono focus:border-theme-accent focus:outline-none"
                         />
                       </FieldRow>
@@ -1901,7 +1899,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 )}
               </form>
 
-              {/* ─── Neobit Pinned Bottom Action Footer Bar ─── */}
+              {/* ─── Grabbit Pinned Bottom Action Footer Bar ─── */}
               <div className="h-12 px-4 bg-ide-bg border-t border-ide-border flex items-center justify-end gap-2.5 shrink-0 select-none">
                 <button
                   type="button"
@@ -1954,7 +1952,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   )
 }
 
-// ─── HELPER COMPONENTS FOR NEOBIT IDE DESIGN SYSTEM ───
+// ─── HELPER COMPONENTS FOR GRABBIT DESIGN SYSTEM ───
 
 function FieldsetGroup({
   title,

@@ -218,6 +218,7 @@ html[data-theme='carrot'] ::-webkit-scrollbar-thumb:hover {
 }
 
 .progress-active {
+  background: linear-gradient(90deg, var(--color-theme-accent) 0%, var(--color-theme-bright) 100%);
   animation: progressPulse 2s infinite ease-in-out;
 }
 

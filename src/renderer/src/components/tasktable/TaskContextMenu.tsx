@@ -117,12 +117,16 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
   const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10)
 
   const handleOpenFolder = (): void => {
-    window.api?.openFileLocation(download.savePath)
+    if (download.savePath) {
+      window.api?.openFileLocation(download.savePath)
+    }
     onClose()
   }
 
   const handlePreviewFile = (): void => {
-    window.api?.openFile(download.savePath)
+    if (download.savePath) {
+      window.api?.openFile(download.savePath)
+    }
     onClose()
   }
 
@@ -147,7 +151,13 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
   }
 
   const handleCopy = (text: string): void => {
-    if (text) window.api?.copyToClipboard(text)
+    if (text) {
+      if (window.api?.copyToClipboard) {
+        window.api.copyToClipboard(text)
+      } else {
+        navigator.clipboard.writeText(text).catch(() => {})
+      }
+    }
     onClose()
   }
 
@@ -216,6 +226,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
       <button
         onClick={() => {
           onPause(download.id)
+          onUpdateDownload?.(download.id, { status: 'paused', speed: 0 })
           onClose()
         }}
         className="w-full px-3 py-1.5 flex items-center gap-2.5 hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
@@ -228,6 +239,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
       <button
         onClick={() => {
           onResume(download.id)
+          onUpdateDownload?.(download.id, { status: 'downloading' })
           onClose()
         }}
         className="w-full px-3 py-1.5 flex items-center gap-2.5 hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
@@ -304,7 +316,10 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
             {categoriesList.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => {
+                onClick={async () => {
+                  if (window.api?.setDownloadCategory) {
+                    await window.api.setDownloadCategory(download.id, cat.id)
+                  }
                   onUpdateDownload?.(download.id, { category: cat.id })
                   onClose()
                 }}

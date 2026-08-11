@@ -105,9 +105,8 @@ export const ScriptConsoleModal: React.FC<ScriptConsoleModalProps> = ({ isOpen, 
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Title Bar */}
         <div
@@ -186,15 +185,14 @@ export const ScriptConsoleModal: React.FC<ScriptConsoleModalProps> = ({ isOpen, 
           {output.map((item, i) => (
             <div
               key={i}
-              className={`leading-tight ${
-                item.type === 'error'
+              className={`leading-tight ${item.type === 'error'
                   ? 'text-rose-400'
                   : item.type === 'warn'
                     ? 'text-amber-400'
                     : item.type === 'info'
                       ? 'text-sky-400'
                       : 'text-emerald-300'
-              }`}
+                }`}
             >
               {item.text}
             </div>

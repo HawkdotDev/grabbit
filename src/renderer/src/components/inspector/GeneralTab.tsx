@@ -81,7 +81,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({ download }) => {
         <span className="text-[11px] font-semibold text-slate-300 shrink-0">Progress:</span>
         <div className="flex-1 bg-ide-surface border border-zinc-700/60 h-4 relative overflow-hidden">
           <div
-            className="bg-blue-600 h-full transition-all duration-300"
+            className="progress-active h-full transition-all duration-300"
             style={{ width: `${progressPct.toFixed(1)}%` }}
           />
         </div>

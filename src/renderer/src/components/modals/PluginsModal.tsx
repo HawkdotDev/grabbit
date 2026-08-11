@@ -59,9 +59,8 @@ export const PluginsModal: React.FC<PluginsModalProps> = ({ isOpen, onClose }) =
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Title Bar */}
         <div
@@ -125,11 +124,10 @@ export const PluginsModal: React.FC<PluginsModalProps> = ({ isOpen, onClose }) =
               <button
                 type="button"
                 onClick={() => toggleInstall(plugin.id)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-none cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
-                  plugin.installed
+                className={`px-3 py-1.5 text-xs font-bold rounded-none cursor-pointer transition shrink-0 flex items-center gap-1.5 ${plugin.installed
                     ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-900/40'
                     : 'bg-theme-accent text-slate-950 hover:bg-theme-bright'
-                }`}
+                  }`}
               >
                 {plugin.installed ? (
                   <>

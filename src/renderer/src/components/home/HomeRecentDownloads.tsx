@@ -320,7 +320,7 @@ export const HomeRecentDownloads: React.FC<HomeRecentDownloadsProps> = React.mem
                             ? 'bg-emerald-400'
                             : item.status === 'seeding'
                               ? 'bg-cyan-400'
-                              : 'bg-theme-accent'
+                              : 'progress-active'
                         }`}
                         style={{ width: `${pct}%` }}
                       />

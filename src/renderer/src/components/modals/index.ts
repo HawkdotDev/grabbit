@@ -14,5 +14,7 @@ export { EditTrackersModal } from './EditTrackersModal'
 export { TorrentOptionsModal } from './TorrentOptionsModal'
 export { RenameModal } from './RenameModal'
 export { IpFilterModal } from './IpFilterModal'
+export { AddTorrentSourceModal } from './AddTorrentSourceModal'
 export { RssRulesManagerModal } from './RssRulesManagerModal'
+export { ConfirmRemoveModal } from './ConfirmRemoveModal'
 

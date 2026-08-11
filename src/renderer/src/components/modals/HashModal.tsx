@@ -50,9 +50,8 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${
-          isDragging ? 'transition-none duration-0' : ''
-        } ${isBlinking ? 'animate-modal-blink' : ''}`}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* Header */}
         <div
@@ -88,11 +87,10 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
                   key={a}
                   type="button"
                   onClick={() => setAlgo(a)}
-                  className={`py-2 px-3 text-xs font-mono font-bold border transition cursor-pointer rounded-none uppercase ${
-                    algo === a
+                  className={`py-2 px-3 text-xs font-mono font-bold border transition cursor-pointer rounded-none uppercase ${algo === a
                       ? 'bg-theme-accent text-slate-950 border-theme-accent'
                       : 'bg-ide-bg text-slate-400 border-ide-border hover:text-slate-200'
-                  }`}
+                    }`}
                 >
                   {a}
                 </button>
@@ -118,11 +116,10 @@ export const HashModal: React.FC<HashModalProps> = ({ download, isOpen, onClose,
           {/* Verification Result Banner */}
           {result && (
             <div
-              className={`p-3 border rounded-none flex items-start gap-2.5 ${
-                result.matches
+              className={`p-3 border rounded-none flex items-start gap-2.5 ${result.matches
                   ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300'
                   : 'bg-rose-950/60 border-rose-800 text-rose-300'
-              }`}
+                }`}
             >
               {result.matches ? (
                 <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />

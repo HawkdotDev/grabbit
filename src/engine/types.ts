@@ -102,6 +102,14 @@ export interface DownloadItem {
   createdOn?: number
   comment?: string
   isPrivate?: boolean
+  peersInfo?: Array<{
+    ip: string
+    port: number
+    clientName?: string
+    downloadSpeed: number
+    uploadSpeed: number
+    choked: boolean
+  }>
 }
 
 export interface CustomThemeColors {

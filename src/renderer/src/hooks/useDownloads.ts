@@ -92,11 +92,19 @@ export function useDownloads() {
       managementMode?: 'manual' | 'automatic'
     }): Promise<void> => {
       if (window.api) {
-        await window.api.addDownload(args)
+        try {
+          await window.api.addDownload(args)
+        } catch (err) {
+          console.error('[useDownloads] addDownload failed:', err)
+          // Reload state to recover from any inconsistency
+          const data = await window.api.getAllDownloads()
+          setDownloads(data || [])
+        }
       }
     },
     []
   )
+
 
   const handlePause = useCallback((id: string): void => {
     window.api?.pauseDownload(id)
@@ -106,8 +114,8 @@ export function useDownloads() {
     window.api?.resumeDownload(id)
   }, [])
 
-  const handleCancel = useCallback((id: string): void => {
-    window.api?.cancelDownload(id)
+  const handleCancel = useCallback((id: string, deleteFiles?: boolean): void => {
+    window.api?.cancelDownload(id, deleteFiles)
   }, [])
 
   const handlePauseAll = useCallback((): void => {
