@@ -28,7 +28,7 @@ export const AutomationsModal: React.FC<AutomationsModalProps> = ({ isOpen, onCl
     'onCompleted'
   )
   const [newRuleAction, setNewRuleAction] = useState<'extract' | 'webhook' | 'script'>('webhook')
-  const [newRuleConfig, setNewRuleConfig] = useState('https://httpbin.org/post')
+  const [newRuleConfig, setNewRuleConfig] = useState('')
 
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)

@@ -52,7 +52,7 @@ export const DEFAULT_AUTOMATION_RULES: AutomationRule[] = [
     trigger: 'onError',
     action: 'webhook',
     actionConfig: {
-      webhookUrl: 'https://httpbin.org/post'
+      webhookUrl: ''
     },
     enabled: false
   }

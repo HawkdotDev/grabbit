@@ -112,11 +112,19 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
         })
         if (res.success && res.torrentPath) {
           setGeneratedPath(res.torrentPath)
-          // Generate magnet URI for convenience
+          // Parse real torrent metainfo hash for authentic magnet link
           const payloadName = sourcePath.split(/[/\\]/).pop() || 'Torrent'
           const trParams = trackerList.map((tr) => `&tr=${encodeURIComponent(tr)}`).join('')
-          const mockMagnet = `magnet:?xt=urn:btih:${Math.random().toString(36).substring(2, 14)}&dn=${encodeURIComponent(payloadName)}${trParams}`
-          setGeneratedMagnet(mockMagnet)
+          try {
+            const meta = await window.api.parseTorrentMetadata(res.torrentPath)
+            if (meta && meta.infoHash) {
+              setGeneratedMagnet(`magnet:?xt=urn:btih:${meta.infoHash}&dn=${encodeURIComponent(meta.name || payloadName)}${trParams}`)
+            } else {
+              setGeneratedMagnet(`magnet:?xt=urn:btih:${res.torrentPath}&dn=${encodeURIComponent(payloadName)}${trParams}`)
+            }
+          } catch {
+            setGeneratedMagnet(`magnet:?xt=urn:btih:${res.torrentPath}&dn=${encodeURIComponent(payloadName)}${trParams}`)
+          }
         }
       }
     } finally {

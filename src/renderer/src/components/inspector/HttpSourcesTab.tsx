@@ -37,8 +37,7 @@ export const HttpSourcesTab: React.FC<HttpSourcesTabProps> = ({ download }) => {
       const newMirror: MirrorSource = {
         id: `mirror_${Date.now()}`,
         url: newMirrorUrl.trim(),
-        status: 'standby',
-        pingMs: Math.floor(Math.random() * 80) + 20
+        status: 'standby'
       }
       setMirrors((prev) => [...prev, newMirror])
       setNewMirrorUrl('')
@@ -209,7 +208,9 @@ export const HttpSourcesTab: React.FC<HttpSourcesTabProps> = ({ download }) => {
                   <span>{mirror.url}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] text-slate-500">{mirror.pingMs}ms latency</span>
+                  <span className="text-[10px] text-slate-500">
+                    {mirror.pingMs !== undefined ? `${mirror.pingMs}ms latency` : 'Standby'}
+                  </span>
                   <button
                     type="button"
                     onClick={() => handleDeleteMirror(mirror.id)}
