@@ -174,15 +174,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
-        {/* ─── Top qBittorrent Style Header Bar ─── */}
+        {/* ─── Top Options Header Bar ─── */}
         <div
           onMouseDown={handleMouseDown}
           className="h-9 px-3 bg-ide-bg border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
         >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-theme-accent text-slate-950 rounded-none font-bold flex items-center justify-center text-[10px] shadow-sm">
-              qb
-            </div>
             <span className="font-semibold text-slate-100 text-xs tracking-tight">Options</span>
           </div>
 
@@ -200,7 +197,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* ─── Main Content Split (Left Sidebar + Right Table Pane) ─── */}
         <div className="flex-1 flex min-h-0 overflow-hidden bg-ide-bg">
           {/* Left Vertical Options Navigation Bar */}
-          <div className="w-36 bg-ide-bg border-r border-ide-border flex flex-col py-2 shrink-0 select-none overflow-y-auto">
+          <div className="w-36 bg-ide-bg border-r border-ide-border flex flex-col shrink-0 select-none overflow-hidden justify-between">
             {sidebarTabs.map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -208,7 +205,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer text-center rounded-none ${
+                  className={`w-full flex-1 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-center rounded-none ${
                     isActive
                       ? 'bg-theme-tint text-theme-accent font-bold border-l-2 border-theme-accent'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
