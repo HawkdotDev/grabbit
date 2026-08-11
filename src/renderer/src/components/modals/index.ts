@@ -13,3 +13,6 @@ export { ProfileGatewayModal } from './ProfileGatewayModal'
 export { EditTrackersModal } from './EditTrackersModal'
 export { TorrentOptionsModal } from './TorrentOptionsModal'
 export { RenameModal } from './RenameModal'
+export { IpFilterModal } from './IpFilterModal'
+export { RssRulesManagerModal } from './RssRulesManagerModal'
+
