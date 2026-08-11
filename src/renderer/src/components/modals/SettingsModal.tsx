@@ -3,16 +3,13 @@ import { EngineSettings, DownloadCategory } from '../../../../engine/types'
 import {
   X,
   Sliders,
-  Folder,
   FolderOpen,
-  Network,
-  Cpu,
-  Bell,
-  Laptop,
   GripHorizontal,
-  Palette,
-  Shield,
-  Radio
+  Globe,
+  Wrench,
+  Gauge,
+  Rss,
+  ExternalLink
 } from 'lucide-react'
 import { useDraggable } from '../../hooks/useDraggable'
 
@@ -23,48 +20,83 @@ interface SettingsModalProps {
   onSave: (newSettings: Partial<EngineSettings>) => void
 }
 
+type TabType =
+  | 'behavior'
+  | 'downloads'
+  | 'connection'
+  | 'speed'
+  | 'bittorrent'
+  | 'rss'
+  | 'webui'
+  | 'advanced'
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   settings,
   onSave
 }) => {
-  const [activeTab, setActiveTab] = useState<'engine' | 'network' | 'privacy' | 'general'>('engine')
+  const [activeTab, setActiveTab] = useState<TabType>('behavior')
 
+  // Behavior State
+  const [theme, setTheme] = useState(settings.theme || 'dark')
+  const [autoCategorize, setAutoCategorize] = useState(settings.autoCategorize)
+  const [enableNotifications, setEnableNotifications] = useState(settings.enableNotifications)
+  const [startOnBoot, setStartOnBoot] = useState(settings.startOnBoot)
+  const [refreshInterval, setRefreshInterval] = useState(1500)
+  const [instanceName, setInstanceName] = useState('Grabbit Desktop')
+
+  // Downloads State
+  const [savePath, setSavePath] = useState(settings.defaultSavePath)
   const [maxConcurrent, setMaxConcurrent] = useState(settings.maxConcurrentDownloads)
   const [defaultThreads, setDefaultThreads] = useState(settings.defaultThreadCount)
-  const [maxGlobalSpeed, setMaxGlobalSpeed] = useState(settings.maxGlobalSpeedLimitKbps)
-  const [enableAdaptiveQoS, setEnableAdaptiveQoS] = useState(settings.enableAdaptiveQoS ?? true)
-  const [enableRpcServer, setEnableRpcServer] = useState(settings.enableRpcServer ?? true)
-  const [rpcPort, setRpcPort] = useState(settings.rpcPort ?? 6800)
-  const [rpcSecretToken, setRpcSecretToken] = useState(settings.rpcSecretToken ?? 'gbt_secret_rpc')
+  const [resumeDataStorage, setResumeDataStorage] = useState('Fastresume files')
+  const [torrentRemovalMode, setTorrentRemovalMode] = useState('Delete files permanently')
+  const [torrentSizeLimitMb, setTorrentSizeLimitMb] = useState(100)
+  const [confirmRecheck, setConfirmRecheck] = useState(true)
+
+  // Connection State
+  const [networkInterface, setNetworkInterface] = useState('Any interface')
+  const [bindIpAddress, setBindIpAddress] = useState('All addresses')
   const [proxyEnabled, setProxyEnabled] = useState(settings.proxyEnabled ?? false)
   const [proxyType, setProxyType] = useState(settings.proxyType ?? 'http')
   const [proxyHost, setProxyHost] = useState(settings.proxyHost ?? '127.0.0.1')
   const [proxyPort, setProxyPort] = useState(settings.proxyPort ?? 8080)
-  const [categoryLimits, setCategoryLimits] = useState<Partial<Record<DownloadCategory, number>>>(
-    settings.categorySpeedLimitsKbps ?? {}
-  )
-
-  // Privacy & Cloudflare WARP / DoH State
   const [enableDoH, setEnableDoH] = useState(settings.enableDoH ?? true)
   const [dohProvider, setDohProvider] = useState(settings.dohProvider ?? 'cloudflare')
   const [customDoHUrl, setCustomDoHUrl] = useState(settings.customDoHUrl ?? 'https://1.1.1.1/dns-query')
   const [enableWarp, setEnableWarp] = useState(settings.enableWarp ?? false)
   const [warpEndpoint, setWarpEndpoint] = useState(settings.warpEndpoint ?? '127.0.0.1:4001')
+
+  // Speed State
+  const [maxGlobalSpeed, setMaxGlobalSpeed] = useState(settings.maxGlobalSpeedLimitKbps)
+  const [enableAdaptiveQoS, setEnableAdaptiveQoS] = useState(settings.enableAdaptiveQoS ?? true)
+  const [categoryLimits, setCategoryLimits] = useState<Partial<Record<DownloadCategory, number>>>(
+    settings.categorySpeedLimitsKbps ?? {}
+  )
+
+  // BitTorrent State
+  const [forceTorrentEncryption, setForceTorrentEncryption] = useState(
+    settings.forceTorrentEncryption ?? true
+  )
+  const [disableP2PTracking, setDisableP2PTracking] = useState(settings.disableP2PTracking ?? false)
   const [stripReferrer, setStripReferrer] = useState(settings.stripReferrer ?? true)
   const [customUserAgent, setCustomUserAgent] = useState(
     settings.customUserAgent ??
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
   )
-  const [forceTorrentEncryption, setForceTorrentEncryption] = useState(settings.forceTorrentEncryption ?? true)
-  const [disableP2PTracking, setDisableP2PTracking] = useState(settings.disableP2PTracking ?? false)
+  const [saveResumeIntervalMin, setSaveResumeIntervalMin] = useState(60)
+  const [saveStatsIntervalMin, setSaveStatsIntervalMin] = useState(15)
 
-  const [savePath, setSavePath] = useState(settings.defaultSavePath)
-  const [theme, setTheme] = useState(settings.theme || 'dark')
-  const [autoCategorize, setAutoCategorize] = useState(settings.autoCategorize)
-  const [enableNotifications, setEnableNotifications] = useState(settings.enableNotifications)
-  const [startOnBoot, setStartOnBoot] = useState(settings.startOnBoot)
+  // WebUI & RPC State
+  const [enableRpcServer, setEnableRpcServer] = useState(settings.enableRpcServer ?? true)
+  const [rpcPort, setRpcPort] = useState(settings.rpcPort ?? 6800)
+  const [rpcSecretToken, setRpcSecretToken] = useState(settings.rpcSecretToken ?? 'gbt_secret_rpc')
+
+  // Advanced State
+  const [memoryPriority, setMemoryPriority] = useState('Below normal')
+  const [resolveHostnames, setResolveHostnames] = useState(false)
+  const [resolveCountries, setResolveCountries] = useState(true)
 
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
@@ -85,8 +117,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }))
   }
 
-  const handleSave = (e: React.FormEvent): void => {
-    e.preventDefault()
+  const handleSave = (e?: React.FormEvent): void => {
+    if (e) e.preventDefault()
     onSave({
       maxConcurrentDownloads: maxConcurrent,
       defaultThreadCount: defaultThreads,
@@ -118,538 +150,663 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onClose()
   }
 
+  const sidebarTabs: Array<{ id: TabType; label: string; icon: React.FC<{ className?: string }> }> =
+    [
+      { id: 'behavior', label: 'Behavior', icon: Sliders },
+      { id: 'downloads', label: 'Downloads', icon: FolderDownIcon },
+      { id: 'connection', label: 'Connection', icon: NetworkNodesIcon },
+      { id: 'speed', label: 'Speed', icon: Gauge },
+      { id: 'bittorrent', label: 'BitTorrent', icon: Globe },
+      { id: 'rss', label: 'RSS & Rules', icon: Rss },
+      { id: 'webui', label: 'WebUI', icon: WebUIIcon },
+      { id: 'advanced', label: 'Advanced', icon: Wrench }
+    ]
+
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 bg-slate-950/40 flex items-center justify-center p-4 select-none font-sans text-xs"
+      className="fixed inset-0 z-50 bg-slate-950/65 flex items-center justify-center p-3 select-none font-sans text-xs"
     >
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${
+        className={`bg-[#1c1e24] border border-[#2d313b] rounded-none w-full max-w-4xl h-[620px] shadow-2xl overflow-hidden flex flex-col font-sans text-slate-200 ${
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
-        {/* Header */}
+        {/* ─── Top qBittorrent Style Header Bar ─── */}
         <div
           onMouseDown={handleMouseDown}
-          className="p-4 border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none bg-ide-bg/80"
+          className="h-9 px-3 bg-[#16181d] border-b border-[#2d313b] flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
         >
-          <div className="flex items-center gap-2.5">
-            <GripHorizontal className="h-4 w-4 text-slate-500 shrink-0 opacity-70" />
-            <div className="p-2 bg-cyan-950 text-cyan-400 rounded-none border border-cyan-500/20">
-              <Sliders className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 bg-sky-500 text-slate-950 rounded-full font-bold flex items-center justify-center text-[10px] shadow-sm">
+              qb
             </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-100">Preferences &amp; Engine Settings</h2>
-              <p className="text-[11px] text-slate-400">
-                Configure download engine, proxy, RPC gateway &amp; storage
-              </p>
-            </div>
+            <span className="font-semibold text-slate-200 text-xs tracking-tight">Options</span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-none transition cursor-pointer"
-          >
-            <X className="h-4 w-4" />
-          </button>
+
+          <div className="flex items-center gap-2">
+            <GripHorizontal className="h-4 w-4 text-slate-600 shrink-0" />
+            <button
+              onClick={onClose}
+              className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-ide-border bg-ide-bg">
-          {[
-            { id: 'engine', label: 'Engine & Threads', icon: Cpu },
-            { id: 'network', label: 'Bandwidth & RPC', icon: Network },
-            { id: 'privacy', label: 'Privacy & WARP', icon: Shield },
-            { id: 'general', label: 'General & Storage', icon: Laptop }
-          ].map((t) => {
-            const Icon = t.icon
-            const isActive = activeTab === t.id
-            return (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id as 'engine' | 'network' | 'privacy' | 'general')}
-                className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition cursor-pointer rounded-none ${
-                  isActive
-                    ? 'border-cyan-400 text-cyan-400 font-bold bg-white/5'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{t.label}</span>
-              </button>
-            )
-          })}
-        </div>
+        {/* ─── Main Content Split (Left Sidebar + Right Table Pane) ─── */}
+        <div className="flex-1 flex min-h-0 overflow-hidden bg-[#181a1f]">
+          {/* Left Vertical Options Navigation Bar */}
+          <div className="w-36 bg-[#16181d] border-r border-[#2d313b] flex flex-col py-2 shrink-0 select-none overflow-y-auto">
+            {sidebarTabs.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-center ${
+                    isActive
+                      ? 'bg-[#252833] text-sky-400 font-bold border-l-2 border-sky-400'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  }`}
+                >
+                  <Icon className={`h-5 w-5 ${isActive ? 'text-sky-400' : 'text-sky-400/80'}`} />
+                  <span className="text-[11px] font-medium leading-none">{tab.label}</span>
+                </button>
+              )
+            })}
+          </div>
 
-        {/* Settings Body */}
-        <form onSubmit={handleSave} className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-          {activeTab === 'engine' && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
-                  <span>Default Thread Count per Download</span>
-                  <span className="font-mono text-cyan-400 font-bold">{defaultThreads} Threads</span>
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="32"
-                  value={defaultThreads}
-                  onChange={(e) => setDefaultThreads(parseInt(e.target.value, 10))}
-                  className="w-full accent-cyan-400 cursor-pointer"
-                />
+          {/* Right Settings Grid / Table Pane */}
+          <div className="flex-1 flex flex-col min-w-0 bg-[#1c1e24] overflow-hidden">
+            {/* Table Header Columns */}
+            <div className="h-7 px-4 bg-[#14161b] border-b border-[#2d313b] flex items-center text-[11px] font-bold text-slate-300 shrink-0">
+              <div className="w-1/2 flex items-center justify-between border-r border-[#2d313b] pr-4">
+                <span>Setting</span>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Max Concurrent Downloads
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={maxConcurrent}
-                  onChange={(e) => setMaxConcurrent(parseInt(e.target.value, 10))}
-                  className="w-full bg-ide-bg text-slate-100 text-xs px-3 py-2 rounded-none border border-ide-border focus:outline-none focus:border-cyan-400 font-mono"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-ide-border">
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={enableAdaptiveQoS}
-                    onChange={(e) => setEnableAdaptiveQoS(e.target.checked)}
-                    className="h-4 w-4 accent-cyan-400 rounded-none"
-                  />
-                  <div>
-                    <span className="text-xs font-semibold text-slate-200 block">
-                      Enable Adaptive QoS Latency Throttling
-                    </span>
-                    <span className="text-[11px] text-slate-400 block">
-                      Automatically limits bandwidth during latency spikes (&gt;120ms) to protect gaming &amp; VoIP ping.
-                    </span>
-                  </div>
-                </label>
+              <div className="w-1/2 pl-4">
+                <span>Value</span>
               </div>
             </div>
-          )}
 
-          {activeTab === 'network' && (
-            <div className="space-y-4">
-              {/* Global Limit */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Global Download Speed Limit (KB/s) [0 = Unlimited]
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={maxGlobalSpeed}
-                  onChange={(e) => setMaxGlobalSpeed(parseInt(e.target.value, 10))}
-                  className="w-full bg-ide-bg text-slate-100 text-xs px-3 py-2 rounded-none border border-ide-border focus:outline-none focus:border-cyan-400 font-mono"
-                />
+            {/* Scrollable Settings Rows */}
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-0">
+              {/* Section Header Row */}
+              <div className="px-4 py-2 bg-[#20232c] border-b border-[#2d313b] flex items-center justify-between text-xs font-bold text-slate-200">
+                <span>
+                  {activeTab === 'behavior' && 'Application Behavior & Appearance'}
+                  {activeTab === 'downloads' && 'Downloads & File Storage Section'}
+                  {activeTab === 'connection' && 'Network Connection & Privacy Proxy'}
+                  {activeTab === 'speed' && 'Bandwidth & Rate Limiting Controls'}
+                  {activeTab === 'bittorrent' && 'BitTorrent Protocol & Swarm Options'}
+                  {activeTab === 'rss' && 'RSS Feed & Automations Rules'}
+                  {activeTab === 'webui' && 'Web UI & JSON-RPC Gateway'}
+                  {activeTab === 'advanced' && 'Advanced Kernel & Memory Parameters'}
+                </span>
+                <a
+                  href="https://github.com/HawkdotDev/grabbit#readme"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sky-400 text-[11px] hover:underline flex items-center gap-1 font-normal"
+                >
+                  <span>Open documentation</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
               </div>
 
-              {/* Per-Category Speed Limits */}
-              <div className="p-3 bg-ide-bg/50 border border-ide-border space-y-2">
-                <span className="text-xs font-bold text-slate-200 block">Per-Category Speed Limits (KB/s)</span>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-0.5">Videos</label>
+              {/* ─── TAB: Behavior ─── */}
+              {activeTab === 'behavior' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Customize application instance name">
                     <input
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={categoryLimits['video'] ?? 0}
-                      onChange={(e) => handleCategoryLimitChange('video', parseInt(e.target.value, 10))}
-                      className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
+                      type="text"
+                      value={instanceName}
+                      onChange={(e) => setInstanceName(e.target.value)}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
                     />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-0.5">Compressed / Archives</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={categoryLimits['compressed'] ?? 0}
-                      onChange={(e) => handleCategoryLimitChange('compressed', parseInt(e.target.value, 10))}
-                      className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-0.5">Programs</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={categoryLimits['executables'] ?? 0}
-                      onChange={(e) => handleCategoryLimitChange('executables', parseInt(e.target.value, 10))}
-                      className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-0.5">Documents</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={categoryLimits['documents'] ?? 0}
-                      onChange={(e) => handleCategoryLimitChange('documents', parseInt(e.target.value, 10))}
-                      className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
+                  </TableRow>
 
-              {/* RPC Server Settings */}
-              <div className="p-3 bg-ide-bg/50 border border-ide-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Radio className="h-3.5 w-3.5 text-cyan-400" />
-                    Remote JSON-RPC &amp; REST Server
-                  </span>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+                  <TableRow label="Appearance theme">
+                    <select
+                      value={theme}
+                      onChange={(e) => setTheme(e.target.value as EngineSettings['theme'])}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="dark">Dark Mode (qBittorrent Dark)</option>
+                      <option value="carrot">Carrot Theme 🥕</option>
+                      <option value="light">Light Mode</option>
+                      <option value="contrast">High Contrast</option>
+                      <option value="custom">Custom Theme 🎨</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Refresh interval">
+                    <select
+                      value={refreshInterval}
+                      onChange={(e) => setRefreshInterval(parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="500">500 ms</option>
+                      <option value="1000">1000 ms</option>
+                      <option value="1500">1500 ms</option>
+                      <option value="3000">3000 ms</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Display notifications">
                     <input
                       type="checkbox"
-                      checked={enableRpcServer}
-                      onChange={(e) => setEnableRpcServer(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-cyan-400 rounded-none"
+                      checked={enableNotifications}
+                      onChange={(e) => setEnableNotifications(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                    <span className="text-[11px] text-slate-300">Enabled</span>
-                  </label>
+                  </TableRow>
+
+                  <TableRow label="Auto-categorize downloads by extension">
+                    <input
+                      type="checkbox"
+                      checked={autoCategorize}
+                      onChange={(e) => setAutoCategorize(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Start application on system boot">
+                    <input
+                      type="checkbox"
+                      checked={startOnBoot}
+                      onChange={(e) => setStartOnBoot(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
                 </div>
-                {enableRpcServer && (
-                  <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
-                    <div>
-                      <label className="text-[11px] text-slate-400 block mb-0.5">RPC Port</label>
-                      <input
-                        type="number"
-                        min="1024"
-                        max="65535"
-                        value={rpcPort}
-                        onChange={(e) => setRpcPort(parseInt(e.target.value, 10))}
-                        className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-slate-400 block mb-0.5">RPC Secret Token</label>
+              )}
+
+              {/* ─── TAB: Downloads ─── */}
+              {activeTab === 'downloads' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Default save location">
+                    <div className="flex gap-1.5">
                       <input
                         type="text"
-                        value={rpcSecretToken}
-                        onChange={(e) => setRpcSecretToken(e.target.value)}
-                        className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
+                        value={savePath}
+                        onChange={(e) => setSavePath(e.target.value)}
+                        className="flex-1 bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
                       />
+                      <button
+                        type="button"
+                        onClick={handleBrowseFolder}
+                        className="px-2.5 py-1 bg-[#252833] hover:bg-[#2e3240] border border-[#2d313b] text-slate-200 rounded-none cursor-pointer"
+                      >
+                        <FolderOpen className="h-3.5 w-3.5 text-amber-400" />
+                      </button>
                     </div>
-                  </div>
-                )}
-              </div>
+                  </TableRow>
 
-              {/* Proxy Settings */}
-              <div className="p-3 bg-ide-bg/50 border border-ide-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Shield className="h-3.5 w-3.5 text-amber-400" />
-                    Network Proxy Settings
-                  </span>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+                  <TableRow label="Resume data storage type (requires restart)">
+                    <select
+                      value={resumeDataStorage}
+                      onChange={(e) => setResumeDataStorage(e.target.value)}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="Fastresume files">Fastresume files</option>
+                      <option value="SQLite database">SQLite database</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Torrent content removing mode">
+                    <select
+                      value={torrentRemovalMode}
+                      onChange={(e) => setTorrentRemovalMode(e.target.value)}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="Delete files permanently">Delete files permanently</option>
+                      <option value="Move to trash / recycle bin">Move to trash / recycle bin</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Max concurrent downloads">
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={maxConcurrent}
+                      onChange={(e) => setMaxConcurrent(parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Default thread count per download">
+                    <input
+                      type="number"
+                      min="1"
+                      max="32"
+                      value={defaultThreads}
+                      onChange={(e) => setDefaultThreads(parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                    />
+                  </TableRow>
+
+                  <TableRow label=".torrent file size limit">
+                    <select
+                      value={`${torrentSizeLimitMb} MiB`}
+                      onChange={(e) => setTorrentSizeLimitMb(parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="50 MiB">50 MiB</option>
+                      <option value="100 MiB">100 MiB</option>
+                      <option value="250 MiB">250 MiB</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Confirm torrent recheck">
+                    <input
+                      type="checkbox"
+                      checked={confirmRecheck}
+                      onChange={(e) => setConfirmRecheck(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+                </div>
+              )}
+
+              {/* ─── TAB: Connection ─── */}
+              {activeTab === 'connection' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Network interface">
+                    <select
+                      value={networkInterface}
+                      onChange={(e) => setNetworkInterface(e.target.value)}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="Any interface">Any interface</option>
+                      <option value="Ethernet">Ethernet</option>
+                      <option value="Wi-Fi">Wi-Fi</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Optional IP address to bind to">
+                    <select
+                      value={bindIpAddress}
+                      onChange={(e) => setBindIpAddress(e.target.value)}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="All addresses">All addresses</option>
+                      <option value="127.0.0.1 (Localhost)">127.0.0.1 (Localhost)</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Enable Proxy">
                     <input
                       type="checkbox"
                       checked={proxyEnabled}
                       onChange={(e) => setProxyEnabled(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-cyan-400 rounded-none"
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                    <span className="text-[11px] text-slate-300">Use Proxy</span>
-                  </label>
-                </div>
-                {proxyEnabled && (
-                  <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
-                    <div>
-                      <label className="text-[11px] text-slate-400 block mb-0.5">Type</label>
-                      <select
-                        value={proxyType}
-                        onChange={(e) => setProxyType(e.target.value as 'http' | 'socks5')}
-                        className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                      >
-                        <option value="http">HTTP</option>
-                        <option value="socks5">SOCKS5</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-slate-400 block mb-0.5">Host</label>
-                      <input
-                        type="text"
-                        value={proxyHost}
-                        onChange={(e) => setProxyHost(e.target.value)}
-                        className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-slate-400 block mb-0.5">Port</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="65535"
-                        value={proxyPort}
-                        onChange={(e) => setProxyPort(parseInt(e.target.value, 10))}
-                        className="w-full bg-ide-bg text-slate-200 px-2 py-1 border border-ide-border focus:border-cyan-400 font-mono"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                  </TableRow>
 
-          {activeTab === 'privacy' && (
-            <div className="space-y-4">
-              {/* Cloudflare DNS-over-HTTPS (DoH) */}
-              <div className="p-3.5 bg-ide-bg/50 border border-ide-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Shield className="h-4 w-4 text-emerald-400" />
-                    DNS-over-HTTPS (DoH) Resolution
-                  </span>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+                  {proxyEnabled && (
+                    <>
+                      <TableRow label="Proxy Type">
+                        <select
+                          value={proxyType}
+                          onChange={(e) => setProxyType(e.target.value as 'http' | 'socks5')}
+                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                        >
+                          <option value="http">HTTP Proxy</option>
+                          <option value="socks5">SOCKS5 Proxy</option>
+                        </select>
+                      </TableRow>
+
+                      <TableRow label="Proxy Host">
+                        <input
+                          type="text"
+                          value={proxyHost}
+                          onChange={(e) => setProxyHost(e.target.value)}
+                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                        />
+                      </TableRow>
+
+                      <TableRow label="Proxy Port">
+                        <input
+                          type="number"
+                          value={proxyPort}
+                          onChange={(e) => setProxyPort(parseInt(e.target.value, 10))}
+                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                        />
+                      </TableRow>
+                    </>
+                  )}
+
+                  <TableRow label="DNS-over-HTTPS (DoH) encrypted resolution">
                     <input
                       type="checkbox"
                       checked={enableDoH}
                       onChange={(e) => setEnableDoH(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-emerald-400 rounded-none cursor-pointer"
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                    <span className="text-xs font-semibold text-emerald-400">Encrypted DNS</span>
-                  </label>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Resolves domain names via HTTPS endpoints (`https://1.1.1.1/dns-query`), preventing ISP DNS snooping, hijacking, and censorship.
-                </p>
-                {enableDoH && (
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div>
-                      <label className="text-[11px] text-slate-400 block mb-1">DoH Provider</label>
-                      <select
-                        value={dohProvider}
-                        onChange={(e) => setDohProvider(e.target.value as 'cloudflare' | 'quad9' | 'google' | 'custom')}
-                        className="w-full bg-ide-bg text-slate-200 px-2 py-1.5 border border-ide-border focus:border-emerald-400 font-mono text-xs cursor-pointer"
-                      >
-                        <option value="cloudflare">Cloudflare (1.1.1.1 Privacy DNS)</option>
-                        <option value="quad9">Quad9 (9.9.9.9 Secure DNS)</option>
-                        <option value="google">Google Public DNS</option>
-                        <option value="custom">Custom DoH Endpoint</option>
-                      </select>
-                    </div>
-                    {dohProvider === 'custom' && (
-                      <div>
-                        <label className="text-[11px] text-slate-400 block mb-1">Custom DoH URL</label>
-                        <input
-                          type="text"
-                          value={customDoHUrl}
-                          onChange={(e) => setCustomDoHUrl(e.target.value)}
-                          className="w-full bg-ide-bg text-slate-200 px-2 py-1.5 border border-ide-border focus:border-emerald-400 font-mono text-xs"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                  </TableRow>
 
-              {/* Cloudflare WARP Tunneling */}
-              <div className="p-3.5 bg-ide-bg/50 border border-ide-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Radio className="h-4 w-4 text-cyan-400" />
-                    Cloudflare WARP Integration
-                  </span>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+                  {enableDoH && (
+                    <>
+                      <TableRow label="DoH Provider">
+                        <select
+                          value={dohProvider}
+                          onChange={(e) =>
+                            setDohProvider(e.target.value as 'cloudflare' | 'quad9' | 'google' | 'custom')
+                          }
+                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                        >
+                          <option value="cloudflare">Cloudflare (1.1.1.1)</option>
+                          <option value="quad9">Quad9 (9.9.9.9)</option>
+                          <option value="google">Google DNS</option>
+                          <option value="custom">Custom Endpoint</option>
+                        </select>
+                      </TableRow>
+
+                      {dohProvider === 'custom' && (
+                        <TableRow label="Custom DoH URL">
+                          <input
+                            type="text"
+                            value={customDoHUrl}
+                            onChange={(e) => setCustomDoHUrl(e.target.value)}
+                            className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                          />
+                        </TableRow>
+                      )}
+                    </>
+                  )}
+
+                  <TableRow label="Cloudflare WARP tunneling integration">
                     <input
                       type="checkbox"
                       checked={enableWarp}
                       onChange={(e) => setEnableWarp(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-cyan-400 rounded-none cursor-pointer"
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                    <span className="text-xs font-semibold text-cyan-400">WARP Active</span>
-                  </label>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Binds transfers directly to local Cloudflare WARP client endpoints (`127.0.0.1:4001`), routing all traffic through Cloudflare's encrypted WireGuard network.
-                </p>
-                {enableWarp && (
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">WARP Endpoint Address</label>
-                    <input
-                      type="text"
-                      value={warpEndpoint}
-                      onChange={(e) => setWarpEndpoint(e.target.value)}
-                      placeholder="127.0.0.1:4001"
-                      className="w-full bg-ide-bg text-slate-200 px-2.5 py-1.5 border border-ide-border focus:border-cyan-400 font-mono text-xs"
-                    />
-                  </div>
-                )}
-              </div>
+                  </TableRow>
 
-              {/* BitTorrent Encryption & Tracking */}
-              <div className="p-3.5 bg-ide-bg/50 border border-ide-border space-y-3">
-                <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                  <Shield className="h-4 w-4 text-purple-400" />
-                  BitTorrent P2P Privacy & Headers
-                </span>
-                <div className="space-y-2 pt-1">
-                  <label className="flex items-center justify-between cursor-pointer p-2 bg-ide-surface border border-ide-border">
-                    <div>
-                      <span className="text-xs font-semibold text-slate-200 block">Strict Anonymous P2P Mode</span>
-                      <span className="text-[10px] text-slate-400 block">Disable DHT & public P2P tracker discovery to enforce private torrent mode</span>
-                    </div>
+                  {enableWarp && (
+                    <TableRow label="WARP Endpoint Address">
+                      <input
+                        type="text"
+                        value={warpEndpoint}
+                        onChange={(e) => setWarpEndpoint(e.target.value)}
+                        className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      />
+                    </TableRow>
+                  )}
+                </div>
+              )}
+
+              {/* ─── TAB: Speed ─── */}
+              {activeTab === 'speed' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Global download rate limit [0: disabled]">
+                    <input
+                      type="number"
+                      min="0"
+                      step="100"
+                      value={maxGlobalSpeed}
+                      onChange={(e) => setMaxGlobalSpeed(parseInt(e.target.value, 10))}
+                      placeholder="0 KB/s"
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Adaptive QoS ping-latency throttling">
                     <input
                       type="checkbox"
-                      checked={disableP2PTracking}
-                      onChange={(e) => setDisableP2PTracking(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-purple-400 rounded-none"
+                      checked={enableAdaptiveQoS}
+                      onChange={(e) => setEnableAdaptiveQoS(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                  </label>
+                  </TableRow>
 
-                  <label className="flex items-center justify-between cursor-pointer p-2 bg-ide-surface border border-ide-border">
-                    <div>
-                      <span className="text-xs font-semibold text-slate-200 block">Enforce Protocol Encryption (MSE/PE)</span>
-                      <span className="text-[10px] text-slate-400 block">Encrypt BitTorrent peer wire headers to bypass ISP P2P throttling</span>
-                    </div>
+                  <TableRow label="Videos category speed limit (KB/s)">
+                    <input
+                      type="number"
+                      value={categoryLimits['video'] ?? 0}
+                      onChange={(e) => handleCategoryLimitChange('video', parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Archives category speed limit (KB/s)">
+                    <input
+                      type="number"
+                      value={categoryLimits['compressed'] ?? 0}
+                      onChange={(e) => handleCategoryLimitChange('compressed', parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                    />
+                  </TableRow>
+                </div>
+              )}
+
+              {/* ─── TAB: BitTorrent ─── */}
+              {activeTab === 'bittorrent' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Enforce protocol header encryption (MSE/PE)">
                     <input
                       type="checkbox"
                       checked={forceTorrentEncryption}
                       onChange={(e) => setForceTorrentEncryption(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-purple-400 rounded-none"
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                  </label>
+                  </TableRow>
 
-                  <label className="flex items-center justify-between cursor-pointer p-2 bg-ide-surface border border-ide-border">
-                    <div>
-                      <span className="text-xs font-semibold text-slate-200 block">Strip Referrer Header</span>
-                      <span className="text-[10px] text-slate-400 block">Remove HTTP Referer from outgoing requests to prevent web tracking</span>
-                    </div>
+                  <TableRow label="Strict anonymous P2P mode (disable DHT/PeX)">
+                    <input
+                      type="checkbox"
+                      checked={disableP2PTracking}
+                      onChange={(e) => setDisableP2PTracking(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Strip HTTP Referrer header">
                     <input
                       type="checkbox"
                       checked={stripReferrer}
                       onChange={(e) => setStripReferrer(e.target.checked)}
-                      className="h-3.5 w-3.5 accent-purple-400 rounded-none"
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
                     />
-                  </label>
+                  </TableRow>
 
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">Custom User-Agent Mask</label>
+                  <TableRow label="Custom User-Agent mask">
                     <input
                       type="text"
                       value={customUserAgent}
                       onChange={(e) => setCustomUserAgent(e.target.value)}
-                      className="w-full bg-ide-bg text-slate-200 px-2.5 py-1.5 border border-ide-border focus:border-purple-400 font-mono text-xs"
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono text-[11px]"
                     />
-                  </div>
+                  </TableRow>
+
+                  <TableRow label="Save resume data interval [0: disabled]">
+                    <select
+                      value={`${saveResumeIntervalMin} min`}
+                      onChange={(e) => setSaveResumeIntervalMin(parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="15 min">15 min</option>
+                      <option value="30 min">30 min</option>
+                      <option value="60 min">60 min</option>
+                    </select>
+                  </TableRow>
+
+                  <TableRow label="Save statistics interval [0: disabled]">
+                    <select
+                      value={`${saveStatsIntervalMin} min`}
+                      onChange={(e) => setSaveStatsIntervalMin(parseInt(e.target.value, 10))}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="5 min">5 min</option>
+                      <option value="15 min">15 min</option>
+                      <option value="30 min">30 min</option>
+                    </select>
+                  </TableRow>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {activeTab === 'general' && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                  <Folder className="h-3.5 w-3.5 text-slate-400" />
-                  Default Save Path
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={savePath}
-                    onChange={(e) => setSavePath(e.target.value)}
-                    className="flex-1 bg-ide-bg text-slate-100 text-xs px-3 py-2 rounded-none border border-ide-border focus:outline-none focus:border-cyan-400 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleBrowseFolder}
-                    className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 hover:text-white rounded-none cursor-pointer transition flex items-center gap-1.5"
-                    title="Browse Folder"
-                  >
-                    <FolderOpen className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Browse</span>
-                  </button>
+              {/* ─── TAB: RSS & Automations ─── */}
+              {activeTab === 'rss' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Auto-unpack downloaded archives (.zip, .tar, .rar)">
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Execute post-processing automation scripts">
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Dispatch webhooks on error">
+                    <input
+                      type="checkbox"
+                      defaultChecked={false}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <label className="text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1">
-                  <Palette className="h-3.5 w-3.5 text-amber-400" />
-                  Appearance Theme
-                </label>
-                <select
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value as EngineSettings['theme'])}
-                  className="w-full bg-ide-bg text-slate-100 text-xs px-3 py-2 rounded-none border border-ide-border focus:outline-none focus:border-cyan-400 font-mono cursor-pointer"
-                >
-                  <option value="dark">Dark Mode (IDE Default)</option>
-                  <option value="carrot">Carrot Theme 🥕 (Pastel Orange/Green on Pitch Black)</option>
-                  <option value="light">Light Mode</option>
-                  <option value="contrast">High Contrast</option>
-                  <option value="custom">Custom Theme 🎨</option>
-                </select>
-              </div>
+              {/* ─── TAB: WebUI & RPC ─── */}
+              {activeTab === 'webui' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Enable Remote WebUI & JSON-RPC server">
+                    <input
+                      type="checkbox"
+                      checked={enableRpcServer}
+                      onChange={(e) => setEnableRpcServer(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
 
-              <div className="space-y-3 pt-2">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={autoCategorize}
-                    onChange={(e) => setAutoCategorize(e.target.checked)}
-                    className="h-4 w-4 accent-cyan-400 rounded-none"
-                  />
-                  <span className="text-xs text-slate-300">
-                    Auto-categorize downloads by extension
-                  </span>
-                </label>
+                  {enableRpcServer && (
+                    <>
+                      <TableRow label="RPC Listening Port">
+                        <input
+                          type="number"
+                          value={rpcPort}
+                          onChange={(e) => setRpcPort(parseInt(e.target.value, 10))}
+                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                        />
+                      </TableRow>
 
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={enableNotifications}
-                    onChange={(e) => setEnableNotifications(e.target.checked)}
-                    className="h-4 w-4 accent-cyan-400 rounded-none"
-                  />
-                  <span className="text-xs text-slate-300 flex items-center gap-1.5">
-                    <Bell className="h-3.5 w-3.5 text-slate-400" />
-                    Show system notification on completion
-                  </span>
-                </label>
+                      <TableRow label="RPC Secret Token">
+                        <input
+                          type="text"
+                          value={rpcSecretToken}
+                          onChange={(e) => setRpcSecretToken(e.target.value)}
+                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                        />
+                      </TableRow>
+                    </>
+                  )}
+                </div>
+              )}
 
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={startOnBoot}
-                    onChange={(e) => setStartOnBoot(e.target.checked)}
-                    className="h-4 w-4 accent-cyan-400 rounded-none"
-                  />
-                  <span className="text-xs text-slate-300">Start Grabbit on system boot</span>
-                </label>
-              </div>
-            </div>
-          )}
+              {/* ─── TAB: Advanced ─── */}
+              {activeTab === 'advanced' && (
+                <div className="divide-y divide-[#262933]">
+                  <TableRow label="Process memory priority (?)">
+                    <select
+                      value={memoryPriority}
+                      onChange={(e) => setMemoryPriority(e.target.value)}
+                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                    >
+                      <option value="Normal">Normal</option>
+                      <option value="Below normal">Below normal</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </TableRow>
 
-          {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-ide-border">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-none hover:bg-white/5 transition cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 text-xs font-bold text-slate-950 bg-cyan-400 hover:bg-cyan-300 active:scale-95 rounded-none shadow-lg shadow-cyan-400/20 transition cursor-pointer"
-            >
-              Save Preferences
-            </button>
+                  <TableRow label="Resolve peer host names">
+                    <input
+                      type="checkbox"
+                      checked={resolveHostnames}
+                      onChange={(e) => setResolveHostnames(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+
+                  <TableRow label="Resolve peer countries">
+                    <input
+                      type="checkbox"
+                      checked={resolveCountries}
+                      onChange={(e) => setResolveCountries(e.target.checked)}
+                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                    />
+                  </TableRow>
+                </div>
+              )}
+            </form>
           </div>
-        </form>
+        </div>
+
+        {/* ─── Bottom Action Bar (OK, Cancel, Apply) ─── */}
+        <div className="h-12 px-4 bg-[#14161b] border-t border-[#2d313b] flex items-center justify-end gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            className="px-6 py-1 bg-[#252833] hover:bg-[#2d3242] text-slate-100 font-semibold border border-[#3b4052] rounded-xs cursor-pointer transition text-xs shadow-xs"
+          >
+            OK
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-1 bg-[#252833] hover:bg-[#2d3242] text-slate-300 border border-[#3b4052] rounded-xs cursor-pointer transition text-xs shadow-xs"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            className="px-5 py-1 bg-[#252833] hover:bg-[#2d3242] text-slate-300 border border-[#3b4052] rounded-xs cursor-pointer transition text-xs shadow-xs"
+          >
+            Apply
+          </button>
+        </div>
       </div>
     </div>
   )
 }
+
+// Sub-component for clean 2-column qBittorrent table rows ("Setting" | "Value")
+const TableRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+  <div className="flex items-center text-xs py-2 px-4 hover:bg-[#20232c]/50 transition-colors">
+    <div className="w-1/2 pr-4 border-r border-[#262933] text-slate-300 font-normal">{label}</div>
+    <div className="w-1/2 pl-4">{children}</div>
+  </div>
+)
+
+// Helper Icons
+const FolderDownIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+  </svg>
+)
+
+const NetworkNodesIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+  </svg>
+)
+
+const WebUIIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+  </svg>
+)
