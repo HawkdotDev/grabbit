@@ -165,29 +165,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 bg-slate-950/65 flex items-center justify-center p-3 select-none font-sans text-xs"
+      className="fixed inset-0 z-50 bg-slate-950/45 flex items-center justify-center p-3 select-none font-sans text-xs"
     >
       <div
         ref={modalRef}
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        className={`bg-[#1c1e24] border border-[#2d313b] rounded-none w-full max-w-4xl h-[620px] shadow-2xl overflow-hidden flex flex-col font-sans text-slate-200 ${
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-4xl h-[620px] shadow-2xl overflow-hidden flex flex-col font-sans text-slate-100 ${
           isDragging ? 'transition-none duration-0' : ''
         } ${isBlinking ? 'animate-modal-blink' : ''}`}
       >
         {/* ─── Top qBittorrent Style Header Bar ─── */}
         <div
           onMouseDown={handleMouseDown}
-          className="h-9 px-3 bg-[#16181d] border-b border-[#2d313b] flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
+          className="h-9 px-3 bg-ide-bg border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
         >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-sky-500 text-slate-950 rounded-full font-bold flex items-center justify-center text-[10px] shadow-sm">
+            <div className="w-5 h-5 bg-theme-accent text-slate-950 rounded-none font-bold flex items-center justify-center text-[10px] shadow-sm">
               qb
             </div>
-            <span className="font-semibold text-slate-200 text-xs tracking-tight">Options</span>
+            <span className="font-semibold text-slate-100 text-xs tracking-tight">Options</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <GripHorizontal className="h-4 w-4 text-slate-600 shrink-0" />
+            <GripHorizontal className="h-4 w-4 text-slate-500 shrink-0 opacity-70" />
             <button
               onClick={onClose}
               className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
@@ -198,9 +198,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* ─── Main Content Split (Left Sidebar + Right Table Pane) ─── */}
-        <div className="flex-1 flex min-h-0 overflow-hidden bg-[#181a1f]">
+        <div className="flex-1 flex min-h-0 overflow-hidden bg-ide-bg">
           {/* Left Vertical Options Navigation Bar */}
-          <div className="w-36 bg-[#16181d] border-r border-[#2d313b] flex flex-col py-2 shrink-0 select-none overflow-y-auto">
+          <div className="w-36 bg-ide-bg border-r border-ide-border flex flex-col py-2 shrink-0 select-none overflow-y-auto">
             {sidebarTabs.map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -208,13 +208,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-center ${
+                  className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-center rounded-none ${
                     isActive
-                      ? 'bg-[#252833] text-sky-400 font-bold border-l-2 border-sky-400'
+                      ? 'bg-theme-tint text-theme-accent font-bold border-l-2 border-theme-accent'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 ${isActive ? 'text-sky-400' : 'text-sky-400/80'}`} />
+                  <Icon className={`h-5 w-5 ${isActive ? 'text-theme-accent' : 'text-slate-400'}`} />
                   <span className="text-[11px] font-medium leading-none">{tab.label}</span>
                 </button>
               )
@@ -222,10 +222,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Right Settings Grid / Table Pane */}
-          <div className="flex-1 flex flex-col min-w-0 bg-[#1c1e24] overflow-hidden">
+          <div className="flex-1 flex flex-col min-w-0 bg-ide-surface overflow-hidden">
             {/* Table Header Columns */}
-            <div className="h-7 px-4 bg-[#14161b] border-b border-[#2d313b] flex items-center text-[11px] font-bold text-slate-300 shrink-0">
-              <div className="w-1/2 flex items-center justify-between border-r border-[#2d313b] pr-4">
+            <div className="h-7 px-4 bg-ide-bg border-b border-ide-border flex items-center text-[11px] font-bold text-slate-300 shrink-0">
+              <div className="w-1/2 flex items-center justify-between border-r border-ide-border pr-4">
                 <span>Setting</span>
               </div>
               <div className="w-1/2 pl-4">
@@ -236,7 +236,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {/* Scrollable Settings Rows */}
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-0">
               {/* Section Header Row */}
-              <div className="px-4 py-2 bg-[#20232c] border-b border-[#2d313b] flex items-center justify-between text-xs font-bold text-slate-200">
+              <div className="px-4 py-2 bg-ide-card border-b border-ide-border flex items-center justify-between text-xs font-bold text-slate-200">
                 <span>
                   {activeTab === 'behavior' && 'Application Behavior & Appearance'}
                   {activeTab === 'downloads' && 'Downloads & File Storage Section'}
@@ -251,7 +251,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   href="https://github.com/HawkdotDev/grabbit#readme"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sky-400 text-[11px] hover:underline flex items-center gap-1 font-normal"
+                  className="text-theme-accent text-[11px] hover:underline flex items-center gap-1 font-normal"
                 >
                   <span>Open documentation</span>
                   <ExternalLink className="h-3 w-3" />
@@ -260,13 +260,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: Behavior ─── */}
               {activeTab === 'behavior' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Customize application instance name">
                     <input
                       type="text"
                       value={instanceName}
                       onChange={(e) => setInstanceName(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                     />
                   </TableRow>
 
@@ -274,10 +274,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={theme}
                       onChange={(e) => setTheme(e.target.value as EngineSettings['theme'])}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
-                      <option value="dark">Dark Mode (qBittorrent Dark)</option>
-                      <option value="carrot">Carrot Theme 🥕</option>
+                      <option value="dark">Dark Mode (IDE Default)</option>
+                      <option value="carrot">Carrot Theme 🥕 (Pastel Orange/Green)</option>
                       <option value="light">Light Mode</option>
                       <option value="contrast">High Contrast</option>
                       <option value="custom">Custom Theme 🎨</option>
@@ -288,7 +288,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={refreshInterval}
                       onChange={(e) => setRefreshInterval(parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="500">500 ms</option>
                       <option value="1000">1000 ms</option>
@@ -302,7 +302,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={enableNotifications}
                       onChange={(e) => setEnableNotifications(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -311,7 +311,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={autoCategorize}
                       onChange={(e) => setAutoCategorize(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -320,7 +320,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={startOnBoot}
                       onChange={(e) => setStartOnBoot(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
                 </div>
@@ -328,19 +328,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: Downloads ─── */}
               {activeTab === 'downloads' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Default save location">
                     <div className="flex gap-1.5">
                       <input
                         type="text"
                         value={savePath}
                         onChange={(e) => setSavePath(e.target.value)}
-                        className="flex-1 bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                        className="flex-1 bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                       />
                       <button
                         type="button"
                         onClick={handleBrowseFolder}
-                        className="px-2.5 py-1 bg-[#252833] hover:bg-[#2e3240] border border-[#2d313b] text-slate-200 rounded-none cursor-pointer"
+                        className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 rounded-none cursor-pointer"
                       >
                         <FolderOpen className="h-3.5 w-3.5 text-amber-400" />
                       </button>
@@ -351,7 +351,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={resumeDataStorage}
                       onChange={(e) => setResumeDataStorage(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="Fastresume files">Fastresume files</option>
                       <option value="SQLite database">SQLite database</option>
@@ -362,7 +362,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={torrentRemovalMode}
                       onChange={(e) => setTorrentRemovalMode(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="Delete files permanently">Delete files permanently</option>
                       <option value="Move to trash / recycle bin">Move to trash / recycle bin</option>
@@ -376,7 +376,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       max="20"
                       value={maxConcurrent}
                       onChange={(e) => setMaxConcurrent(parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                     />
                   </TableRow>
 
@@ -387,7 +387,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       max="32"
                       value={defaultThreads}
                       onChange={(e) => setDefaultThreads(parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                     />
                   </TableRow>
 
@@ -395,7 +395,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={`${torrentSizeLimitMb} MiB`}
                       onChange={(e) => setTorrentSizeLimitMb(parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="50 MiB">50 MiB</option>
                       <option value="100 MiB">100 MiB</option>
@@ -408,7 +408,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={confirmRecheck}
                       onChange={(e) => setConfirmRecheck(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
                 </div>
@@ -416,12 +416,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: Connection ─── */}
               {activeTab === 'connection' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Network interface">
                     <select
                       value={networkInterface}
                       onChange={(e) => setNetworkInterface(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="Any interface">Any interface</option>
                       <option value="Ethernet">Ethernet</option>
@@ -433,7 +433,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={bindIpAddress}
                       onChange={(e) => setBindIpAddress(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="All addresses">All addresses</option>
                       <option value="127.0.0.1 (Localhost)">127.0.0.1 (Localhost)</option>
@@ -445,7 +445,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={proxyEnabled}
                       onChange={(e) => setProxyEnabled(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -455,7 +455,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <select
                           value={proxyType}
                           onChange={(e) => setProxyType(e.target.value as 'http' | 'socks5')}
-                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                          className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                         >
                           <option value="http">HTTP Proxy</option>
                           <option value="socks5">SOCKS5 Proxy</option>
@@ -467,7 +467,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           type="text"
                           value={proxyHost}
                           onChange={(e) => setProxyHost(e.target.value)}
-                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                          className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                         />
                       </TableRow>
 
@@ -476,7 +476,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           type="number"
                           value={proxyPort}
                           onChange={(e) => setProxyPort(parseInt(e.target.value, 10))}
-                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                          className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                         />
                       </TableRow>
                     </>
@@ -487,7 +487,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={enableDoH}
                       onChange={(e) => setEnableDoH(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -499,7 +499,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           onChange={(e) =>
                             setDohProvider(e.target.value as 'cloudflare' | 'quad9' | 'google' | 'custom')
                           }
-                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                          className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                         >
                           <option value="cloudflare">Cloudflare (1.1.1.1)</option>
                           <option value="quad9">Quad9 (9.9.9.9)</option>
@@ -514,7 +514,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             type="text"
                             value={customDoHUrl}
                             onChange={(e) => setCustomDoHUrl(e.target.value)}
-                            className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                            className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                           />
                         </TableRow>
                       )}
@@ -526,7 +526,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={enableWarp}
                       onChange={(e) => setEnableWarp(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -536,7 +536,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         type="text"
                         value={warpEndpoint}
                         onChange={(e) => setWarpEndpoint(e.target.value)}
-                        className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                        className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                       />
                     </TableRow>
                   )}
@@ -545,7 +545,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: Speed ─── */}
               {activeTab === 'speed' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Global download rate limit [0: disabled]">
                     <input
                       type="number"
@@ -554,7 +554,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       value={maxGlobalSpeed}
                       onChange={(e) => setMaxGlobalSpeed(parseInt(e.target.value, 10))}
                       placeholder="0 KB/s"
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                     />
                   </TableRow>
 
@@ -563,7 +563,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={enableAdaptiveQoS}
                       onChange={(e) => setEnableAdaptiveQoS(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -572,7 +572,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="number"
                       value={categoryLimits['video'] ?? 0}
                       onChange={(e) => handleCategoryLimitChange('video', parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                     />
                   </TableRow>
 
@@ -581,7 +581,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="number"
                       value={categoryLimits['compressed'] ?? 0}
                       onChange={(e) => handleCategoryLimitChange('compressed', parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                     />
                   </TableRow>
                 </div>
@@ -589,13 +589,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: BitTorrent ─── */}
               {activeTab === 'bittorrent' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Enforce protocol header encryption (MSE/PE)">
                     <input
                       type="checkbox"
                       checked={forceTorrentEncryption}
                       onChange={(e) => setForceTorrentEncryption(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -604,7 +604,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={disableP2PTracking}
                       onChange={(e) => setDisableP2PTracking(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -613,7 +613,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={stripReferrer}
                       onChange={(e) => setStripReferrer(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -622,7 +622,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="text"
                       value={customUserAgent}
                       onChange={(e) => setCustomUserAgent(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono text-[11px]"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono text-[11px]"
                     />
                   </TableRow>
 
@@ -630,7 +630,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={`${saveResumeIntervalMin} min`}
                       onChange={(e) => setSaveResumeIntervalMin(parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="15 min">15 min</option>
                       <option value="30 min">30 min</option>
@@ -642,7 +642,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <select
                       value={`${saveStatsIntervalMin} min`}
                       onChange={(e) => setSaveStatsIntervalMin(parseInt(e.target.value, 10))}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="5 min">5 min</option>
                       <option value="15 min">15 min</option>
@@ -654,12 +654,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: RSS & Automations ─── */}
               {activeTab === 'rss' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Auto-unpack downloaded archives (.zip, .tar, .rar)">
                     <input
                       type="checkbox"
                       defaultChecked
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -667,7 +667,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <input
                       type="checkbox"
                       defaultChecked
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -675,7 +675,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <input
                       type="checkbox"
                       defaultChecked={false}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
                 </div>
@@ -683,13 +683,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: WebUI & RPC ─── */}
               {activeTab === 'webui' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Enable Remote WebUI & JSON-RPC server">
                     <input
                       type="checkbox"
                       checked={enableRpcServer}
                       onChange={(e) => setEnableRpcServer(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -700,7 +700,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           type="number"
                           value={rpcPort}
                           onChange={(e) => setRpcPort(parseInt(e.target.value, 10))}
-                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                          className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                         />
                       </TableRow>
 
@@ -709,7 +709,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           type="text"
                           value={rpcSecretToken}
                           onChange={(e) => setRpcSecretToken(e.target.value)}
-                          className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono"
+                          className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono"
                         />
                       </TableRow>
                     </>
@@ -719,12 +719,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* ─── TAB: Advanced ─── */}
               {activeTab === 'advanced' && (
-                <div className="divide-y divide-[#262933]">
+                <div className="divide-y divide-ide-border/50">
                   <TableRow label="Process memory priority (?)">
                     <select
                       value={memoryPriority}
                       onChange={(e) => setMemoryPriority(e.target.value)}
-                      className="w-full bg-[#14161b] border border-[#2d313b] text-slate-200 px-2 py-1 text-xs focus:border-sky-400 font-mono cursor-pointer"
+                      className="w-full bg-ide-bg border border-ide-border text-slate-100 px-2 py-1 text-xs focus:border-theme-accent font-mono cursor-pointer"
                     >
                       <option value="Normal">Normal</option>
                       <option value="Below normal">Below normal</option>
@@ -737,7 +737,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={resolveHostnames}
                       onChange={(e) => setResolveHostnames(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
 
@@ -746,7 +746,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="checkbox"
                       checked={resolveCountries}
                       onChange={(e) => setResolveCountries(e.target.checked)}
-                      className="h-4 w-4 accent-sky-400 rounded-sm cursor-pointer"
+                      className="h-4 w-4 accent-theme-accent rounded-none cursor-pointer"
                     />
                   </TableRow>
                 </div>
@@ -756,25 +756,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* ─── Bottom Action Bar (OK, Cancel, Apply) ─── */}
-        <div className="h-12 px-4 bg-[#14161b] border-t border-[#2d313b] flex items-center justify-end gap-2 shrink-0">
+        <div className="h-12 px-4 bg-ide-bg border-t border-ide-border flex items-center justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={() => handleSave()}
-            className="px-6 py-1 bg-[#252833] hover:bg-[#2d3242] text-slate-100 font-semibold border border-[#3b4052] rounded-xs cursor-pointer transition text-xs shadow-xs"
+            className="px-6 py-1 bg-theme-accent hover:bg-theme-bright text-slate-950 font-bold border border-theme-accent rounded-none cursor-pointer transition text-xs shadow-sm"
           >
             OK
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-1 bg-[#252833] hover:bg-[#2d3242] text-slate-300 border border-[#3b4052] rounded-xs cursor-pointer transition text-xs shadow-xs"
+            className="px-5 py-1 bg-white/5 hover:bg-white/10 text-slate-300 border border-ide-border rounded-none cursor-pointer transition text-xs shadow-sm"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => handleSave()}
-            className="px-5 py-1 bg-[#252833] hover:bg-[#2d3242] text-slate-300 border border-[#3b4052] rounded-xs cursor-pointer transition text-xs shadow-xs"
+            className="px-5 py-1 bg-white/5 hover:bg-white/10 text-slate-300 border border-ide-border rounded-none cursor-pointer transition text-xs shadow-sm"
           >
             Apply
           </button>
@@ -786,8 +786,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
 // Sub-component for clean 2-column qBittorrent table rows ("Setting" | "Value")
 const TableRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="flex items-center text-xs py-2 px-4 hover:bg-[#20232c]/50 transition-colors">
-    <div className="w-1/2 pr-4 border-r border-[#262933] text-slate-300 font-normal">{label}</div>
+  <div className="flex items-center text-xs py-2 px-4 hover:bg-white/3 transition-colors">
+    <div className="w-1/2 pr-4 border-r border-ide-border/50 text-slate-300 font-normal">{label}</div>
     <div className="w-1/2 pl-4">{children}</div>
   </div>
 )
