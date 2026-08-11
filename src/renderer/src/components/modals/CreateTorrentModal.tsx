@@ -58,10 +58,19 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
   const [pieceSizeKb, setPieceSizeKb] = useState(512)
   const [activeTrackerPreset, setActiveTrackerPreset] = useState('recommended')
   const [trackers, setTrackers] = useState(TRACKER_PRESETS['recommended']!.trackers.join('\n'))
-  const [comment, setComment] = useState('Packaged with Grabbit Supercharged Engine v0.2.0')
+  const [comment, setComment] = useState('')
   const [createdByName, setCreatedByName] = useState('Grabbit Desktop Client')
   const [isPrivate, setIsPrivate] = useState(false)
   const [startSeeding, setStartSeeding] = useState(true)
+
+  React.useEffect(() => {
+    window.api?.getAppVersion?.().then((ver) => {
+      if (ver) {
+        setComment(`Packaged with Grabbit Supercharged Engine v${ver}`)
+        setCreatedByName(`Grabbit Desktop Client v${ver}`)
+      }
+    })
+  }, [])
 
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedPath, setGeneratedPath] = useState('')
@@ -375,7 +384,7 @@ export const CreateTorrentModal: React.FC<CreateTorrentModalProps> = ({ isOpen, 
                 type="text"
                 value={createdByName}
                 onChange={(e) => setCreatedByName(e.target.value)}
-                placeholder="Grabbit Client v0.1.1"
+                placeholder="Grabbit Desktop Client"
                 className={inputCls}
               />
             </div>

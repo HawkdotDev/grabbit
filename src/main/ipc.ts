@@ -12,6 +12,7 @@ import { MediaWorker } from '../engine/workers/MediaWorker'
 import { CategoryManager } from '../engine/CategoryManager'
 import { Logger } from '../engine/Logger'
 import { DownloadCategory, DownloadItem, DownloadPriority, EngineSettings } from '../engine/types'
+import packageJson from '../../package.json'
 
 import { DoHResolver } from '../engine/DoHResolver'
 
@@ -435,12 +436,12 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
   // App Version IPC Handler
   ipcMain.handle('app:getVersion', () => {
-    return app.getVersion() || '0.2.0'
+    return app.getVersion() || packageJson.version || '0.0.0'
   })
 
   // Auto-Updater IPC Handler
   ipcMain.handle('updater:check', async () => {
-    const currentVersion = app.getVersion() || '0.2.0'
+    const currentVersion = app.getVersion() || packageJson.version || '0.0.0'
 
     try {
       const response = await new Promise<{

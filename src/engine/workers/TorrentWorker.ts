@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { ChunkInfo, DownloadFileItem } from '../types'
+import packageJson from '../../../package.json'
 
 export interface TorrentFileEntry {
   path?: string
@@ -171,7 +172,8 @@ export class TorrentWorker {
   private static torrentsMap: Map<string, TorrentTaskInstance> = new Map()
 
   public static generatePeerId(): string {
-    const prefix = '-GR0200-' // GR = Grabbit, 0200 = v0.2.0
+    const verClean = (packageJson.version || '0.0.0').replace(/\./g, '').padStart(4, '0')
+    const prefix = `-GR${verClean}-` // Dynamic GR + app version
     const randomChars = Math.random().toString(36).substring(2, 14).padEnd(12, '0')
     return prefix + randomChars
   }
@@ -190,7 +192,7 @@ export class TorrentWorker {
         encrypt: opts?.forceEncryption ?? true,
         peerId: customPeerId,
         tracker: {
-          userAgent: 'Grabbit/0.2.0 (Desktop Download Manager - Privacy Encrypted)'
+          userAgent: `Grabbit/${packageJson.version || '0.0.0'} (Desktop Download Manager - Privacy Encrypted)`
         }
       })
 
@@ -426,8 +428,8 @@ export class TorrentWorker {
         {
           pieceLength,
           announceList,
-          comment: options?.comment || 'Created with Grabbit v0.2.0',
-          createdBy: options?.createdBy || 'Grabbit Desktop Client v0.2.0',
+          comment: options?.comment || `Created with Grabbit v${packageJson.version || '0.0.0'}`,
+          createdBy: options?.createdBy || `Grabbit Desktop Client v${packageJson.version || '0.0.0'}`,
           private: options?.isPrivate ?? false
         },
         (err: Error | null, torrentBuf: Buffer) => {

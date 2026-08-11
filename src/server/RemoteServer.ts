@@ -1,5 +1,6 @@
 import * as http from 'http'
 import { DownloadManager } from '../engine/DownloadManager'
+import packageJson from '../../package.json'
 import { DownloadItem } from '../engine/types'
 
 export class RemoteServer {
@@ -417,7 +418,7 @@ export class RemoteServer {
       }
 
       res.writeHead(200, { 'Content-Type': 'text/plain' })
-      res.end('Grabbit Download Manager Remote Server & JSON-RPC Gateway v1.0.0')
+      res.end(`Grabbit Download Manager Remote Server & JSON-RPC Gateway v${packageJson.version || '0.0.0'}`)
     })
 
     this.server.listen(this.port, '127.0.0.1', () => {
