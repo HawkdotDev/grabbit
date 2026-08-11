@@ -35,11 +35,15 @@ export interface TaskContextMenuProps {
   x: number
   y: number
   download: DownloadItem
+  availableTags?: string[]
   onClose: () => void
   onPause: (id: string) => void
   onResume: (id: string) => void
   onCancel: (id: string) => void
   onOpenHashModal: (download: DownloadItem) => void
+  onOpenTrackersModal?: (download: DownloadItem) => void
+  onOpenTorrentOptionsModal?: (download: DownloadItem) => void
+  onOpenRenameModal?: (download: DownloadItem) => void
   onUpdateDownload?: (id: string, updates: Partial<DownloadItem>) => void
 }
 
@@ -47,17 +51,23 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
   x,
   y,
   download,
+  availableTags = [],
   onClose,
   onPause,
   onResume,
   onCancel,
   onOpenHashModal,
+  onOpenTrackersModal,
+  onOpenTorrentOptionsModal,
+  onOpenRenameModal,
   onUpdateDownload
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const [activeSubmenu, setActiveSubmenu] = useState<'category' | 'tags' | 'copy' | null>(null)
   const [autoManagement, setAutoManagement] = useState(true)
   const [superSeeding, setSuperSeeding] = useState(false)
+  const [customTagInput, setCustomTagInput] = useState('')
+  const [showCustomTagInput, setShowCustomTagInput] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -97,25 +107,65 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
   }
 
   const handleRename = (): void => {
-    const newName = prompt('Rename Task:', download.name)
-    if (newName && newName.trim()) {
-      onUpdateDownload?.(download.id, { name: newName.trim() })
-    }
     onClose()
+    if (onOpenRenameModal) {
+      onOpenRenameModal(download)
+    }
   }
 
-  const handleSetLocation = (): void => {
-    const newPath = prompt('Set Destination Directory Path:', download.savePath)
-    if (newPath && newPath.trim()) {
-      onUpdateDownload?.(download.id, { savePath: newPath.trim() })
-    }
+  const handleSetLocation = async (): Promise<void> => {
     onClose()
+    if (window.api?.selectDirectory) {
+      const chosenPath = await window.api.selectDirectory(download.savePath)
+      if (chosenPath) {
+        if (window.api?.setDownloadLocation) {
+          await window.api.setDownloadLocation(download.id, chosenPath)
+        }
+        onUpdateDownload?.(download.id, { savePath: chosenPath })
+      }
+    }
   }
 
   const handleCopy = (text: string): void => {
     if (text) window.api?.copyToClipboard(text)
     onClose()
   }
+
+  const handleForceReannounce = async (): Promise<void> => {
+    if (window.api?.reannounceTorrent) {
+      await window.api.reannounceTorrent(download.id)
+    }
+    onClose()
+  }
+
+  const handleToggleTag = async (tag: string): Promise<void> => {
+    const cleanTag = tag.trim()
+    if (!cleanTag) return
+
+    if (window.api?.toggleDownloadTag) {
+      await window.api.toggleDownloadTag(download.id, cleanTag)
+    }
+
+    const current = download.tags || []
+    const nextTags = current.includes(cleanTag)
+      ? current.filter((t) => t !== cleanTag)
+      : [...current, cleanTag]
+    onUpdateDownload?.(download.id, { tags: nextTags })
+  }
+
+  const handleAddCustomTag = (e: React.FormEvent): void => {
+    e.preventDefault()
+    if (customTagInput.trim()) {
+      handleToggleTag(customTagInput.trim())
+      setCustomTagInput('')
+      setShowCustomTagInput(false)
+    }
+  }
+
+  const defaultTagOptions = ['work', 'iso', 'media', 'software', 'archives', 'grabbit', 'untagged']
+  const allTagOptions = Array.from(
+    new Set([...defaultTagOptions, ...(download.tags || []), ...availableTags])
+  )
 
   const categoriesList: Array<{ id: DownloadCategory; label: string; icon: React.JSX.Element }> = [
     {
@@ -201,8 +251,12 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
       {/* 6. Edit trackers... */}
       <button
         onClick={() => {
-          onOpenHashModal(download)
           onClose()
+          if (onOpenTrackersModal) {
+            onOpenTrackersModal(download)
+          } else {
+            onOpenHashModal(download)
+          }
         }}
         className="w-full px-3 py-1.5 flex items-center gap-2.5 hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
       >
@@ -263,17 +317,52 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
         {/* Tags Submenu */}
         {activeSubmenu === 'tags' && (
-          <div className="absolute left-full top-0 w-40 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-160">
-            {['grabbit', 'untagged'].map((tag) => (
+          <div className="absolute left-full top-0 w-48 bg-ide-surface border border-ide-border rounded-none shadow-2xl py-1 text-xs z-160 max-h-64 overflow-y-auto">
+            {allTagOptions.map((tag) => {
+              const isAssigned = (download.tags || []).includes(tag)
+              return (
+                <button
+                  key={tag}
+                  onClick={() => handleToggleTag(tag)}
+                  className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-theme-tint hover:text-theme-accent cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Tag className="h-3 w-3 text-cyan-400 shrink-0" />
+                    <span className="truncate">{tag}</span>
+                  </div>
+                  {isAssigned && <Check className="h-3.5 w-3.5 text-theme-accent shrink-0" />}
+                </button>
+              )
+            })}
+
+            <div className="border-t border-ide-border/60 my-1" />
+
+            {showCustomTagInput ? (
+              <form onSubmit={handleAddCustomTag} className="p-1.5 flex gap-1">
+                <input
+                  type="text"
+                  autoFocus
+                  value={customTagInput}
+                  onChange={(e) => setCustomTagInput(e.target.value)}
+                  placeholder="New tag..."
+                  className="w-full bg-ide-bg text-slate-100 text-[11px] px-1.5 py-1 border border-ide-border focus:outline-none focus:border-cyan-500 font-mono"
+                />
+                <button
+                  type="submit"
+                  className="px-2 py-1 bg-theme-accent text-slate-950 font-bold text-[10px] cursor-pointer"
+                >
+                  Add
+                </button>
+              </form>
+            ) : (
               <button
-                key={tag}
-                onClick={() => onClose()}
-                className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-theme-tint hover:text-theme-accent cursor-pointer text-left"
+                type="button"
+                onClick={() => setShowCustomTagInput(true)}
+                className="w-full px-3 py-1.5 text-slate-400 hover:text-slate-100 hover:bg-white/5 cursor-pointer text-left font-mono text-[11px]"
               >
-                <Tag className="h-3 w-3 text-cyan-400" />
-                <span>{tag}</span>
+                + Add Custom Tag...
               </button>
-            ))}
+            )}
           </div>
         )}
       </div>
@@ -294,7 +383,12 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
       {/* 10. Torrent options... */}
       <button
-        onClick={() => onClose()}
+        onClick={() => {
+          onClose()
+          if (onOpenTorrentOptionsModal) {
+            onOpenTorrentOptionsModal(download)
+          }
+        }}
         className="w-full px-3 py-1.5 flex items-center gap-2.5 hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
       >
         <Sliders className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
@@ -340,7 +434,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
       {/* 14. Force reannounce */}
       <button
-        onClick={() => onClose()}
+        onClick={handleForceReannounce}
         className="w-full px-3 py-1.5 flex items-center gap-2.5 hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
       >
         <RefreshCw className="h-3.5 w-3.5 text-cyan-400 shrink-0" />

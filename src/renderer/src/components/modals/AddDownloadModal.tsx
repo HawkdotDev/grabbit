@@ -36,6 +36,15 @@ interface AddDownloadModalProps {
     category?: DownloadCategory
     priority?: DownloadPriority
     threadCount?: number
+    tags?: string[]
+    startPaused?: boolean
+    addToTopQueue?: boolean
+    sequentialDownload?: boolean
+    firstLastPiecesFirst?: boolean
+    skipHashCheck?: boolean
+    stopCondition?: 'none' | 'metadata' | 'files'
+    contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+    managementMode?: 'manual' | 'automatic'
   }) => void
   defaultSavePath: string
   initialMode?: 'link' | 'file'
@@ -93,22 +102,20 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
   defaultSavePath,
   initialUrl = ''
 }) => {
-  const [url] = useState(
-    initialUrl ||
-      'magnet:?xt=urn:btih:004c2474042e2d9785bf0c097f69328e1a7fec86&dn=House.of.the.Dragon.S03E07.1080p.x265-ELiTE'
-  )
-  const [filename] = useState('House.of.the.Dragon.S03E07.1080p.x265-ELiTE')
-  const [savePath, setSavePath] = useState(defaultSavePath || 'C:\\Users\\dwaip\\Videos')
+  const [url, setUrl] = useState(initialUrl)
+  const [filename, setFilename] = useState('')
+  const [savePath, setSavePath] = useState(defaultSavePath)
   const [managementMode, setManagementMode] = useState<'manual' | 'automatic'>('manual')
   const [useIncompletePath, setUseIncompletePath] = useState(false)
   const [incompleteSavePath, setIncompleteSavePath] = useState(
-    (defaultSavePath || 'C:\\Users\\dwaip\\Videos') + '\\Incomplete'
+    (defaultSavePath || '') + '\\Incomplete'
   )
   const [rememberPath, setRememberPath] = useState(true)
 
-  const [category, setCategory] = useState<DownloadCategory>('video')
+  const [category, setCategory] = useState<DownloadCategory>('other')
   const [setAsDefaultCategory, setSetAsDefaultCategory] = useState(false)
   const [tagsInput, setTagsInput] = useState('')
+  const [isTagPickerOpen, setIsTagPickerOpen] = useState(false)
   const [startTorrent, setStartTorrent] = useState(true)
   const [stopCondition, setStopCondition] = useState<'none' | 'metadata' | 'files'>('none')
   const [addToTopQueue, setAddToTopQueue] = useState(false)
@@ -122,65 +129,51 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 
   const [fileFilter, setFileFilter] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
-    f_root: true,
-    f_sub: false
+    f_root: true
   })
+  const [filesTree, setFilesTree] = useState<FileTreeNode[]>([])
 
-  // Exact file structure matching user's image
-  const [filesTree, setFilesTree] = useState<FileTreeNode[]>([
-    {
-      id: 'f_root',
-      name: 'House.of.the.Dragon.S03E07.1080p.x265-ELiTE',
-      size: 989347840, // 943.4 MiB
-      selected: true,
-      priority: 'normal',
-      type: 'folder',
-      children: [
-        {
-          id: 'f_sub',
-          name: 'Screens',
-          size: 31562137, // 30.1 MiB
-          selected: true,
-          priority: 'normal',
-          type: 'folder',
-          children: [
-            {
-              id: 'f_screen1',
-              name: 'screenshot1.png',
-              size: 15781068,
-              selected: true,
-              priority: 'normal',
-              type: 'file'
-            },
-            {
-              id: 'f_screen2',
-              name: 'screenshot2.png',
-              size: 15781069,
-              selected: true,
-              priority: 'normal',
-              type: 'file'
+  const [prevSyncKey, setPrevSyncKey] = useState('')
+  const currentSyncKey = `${isOpen}-${initialUrl}-${defaultSavePath}`
+
+  if (currentSyncKey !== prevSyncKey) {
+    setPrevSyncKey(currentSyncKey)
+    if (isOpen) {
+      setUrl(initialUrl)
+      if (initialUrl) {
+        if (initialUrl.startsWith('magnet:')) {
+          const dnMatch = initialUrl.match(/[?&]dn=([^&]+)/)
+          const rawDn = dnMatch ? dnMatch[1] : undefined
+          if (rawDn) {
+            try {
+              setFilename(decodeURIComponent(rawDn.replace(/\+/g, ' ')))
+            } catch {
+              setFilename(rawDn)
             }
-          ]
-        },
-        {
-          id: 'f_mkv',
-          name: 'House.of.the.Dragon.S03E07.1080p.x265-ELiTE.mkv',
-          size: 957614080, // 913.2 MiB
-          selected: true,
-          priority: 'normal',
-          type: 'file'
-        },
-        {
-          id: 'f_nfo',
-          name: 'House.of.the.Dragon.S03E07.1080p.x265-ELiTE.nfo',
-          size: 1228, // 1.2 KiB
-          selected: true,
-          priority: 'normal',
-          type: 'file'
+          } else {
+            setFilename('Magnet Download')
+          }
+        } else {
+          const base = initialUrl.split('/').pop()?.split('?')[0]
+          if (base) {
+            try {
+              setFilename(decodeURIComponent(base))
+            } catch {
+              setFilename(base)
+            }
+          } else {
+            setFilename('')
+          }
         }
-      ]
+      } else {
+        setFilename('')
+      }
+      if (defaultSavePath) {
+        setSavePath(defaultSavePath)
+        setIncompleteSavePath(defaultSavePath + '\\Incomplete')
+      }
     }
-  ])
+  }
 
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
@@ -273,15 +266,44 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
     return `${(bytes / (k * k * k)).toFixed(1)} GiB`
   }
 
+  const handleTagChipClick = (tag: string): void => {
+    const currentTags = tagsInput
+      .split(/[,;\s]+/)
+      .map((t) => t.trim())
+      .filter(Boolean)
+    if (currentTags.includes(tag)) {
+      setTagsInput(currentTags.filter((t) => t !== tag).join(', '))
+    } else {
+      setTagsInput([...currentTags, tag].join(', '))
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
+    const targetUrl = url.trim()
+    if (!targetUrl) return
+
+    const parsedTags = tagsInput
+      .split(/[,;\s]+/)
+      .map((t) => t.trim())
+      .filter(Boolean)
+
     onAdd({
-      url: url || 'magnet:?xt=urn:btih:004c2474042e2d9785bf0c097f69328e1a7fec86',
-      filename,
-      savePath,
+      url: targetUrl,
+      filename: filename.trim() || undefined,
+      savePath: savePath.trim() || undefined,
       category,
       priority: 'normal',
-      threadCount: 8
+      threadCount: 8,
+      tags: parsedTags.length > 0 ? parsedTags : undefined,
+      startPaused: !startTorrent,
+      addToTopQueue,
+      sequentialDownload,
+      firstLastPiecesFirst,
+      skipHashCheck,
+      stopCondition,
+      contentLayout,
+      managementMode
     })
     onClose()
   }
@@ -404,14 +426,17 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                     />
                     <select
                       className={`${selectCls} px-1 text-center`}
-                      onChange={(e) => setSavePath(e.target.value)}
+                      onChange={(e) => {
+                        if (e.target.value) setSavePath(e.target.value)
+                      }}
                       value=""
                       title="Quick Save Locations"
                     >
                       <option value="" disabled hidden></option>
-                      <option value="C:\Users\dwaip\Downloads">Downloads</option>
-                      <option value="C:\Users\dwaip\Videos">Videos</option>
-                      <option value="D:\Torrents">Torrents</option>
+                      {defaultSavePath && <option value={defaultSavePath}>Default Folder</option>}
+                      <option value={defaultSavePath ? defaultSavePath.replace(/[/\\][^/\\]+$/, '\\Downloads') : 'Downloads'}>Downloads</option>
+                      <option value={defaultSavePath ? defaultSavePath.replace(/[/\\][^/\\]+$/, '\\Videos') : 'Videos'}>Videos</option>
+                      <option value={defaultSavePath ? defaultSavePath.replace(/[/\\][^/\\]+$/, '\\Documents') : 'Documents'}>Documents</option>
                     </select>
                     <button
                       type="button"
@@ -504,27 +529,55 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
                   </div>
 
                   {/* Tags */}
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="text-slate-300 font-medium">Tags:</label>
-                    <div className="flex-1 flex gap-1 items-center">
-                      <input
-                        type="text"
-                        value={tagsInput}
-                        onChange={(e) => setTagsInput(e.target.value)}
-                        placeholder="Click [...] button to add/remove tags."
-                        className={`flex-1 ${inputCls} placeholder:text-slate-500`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const tag = prompt('Add tag:', tagsInput)
-                          if (tag !== null) setTagsInput(tag)
-                        }}
-                        className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 font-bold rounded-none cursor-pointer transition"
-                      >
-                        ...
-                      </button>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="text-slate-300 font-medium">Tags:</label>
+                      <div className="flex-1 flex gap-1 items-center">
+                        <input
+                          type="text"
+                          value={tagsInput}
+                          onChange={(e) => setTagsInput(e.target.value)}
+                          placeholder="e.g. work, iso, media"
+                          className={`flex-1 ${inputCls} placeholder:text-slate-500`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsTagPickerOpen(!isTagPickerOpen)}
+                          className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 font-bold rounded-none cursor-pointer transition text-xs"
+                          title="Quick Tag Picker"
+                        >
+                          ...
+                        </button>
+                      </div>
                     </div>
+
+                    {isTagPickerOpen && (
+                      <div className="p-2 bg-ide-bg border border-ide-border space-y-1.5 animate-in fade-in">
+                        <div className="text-[10px] text-slate-400 font-medium">Click to add/remove tags:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {['work', 'iso', 'media', 'software', 'archives', 'grabbit', 'urgent'].map((t) => {
+                            const isSelected = tagsInput
+                              .split(/[,;\s]+/)
+                              .map((s) => s.trim())
+                              .includes(t)
+                            return (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => handleTagChipClick(t)}
+                                className={`px-2 py-0.5 text-[10px] font-mono border transition cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-cyan-950/70 text-cyan-300 border-cyan-500/50 font-bold'
+                                    : 'bg-white/5 text-slate-400 border-ide-border hover:text-slate-200'
+                                }`}
+                              >
+                                {isSelected ? `✓ ${t}` : `+ ${t}`}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Checkbox Rows Matching Reference Layout */}
@@ -696,152 +749,166 @@ export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
 
               {/* File Browser Canvas */}
               <div className="flex-1 overflow-y-auto overflow-x-auto text-[13px] font-sans bg-ide-bg/90 p-2 space-y-1">
-                {filesTree.map((rootNode) => (
-                  <div key={rootNode.id} className="space-y-1">
-                    {/* Row 1: Root Folder (House.of.the.Dragon.S03E07.1080p.x265-ELiTE) */}
-                    <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none">
-                      <div className="col-span-7 flex items-center gap-2 overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={(e) => toggleFolder(rootNode.id, e)}
-                          className="p-0.5 text-slate-300 hover:text-white"
-                        >
-                          {expandedFolders[rootNode.id] ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </button>
-                        {renderCheckbox(rootNode.selected, () => toggleNodeSelect(rootNode.id))}
-                        <FolderIcon />
-                        <span className="truncate text-slate-100 font-normal text-[13px]">
-                          {rootNode.name}
-                        </span>
-                      </div>
-                      <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
-                        {formatBytes(rootNode.size)}
-                      </div>
-                      <div className="col-span-3 text-left pl-4">
-                        <span className="text-slate-300 text-[13px]">Normal</span>
-                      </div>
+                {filesTree.length === 0 ? (
+                  <div className="h-full min-h-48 flex flex-col items-center justify-center p-6 text-center text-slate-500 font-sans select-none">
+                    <FolderOpen className="h-8 w-8 text-slate-600 mb-2 opacity-50" />
+                    <div className="text-xs font-semibold text-slate-400">
+                      {url ? (url.startsWith('magnet:') ? 'Magnet swarm metadata pending...' : 'Payload structure ready') : 'No download payload loaded'}
                     </div>
+                    <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                      Files will be organized and downloaded automatically into the destination folder upon transfer start.
+                    </div>
+                  </div>
+                ) : (
+                  filesTree.map((rootNode) => (
+                    <div key={rootNode.id} className="space-y-1">
+                      {/* Row 1: Root Folder */}
+                      <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none">
+                        <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={(e) => toggleFolder(rootNode.id, e)}
+                            className="p-0.5 text-slate-300 hover:text-white"
+                          >
+                            {expandedFolders[rootNode.id] ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                          </button>
+                          {renderCheckbox(rootNode.selected, () => toggleNodeSelect(rootNode.id))}
+                          <FolderIcon />
+                          <span className="truncate text-slate-100 font-normal text-[13px]">
+                            {rootNode.name}
+                          </span>
+                        </div>
+                        <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                          {formatBytes(rootNode.size)}
+                        </div>
+                        <div className="col-span-3 text-left pl-4">
+                          <span className="text-slate-300 text-[13px]">Normal</span>
+                        </div>
+                      </div>
 
-                    {/* Children Items */}
-                    {expandedFolders[rootNode.id] &&
-                      rootNode.children?.map((child) => (
-                        <React.Fragment key={child.id}>
-                          {child.type === 'folder' ? (
-                            // Row 2: Subfolder (Screens)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-6">
-                              <div className="col-span-7 flex items-center gap-2 overflow-hidden">
-                                <button
-                                  type="button"
-                                  onClick={(e) => toggleFolder(child.id, e)}
-                                  className="p-0.5 text-slate-300 hover:text-white"
-                                >
-                                  {expandedFolders[child.id] ? (
-                                    <ChevronDown className="h-4 w-4" />
-                                  ) : (
-                                    <ChevronRight className="h-4 w-4" />
-                                  )}
-                                </button>
-                                {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
-                                <FolderIcon />
-                                <span className="truncate text-slate-100 font-normal text-[13px]">
-                                  {child.name}
-                                </span>
-                              </div>
-                              <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
-                                {formatBytes(child.size)}
-                              </div>
-                              <div className="col-span-3 text-left pl-4">
-                                <span className="text-slate-300 text-[13px]">Normal</span>
-                              </div>
-                            </div>
-                          ) : child.name.endsWith('.mkv') ? (
-                            // Row 3: Video File (.mkv with VLC Cone Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-10">
-                              <div className="col-span-7 flex items-center gap-2 overflow-hidden">
-                                {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
-                                <VlcConeIcon />
-                                <span className="truncate text-slate-100 font-normal text-[13px]">
-                                  {child.name}
-                                </span>
-                              </div>
-                              <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
-                                {formatBytes(child.size)}
-                              </div>
-                              <div className="col-span-3 text-left pl-4">
-                                <select
-                                  value={child.priority}
-                                  onChange={(e) =>
-                                    updateFilePriority(child.id, e.target.value as DownloadPriority)
-                                  }
-                                  className="bg-transparent text-slate-200 text-[13px] focus:outline-none cursor-pointer"
-                                >
-                                  <option value="normal" className="bg-ide-surface">
-                                    Normal
-                                  </option>
-                                  <option value="high" className="bg-ide-surface">
-                                    High
-                                  </option>
-                                  <option value="low" className="bg-ide-surface">
-                                    Low
-                                  </option>
-                                  <option value="ignore" className="bg-ide-surface">
-                                    Do not download
-                                  </option>
-                                </select>
-                              </div>
-                            </div>
-                          ) : (
-                            // Row 4: Document File (.nfo with Blue Doc Icon)
-                            <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-10">
-                              <div className="col-span-7 flex items-center gap-2 overflow-hidden">
-                                {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
-                                <NfoDocIcon />
-                                <span className="truncate text-slate-100 font-normal text-[13px]">
-                                  {child.name}
-                                </span>
-                              </div>
-                              <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
-                                {formatBytes(child.size)}
-                              </div>
-                              <div className="col-span-3 text-left pl-4">
-                                <span className="text-slate-300 text-[13px]">Normal</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Nested Screen Images (if Screens folder is expanded) */}
-                          {child.type === 'folder' &&
-                            expandedFolders[child.id] &&
-                            child.children?.map((nested) => (
-                              <div
-                                key={nested.id}
-                                className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-14"
-                              >
+                      {/* Children Items */}
+                      {expandedFolders[rootNode.id] &&
+                        rootNode.children?.map((child) => (
+                          <React.Fragment key={child.id}>
+                            {child.type === 'folder' ? (
+                              // Row 2: Subfolder (Screens)
+                              <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-6">
                                 <div className="col-span-7 flex items-center gap-2 overflow-hidden">
-                                  {renderCheckbox(nested.selected, () =>
-                                    toggleNodeSelect(nested.id)
-                                  )}
-                                  <NfoDocIcon />
-                                  <span className="truncate text-slate-200 font-normal text-[13px]">
-                                    {nested.name}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => toggleFolder(child.id, e)}
+                                    className="p-0.5 text-slate-300 hover:text-white"
+                                  >
+                                    {expandedFolders[child.id] ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                  {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
+                                  <FolderIcon />
+                                  <span className="truncate text-slate-100 font-normal text-[13px]">
+                                    {child.name}
                                   </span>
                                 </div>
                                 <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
-                                  {formatBytes(nested.size)}
+                                  {formatBytes(child.size)}
                                 </div>
                                 <div className="col-span-3 text-left pl-4">
                                   <span className="text-slate-300 text-[13px]">Normal</span>
                                 </div>
                               </div>
-                            ))}
-                        </React.Fragment>
-                      ))}
-                  </div>
-                ))}
+                            ) : child.name.endsWith('.mkv') ||
+                              child.name.endsWith('.mp4') ||
+                              child.name.endsWith('.avi') ? (
+                              // Row 3: Video File (.mkv with VLC Cone Icon)
+                              <div className="grid grid-cols-12 items-center py-1 px-1 bg-white/5 border border-ide-border/40 select-none rounded-none pl-10">
+                                <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                  {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
+                                  <VlcConeIcon />
+                                  <span className="truncate text-slate-100 font-semibold text-[13px]">
+                                    {child.name}
+                                  </span>
+                                </div>
+                                <div className="col-span-2 text-right pr-2 text-[13px] text-slate-200 font-medium">
+                                  {formatBytes(child.size)}
+                                </div>
+                                <div className="col-span-3 text-left pl-4">
+                                  <select
+                                    value={child.priority}
+                                    onChange={(e) =>
+                                      updateFilePriority(child.id, e.target.value as DownloadPriority)
+                                    }
+                                    className="bg-transparent text-slate-200 text-[13px] focus:outline-none cursor-pointer"
+                                  >
+                                    <option value="normal" className="bg-ide-surface">
+                                      Normal
+                                    </option>
+                                    <option value="high" className="bg-ide-surface">
+                                      High
+                                    </option>
+                                    <option value="low" className="bg-ide-surface">
+                                      Low
+                                    </option>
+                                    <option value="ignore" className="bg-ide-surface">
+                                      Do not download
+                                    </option>
+                                  </select>
+                                </div>
+                              </div>
+                            ) : (
+                              // Row 4: Document File (.nfo with Blue Doc Icon)
+                              <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-10">
+                                <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                  {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
+                                  <NfoDocIcon />
+                                  <span className="truncate text-slate-100 font-normal text-[13px]">
+                                    {child.name}
+                                  </span>
+                                </div>
+                                <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                                  {formatBytes(child.size)}
+                                </div>
+                                <div className="col-span-3 text-left pl-4">
+                                  <span className="text-slate-300 text-[13px]">Normal</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Nested Screen Images (if Screens folder is expanded) */}
+                            {child.type === 'folder' &&
+                              expandedFolders[child.id] &&
+                              child.children?.map((nested) => (
+                                <div
+                                  key={nested.id}
+                                  className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-14"
+                                >
+                                  <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                    {renderCheckbox(nested.selected, () =>
+                                      toggleNodeSelect(nested.id)
+                                    )}
+                                    <NfoDocIcon />
+                                    <span className="truncate text-slate-200 font-normal text-[13px]">
+                                      {nested.name}
+                                    </span>
+                                  </div>
+                                  <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                                    {formatBytes(nested.size)}
+                                  </div>
+                                  <div className="col-span-3 text-left pl-4">
+                                    <span className="text-slate-300 text-[13px]">Normal</span>
+                                  </div>
+                                </div>
+                              ))}
+                          </React.Fragment>
+                        ))}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

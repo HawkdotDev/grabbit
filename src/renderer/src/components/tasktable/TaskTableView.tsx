@@ -23,6 +23,9 @@ interface TaskTableViewProps {
   onResume: (id: string) => void
   onCancel: (id: string) => void
   onOpenHashModal: (download: DownloadItem) => void
+  onOpenTrackersModal?: (download: DownloadItem) => void
+  onOpenTorrentOptionsModal?: (download: DownloadItem) => void
+  onOpenRenameModal?: (download: DownloadItem) => void
   onUpdateDownload?: (id: string, updates: Partial<DownloadItem>) => void
   onOpenAddModal?: (mode?: 'link' | 'file') => void
   searchQuery: string
@@ -43,6 +46,9 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
     onResume,
     onCancel,
     onOpenHashModal,
+    onOpenTrackersModal,
+    onOpenTorrentOptionsModal,
+    onOpenRenameModal,
     onUpdateDownload,
     onOpenAddModal,
     searchQuery,
@@ -274,11 +280,15 @@ export const TaskTableView: React.FC<TaskTableViewProps> = React.memo(
             x={contextMenu.x}
             y={contextMenu.y}
             download={contextMenu.download}
+            availableTags={Array.from(new Set(downloads.flatMap((d) => d.tags || [])))}
             onClose={handleCloseContextMenu}
             onPause={onPause}
             onResume={onResume}
             onCancel={onCancel}
             onOpenHashModal={onOpenHashModal}
+            onOpenTrackersModal={onOpenTrackersModal}
+            onOpenTorrentOptionsModal={onOpenTorrentOptionsModal}
+            onOpenRenameModal={onOpenRenameModal}
             onUpdateDownload={onUpdateDownload}
           />
         )}

@@ -12,6 +12,7 @@ import {
   LogOut
 } from 'lucide-react'
 import { NotificationPanel, NotificationItem } from '../notifications/NotificationPanel'
+import { ProfileGatewayModal, ProfileGatewayTab } from '../modals/ProfileGatewayModal'
 
 interface HeaderActionsProps {
   onOpenSettingsModal: () => void
@@ -21,6 +22,8 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [profileModalTab, setProfileModalTab] = useState<ProfileGatewayTab>('gateway')
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'welcome',
@@ -237,7 +240,11 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
               </div>
 
               <button
-                onClick={() => setIsProfileOpen(false)}
+                onClick={() => {
+                  setProfileModalTab('gateway')
+                  setIsProfileModalOpen(true)
+                  setIsProfileOpen(false)
+                }}
                 className="w-full text-left px-3.5 py-2 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2.5 cursor-pointer font-medium"
               >
                 <Server className="h-4 w-4 text-cyan-300" />
@@ -245,7 +252,11 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
               </button>
 
               <button
-                onClick={() => setIsProfileOpen(false)}
+                onClick={() => {
+                  setProfileModalTab('tokens')
+                  setIsProfileModalOpen(true)
+                  setIsProfileOpen(false)
+                }}
                 className="w-full text-left px-3.5 py-2 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2.5 cursor-pointer font-medium"
               >
                 <Key className="h-4 w-4 text-amber-200" />
@@ -253,7 +264,11 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
               </button>
 
               <button
-                onClick={() => setIsProfileOpen(false)}
+                onClick={() => {
+                  setProfileModalTab('browser')
+                  setIsProfileModalOpen(true)
+                  setIsProfileOpen(false)
+                }}
                 className="w-full text-left px-3.5 py-2 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2.5 cursor-pointer font-medium"
               >
                 <Activity className="h-4 w-4 text-emerald-300" />
@@ -263,7 +278,11 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
               <div className="border-t border-ide-border my-1" />
 
               <button
-                onClick={() => setIsProfileOpen(false)}
+                onClick={() => {
+                  setProfileModalTab('lock')
+                  setIsProfileModalOpen(true)
+                  setIsProfileOpen(false)
+                }}
                 className="w-full text-left px-3.5 py-2 hover:bg-rose-950/40 hover:text-rose-300 text-xs flex items-center gap-2.5 cursor-pointer font-medium text-slate-400"
               >
                 <LogOut className="h-4 w-4 text-rose-300" />
@@ -273,6 +292,13 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
           </>
         )}
       </div>
+
+      {/* Profile Gateway Dialog */}
+      <ProfileGatewayModal
+        isOpen={isProfileModalOpen}
+        initialTab={profileModalTab}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </div>
   )
 })

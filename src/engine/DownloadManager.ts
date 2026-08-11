@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import * as fs from 'fs'
 import * as path from 'path'
 import { ChunkEngine } from './ChunkEngine'
 import { DiskAllocator } from './DiskAllocator'
@@ -129,6 +130,15 @@ export class DownloadManager extends EventEmitter {
       category?: DownloadCategory
       priority?: DownloadPriority
       threadCount?: number
+      tags?: string[]
+      startPaused?: boolean
+      addToTopQueue?: boolean
+      sequentialDownload?: boolean
+      firstLastPiecesFirst?: boolean
+      skipHashCheck?: boolean
+      stopCondition?: 'none' | 'metadata' | 'files'
+      contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+      managementMode?: 'manual' | 'automatic'
     }
   ): Promise<DownloadItem> {
     const isTorrent = DownloadManager.isTorrentSource(url)
@@ -216,6 +226,13 @@ export class DownloadManager extends EventEmitter {
       ? TorrentWorker.createTorrentChunks(32)
       : this.chunkEngine.createChunks(totalSize, threadCount)
 
+    const userTags =
+      options?.tags && options.tags.length > 0
+        ? Array.from(new Set(options.tags.map((t) => t.trim()).filter(Boolean)))
+        : ['grabbit', category]
+
+    const initialStatus = options?.startPaused ? 'paused' : 'queued'
+
     const download: DownloadItem = {
       id: 'dl_' + Math.random().toString(36).substring(2, 9),
       url,
@@ -225,7 +242,7 @@ export class DownloadManager extends EventEmitter {
       downloadedSize: 0,
       speed: 0,
       eta: 0,
-      status: 'queued',
+      status: initialStatus,
       category,
       priority: options?.priority || 'normal',
       threadCount,
@@ -238,17 +255,23 @@ export class DownloadManager extends EventEmitter {
       seedsCount: 0,
       peersCount: 0,
       infoHash,
-      tags: ['grabbit', category],
+      tags: userTags,
       trackers: trackersList,
       files: fileEntries
     }
 
     this.downloads.set(download.id, download)
+    if (options?.addToTopQueue) {
+      this.queueManager.promoteQueueItem(this.downloads, download.id)
+    }
+
     this.saveStateImmediate()
     this.emit('downloadAdded', download)
     PostProcessor.handleDownloadEvent('onAdded', download).catch(() => {})
 
-    this.processQueue()
+    if (!options?.startPaused) {
+      this.processQueue()
+    }
     return download
   }
 
@@ -318,6 +341,7 @@ export class DownloadManager extends EventEmitter {
         d.speed = 0
         this.saveStateImmediate()
         this.emit('downloadUpdated', d)
+        this.emit('downloadError', { id: d.id, error: d.error })
         PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
         PluginManager.executeHook('onDownloadError', d).catch(() => {})
         this.processQueue()
@@ -369,6 +393,7 @@ export class DownloadManager extends EventEmitter {
         DiskAllocator.closeFile(d.savePath)
         this.saveStateImmediate()
         this.emit('downloadUpdated', d)
+        this.emit('downloadError', { id: d.id, error: d.error })
         PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
         PluginManager.executeHook('onDownloadError', d).catch(() => {})
         this.processQueue()
@@ -479,6 +504,95 @@ export class DownloadManager extends EventEmitter {
     this.emit('downloadUpdated', d)
 
     return { matches, actualHash }
+  }
+
+  public renameDownload(id: string, newName: string): boolean {
+    const d = this.downloads.get(id)
+    if (!d || !newName || !newName.trim()) return false
+
+    const cleanName = newName.trim()
+    const oldPath = d.savePath
+
+    if (oldPath && fs.existsSync(oldPath)) {
+      try {
+        const newPath = path.join(path.dirname(oldPath), cleanName)
+        if (oldPath !== newPath) {
+          fs.renameSync(oldPath, newPath)
+          d.savePath = newPath
+        }
+      } catch (err) {
+        console.warn(`[DownloadManager] Could not rename file on disk:`, err)
+      }
+    }
+
+    d.name = cleanName
+    this.saveStateImmediate()
+    this.emit('downloadUpdated', d)
+    return true
+  }
+
+  public setDownloadLocation(id: string, newTargetLocation: string): boolean {
+    const d = this.downloads.get(id)
+    if (!d || !newTargetLocation || !newTargetLocation.trim()) return false
+
+    const cleanTarget = newTargetLocation.trim()
+    const oldPath = d.savePath
+    let newSavePath = cleanTarget
+
+    try {
+      if (fs.existsSync(cleanTarget) && fs.statSync(cleanTarget).isDirectory()) {
+        newSavePath = path.join(cleanTarget, path.basename(oldPath || d.name))
+      }
+
+      if (oldPath && fs.existsSync(oldPath) && oldPath !== newSavePath) {
+        DiskAllocator.ensureDirectory(path.dirname(newSavePath))
+        fs.renameSync(oldPath, newSavePath)
+      }
+    } catch (err) {
+      console.warn(`[DownloadManager] Could not relocate file on disk:`, err)
+    }
+
+    d.savePath = newSavePath
+    this.saveStateImmediate()
+    this.emit('downloadUpdated', d)
+    return true
+  }
+
+  public setDownloadTags(id: string, tags: string[]): boolean {
+    const d = this.downloads.get(id)
+    if (!d) return false
+
+    d.tags = Array.from(new Set((tags || []).map((t) => t.trim()).filter(Boolean)))
+    this.saveStateImmediate()
+    this.emit('downloadUpdated', d)
+    return true
+  }
+
+  public toggleDownloadTag(id: string, tag: string): boolean {
+    const d = this.downloads.get(id)
+    if (!d || !tag || !tag.trim()) return false
+
+    const cleanTag = tag.trim()
+    const currentTags = d.tags || []
+    if (currentTags.includes(cleanTag)) {
+      d.tags = currentTags.filter((t) => t !== cleanTag)
+    } else {
+      d.tags = [...currentTags, cleanTag]
+    }
+
+    this.saveStateImmediate()
+    this.emit('downloadUpdated', d)
+    return true
+  }
+
+  public setTorrentOptions(id: string, options: Partial<DownloadItem>): boolean {
+    const d = this.downloads.get(id)
+    if (!d) return false
+
+    Object.assign(d, options)
+    this.saveStateImmediate()
+    this.emit('downloadUpdated', d)
+    return true
   }
 
   private processQueue(): void {

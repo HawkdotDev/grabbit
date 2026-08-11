@@ -16,6 +16,15 @@ const api = {
     category?: DownloadCategory
     priority?: DownloadPriority
     threadCount?: number
+    tags?: string[]
+    startPaused?: boolean
+    addToTopQueue?: boolean
+    sequentialDownload?: boolean
+    firstLastPiecesFirst?: boolean
+    skipHashCheck?: boolean
+    stopCondition?: 'none' | 'metadata' | 'files'
+    contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+    managementMode?: 'manual' | 'automatic'
   }): Promise<DownloadItem> => ipcRenderer.invoke('download:add', args),
 
   pauseDownload: (id: string): Promise<boolean> => ipcRenderer.invoke('download:pause', id),
@@ -64,6 +73,19 @@ const api = {
     files: Array<{ name: string; path: string; size: number }>
     trackers: string[]
   }> => ipcRenderer.invoke('torrent:parseMetadata', source),
+
+  reannounceTorrent: (id: string): Promise<boolean> => ipcRenderer.invoke('torrent:reannounce', id),
+  updateTorrentOptions: (id: string, options: Partial<DownloadItem>): Promise<boolean> =>
+    ipcRenderer.invoke('torrent:updateOptions', { id, options }),
+
+  renameDownload: (id: string, newName: string): Promise<boolean> =>
+    ipcRenderer.invoke('download:rename', { id, newName }),
+  setDownloadLocation: (id: string, newPath: string): Promise<boolean> =>
+    ipcRenderer.invoke('download:setLocation', { id, newPath }),
+  setDownloadTags: (id: string, tags: string[]): Promise<boolean> =>
+    ipcRenderer.invoke('download:setTags', { id, tags }),
+  toggleDownloadTag: (id: string, tag: string): Promise<boolean> =>
+    ipcRenderer.invoke('download:toggleTag', { id, tag }),
 
   verifyHash: (args: {
     id: string
@@ -184,6 +206,12 @@ const api = {
     const handler = (_: unknown, download: DownloadItem): void => callback(download)
     ipcRenderer.on('download:onCompleted', handler)
     return () => ipcRenderer.removeListener('download:onCompleted', handler)
+  },
+
+  onDownloadError: (callback: (data: { id: string; error: string }) => void): (() => void) => {
+    const handler = (_: unknown, data: { id: string; error: string }): void => callback(data)
+    ipcRenderer.on('download:onError', handler)
+    return () => ipcRenderer.removeListener('download:onError', handler)
   },
 
   onDownloadRemoved: (callback: (id: string) => void): (() => void) => {

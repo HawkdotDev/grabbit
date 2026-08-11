@@ -81,6 +81,15 @@ export function useDownloads() {
       category?: DownloadCategory
       priority?: DownloadPriority
       threadCount?: number
+      tags?: string[]
+      startPaused?: boolean
+      addToTopQueue?: boolean
+      sequentialDownload?: boolean
+      firstLastPiecesFirst?: boolean
+      skipHashCheck?: boolean
+      stopCondition?: 'none' | 'metadata' | 'files'
+      contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+      managementMode?: 'manual' | 'automatic'
     }): Promise<void> => {
       if (window.api) {
         await window.api.addDownload(args)

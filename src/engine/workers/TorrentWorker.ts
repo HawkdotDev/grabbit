@@ -486,6 +486,26 @@ export class TorrentWorker {
   }
 
   /**
+   * Forces re-announcing to all configured trackers on an active torrent
+   */
+  public static reannounceTorrent(downloadId: string): boolean {
+    const torrent = this.torrentsMap.get(downloadId)
+    if (torrent) {
+      if (typeof (torrent as unknown as { announce?: () => void }).announce === 'function') {
+        ;(torrent as unknown as { announce: () => void }).announce()
+      } else if (Array.isArray(torrent.announce)) {
+        torrent.announce.forEach((trUrl: string) => {
+          if (typeof torrent.addTracker === 'function') {
+            torrent.addTracker(trUrl)
+          }
+        })
+      }
+      return true
+    }
+    return false
+  }
+
+  /**
    * Manually adds a peer IP:port address to an active torrent swarm
    */
   public static addPeer(downloadId: string, peerAddress: string): boolean {

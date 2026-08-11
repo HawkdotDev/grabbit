@@ -88,10 +88,11 @@ export class Storage {
     try {
       if (fs.existsSync(this.downloadsFile)) {
         const raw = fs.readFileSync(this.downloadsFile, 'utf8')
+        if (!raw || !raw.trim()) return []
         return JSON.parse(raw)
       }
-    } catch (err) {
-      console.error('Failed to load downloads from storage:', err)
+    } catch {
+      // Fallback cleanly to empty array on parse errors or concurrency races
     }
     return []
   }

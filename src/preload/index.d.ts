@@ -18,6 +18,15 @@ export interface GrabbitAPI {
     category?: DownloadCategory
     priority?: DownloadPriority
     threadCount?: number
+    tags?: string[]
+    startPaused?: boolean
+    addToTopQueue?: boolean
+    sequentialDownload?: boolean
+    firstLastPiecesFirst?: boolean
+    skipHashCheck?: boolean
+    stopCondition?: 'none' | 'metadata' | 'files'
+    contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+    managementMode?: 'manual' | 'automatic'
   }) => Promise<DownloadItem>
   pauseDownload: (id: string) => Promise<boolean>
   resumeDownload: (id: string) => Promise<boolean>
@@ -46,6 +55,12 @@ export interface GrabbitAPI {
     files: Array<{ name: string; path: string; size: number }>
     trackers: string[]
   }>
+  reannounceTorrent: (id: string) => Promise<boolean>
+  updateTorrentOptions: (id: string, options: Partial<DownloadItem>) => Promise<boolean>
+  renameDownload: (id: string, newName: string) => Promise<boolean>
+  setDownloadLocation: (id: string, newPath: string) => Promise<boolean>
+  setDownloadTags: (id: string, tags: string[]) => Promise<boolean>
+  toggleDownloadTag: (id: string, tag: string) => Promise<boolean>
 
   // Category & Filter IPC
   getCategories: () => Promise<Record<DownloadCategory, string[]>>

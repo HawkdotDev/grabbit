@@ -8,7 +8,7 @@ import { TorrentWorker } from '../engine/workers/TorrentWorker'
 import { PluginManager } from '../engine/PluginManager'
 import { PostProcessor, AutomationRule } from '../engine/PostProcessor'
 import { Storage } from '../engine/Storage'
-import { DownloadCategory, DownloadPriority, EngineSettings } from '../engine/types'
+import { DownloadCategory, DownloadItem, DownloadPriority, EngineSettings } from '../engine/types'
 
 export function setupIPC(downloadManager: DownloadManager): void {
   // WebTorrent Specific IPC Handlers
@@ -31,15 +31,32 @@ export function setupIPC(downloadManager: DownloadManager): void {
     }
   )
 
+  ipcMain.handle('torrent:reannounce', (_, id: string) => {
+    return TorrentWorker.reannounceTorrent(id)
+  })
+
+  ipcMain.handle(
+    'torrent:updateOptions',
+    (_, args: { id: string; options: Partial<DownloadItem> }) => {
+      return downloadManager.setTorrentOptions(args.id, args.options)
+    }
+  )
+
   ipcMain.handle('torrent:exportFile', async (event, downloadId: string) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return false
     const buffer = TorrentWorker.getTorrentFileBuffer(downloadId)
     if (!buffer) return false
 
+    const downloads = downloadManager.getDownloads()
+    const targetDownload = downloads.find((d) => d.id === downloadId)
+    const defaultFilename = targetDownload?.name
+      ? `${targetDownload.name.replace(/\.torrent$/i, '')}.torrent`
+      : `${downloadId}.torrent`
+
     const { filePath } = await dialog.showSaveDialog(win, {
       title: 'Export .torrent File',
-      defaultPath: `${downloadId}.torrent`,
+      defaultPath: defaultFilename,
       filters: [{ name: 'Torrent File', extensions: ['torrent'] }]
     })
 
@@ -83,15 +100,18 @@ export function setupIPC(downloadManager: DownloadManager): void {
         category?: DownloadCategory
         priority?: DownloadPriority
         threadCount?: number
+        tags?: string[]
+        startPaused?: boolean
+        addToTopQueue?: boolean
+        sequentialDownload?: boolean
+        firstLastPiecesFirst?: boolean
+        skipHashCheck?: boolean
+        stopCondition?: 'none' | 'metadata' | 'files'
+        contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+        managementMode?: 'manual' | 'automatic'
       }
     ) => {
-      return await downloadManager.addDownload(args.url, {
-        filename: args.filename,
-        savePath: args.savePath,
-        category: args.category,
-        priority: args.priority,
-        threadCount: args.threadCount
-      })
+      return await downloadManager.addDownload(args.url, args)
     }
   )
 
@@ -139,6 +159,22 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
   ipcMain.handle('download:getAll', () => {
     return downloadManager.getDownloads()
+  })
+
+  ipcMain.handle('download:rename', (_, args: { id: string; newName: string }) => {
+    return downloadManager.renameDownload(args.id, args.newName)
+  })
+
+  ipcMain.handle('download:setLocation', (_, args: { id: string; newPath: string }) => {
+    return downloadManager.setDownloadLocation(args.id, args.newPath)
+  })
+
+  ipcMain.handle('download:setTags', (_, args: { id: string; tags: string[] }) => {
+    return downloadManager.setDownloadTags(args.id, args.tags)
+  })
+
+  ipcMain.handle('download:toggleTag', (_, args: { id: string; tag: string }) => {
+    return downloadManager.toggleDownloadTag(args.id, args.tag)
   })
 
   ipcMain.handle(
@@ -606,6 +642,12 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onCompleted', download)
+    })
+  })
+
+  downloadManager.on('downloadError', (data) => {
+    BrowserWindow.getAllWindows().forEach((win) => {
+      win.webContents.send('download:onError', data)
     })
   })
 

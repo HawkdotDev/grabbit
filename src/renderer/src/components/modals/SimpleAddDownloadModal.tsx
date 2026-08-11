@@ -23,6 +23,15 @@ interface SimpleAddDownloadModalProps {
     category?: DownloadCategory
     priority?: DownloadPriority
     threadCount?: number
+    tags?: string[]
+    startPaused?: boolean
+    addToTopQueue?: boolean
+    sequentialDownload?: boolean
+    firstLastPiecesFirst?: boolean
+    skipHashCheck?: boolean
+    stopCondition?: 'none' | 'metadata' | 'files'
+    contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+    managementMode?: 'manual' | 'automatic'
   }) => void
   defaultSavePath: string
   initialMode?: 'link' | 'file'
@@ -86,7 +95,9 @@ export const SimpleAddDownloadModal: React.FC<SimpleAddDownloadModalProps> = ({
       savePath: savePath.trim() || undefined,
       category,
       priority,
-      threadCount
+      threadCount,
+      addToTopQueue,
+      startPaused: !startImmediately
     })
 
     setUrl('')

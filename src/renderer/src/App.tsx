@@ -22,6 +22,9 @@ import {
   AutomationsModal,
   ScriptConsoleModal,
   ThemeCustomizerModal,
+  EditTrackersModal,
+  TorrentOptionsModal,
+  RenameModal,
   AnalyticsView,
   NetworkView,
   ClipboardBanner
@@ -73,6 +76,10 @@ export function App(): React.JSX.Element {
   const [addModalInitialUrl, setAddModalInitialUrl] = useState('')
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [hashModalDownload, setHashModalDownload] = useState<DownloadItem | null>(null)
+  const [trackersModalDownload, setTrackersModalDownload] = useState<DownloadItem | null>(null)
+  const [torrentOptionsModalDownload, setTorrentOptionsModalDownload] =
+    useState<DownloadItem | null>(null)
+  const [renameModalDownload, setRenameModalDownload] = useState<DownloadItem | null>(null)
 
   // Extra Features Modals
   const [isCreateTorrentOpen, setIsCreateTorrentOpen] = useState(false)
@@ -294,6 +301,9 @@ export function App(): React.JSX.Element {
                 onResume={handleResume}
                 onCancel={handleCancel}
                 onOpenHashModal={(item) => setHashModalDownload(item)}
+                onOpenTrackersModal={(item) => setTrackersModalDownload(item)}
+                onOpenTorrentOptionsModal={(item) => setTorrentOptionsModalDownload(item)}
+                onOpenRenameModal={(item) => setRenameModalDownload(item)}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 filterBy={filterBy}
@@ -356,6 +366,26 @@ export function App(): React.JSX.Element {
         onClose={() => setHashModalDownload(null)}
         download={hashModalDownload}
         onVerify={(id, expectedHash, algo) => handleVerifyHash(id, expectedHash, algo)}
+      />
+
+      <EditTrackersModal
+        isOpen={!!trackersModalDownload}
+        download={trackersModalDownload}
+        onClose={() => setTrackersModalDownload(null)}
+      />
+
+      <TorrentOptionsModal
+        isOpen={!!torrentOptionsModalDownload}
+        download={torrentOptionsModalDownload}
+        onClose={() => setTorrentOptionsModalDownload(null)}
+        onSave={handleUpdateDownload}
+      />
+
+      <RenameModal
+        isOpen={!!renameModalDownload}
+        download={renameModalDownload}
+        onClose={() => setRenameModalDownload(null)}
+        onRenamed={(id, newName) => handleUpdateDownload(id, { name: newName })}
       />
 
       <CreateTorrentModal
