@@ -2023,7 +2023,7 @@ function CheckboxField({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 border-ide-border bg-ide-bg accent-[#b497ff] cursor-pointer shrink-0"
+        className="h-4 w-4 border-ide-border bg-ide-bg accent-theme-accent cursor-pointer shrink-0"
       />
       <span className="text-slate-200 text-xs leading-snug">{label}</span>
     </label>
@@ -2045,7 +2045,7 @@ function CheckboxLabel({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 border-ide-border bg-ide-bg accent-[#b497ff] cursor-pointer shrink-0"
+        className="h-4 w-4 border-ide-border bg-ide-bg accent-theme-accent cursor-pointer shrink-0"
       />
       <span>{label}</span>
     </label>

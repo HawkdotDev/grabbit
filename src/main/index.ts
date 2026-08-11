@@ -53,6 +53,11 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.grabbit.app')
 
+  // Register magnet URI protocol scheme
+  if (!app.isDefaultProtocolClient('magnet')) {
+    app.setAsDefaultProtocolClient('magnet')
+  }
+
   // Initialize download manager engine and setup IPC
   downloadManager = new DownloadManager()
   setupIPC(downloadManager)
