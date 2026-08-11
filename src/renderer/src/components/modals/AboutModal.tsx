@@ -9,7 +9,7 @@ interface AboutModalProps {
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
-  const [version, setVersion] = React.useState('0.1.1')
+  const [version, setVersion] = React.useState('0.2.0')
   const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
     useDraggable(isOpen)
 

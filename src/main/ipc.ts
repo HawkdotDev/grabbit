@@ -435,12 +435,12 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
   // App Version IPC Handler
   ipcMain.handle('app:getVersion', () => {
-    return app.getVersion() || '0.1.1'
+    return app.getVersion() || '0.2.0'
   })
 
   // Auto-Updater IPC Handler
   ipcMain.handle('updater:check', async () => {
-    const currentVersion = app.getVersion() || '0.1.1'
+    const currentVersion = app.getVersion() || '0.2.0'
 
     try {
       const response = await new Promise<{

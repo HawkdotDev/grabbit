@@ -171,7 +171,7 @@ export class TorrentWorker {
   private static torrentsMap: Map<string, TorrentTaskInstance> = new Map()
 
   public static generatePeerId(): string {
-    const prefix = '-GR0110-' // GR = Grabbit, 0110 = v0.1.1
+    const prefix = '-GR0200-' // GR = Grabbit, 0200 = v0.2.0
     const randomChars = Math.random().toString(36).substring(2, 14).padEnd(12, '0')
     return prefix + randomChars
   }
@@ -190,7 +190,7 @@ export class TorrentWorker {
         encrypt: opts?.forceEncryption ?? true,
         peerId: customPeerId,
         tracker: {
-          userAgent: 'Grabbit/0.1.1 (Desktop Download Manager - Privacy Encrypted)'
+          userAgent: 'Grabbit/0.2.0 (Desktop Download Manager - Privacy Encrypted)'
         }
       })
 
@@ -426,8 +426,8 @@ export class TorrentWorker {
         {
           pieceLength,
           announceList,
-          comment: options?.comment || 'Created with Grabbit v0.1.1',
-          createdBy: options?.createdBy || 'Grabbit Desktop Client v0.1.1',
+          comment: options?.comment || 'Created with Grabbit v0.2.0',
+          createdBy: options?.createdBy || 'Grabbit Desktop Client v0.2.0',
           private: options?.isPrivate ?? false
         },
         (err: Error | null, torrentBuf: Buffer) => {
