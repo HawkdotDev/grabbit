@@ -29,7 +29,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   settings,
   onSave
 }) => {
-  const [activeTab, setActiveTab] = useState<'engine' | 'network' | 'general'>('engine')
+  const [activeTab, setActiveTab] = useState<'engine' | 'network' | 'privacy' | 'general'>('engine')
 
   const [maxConcurrent, setMaxConcurrent] = useState(settings.maxConcurrentDownloads)
   const [defaultThreads, setDefaultThreads] = useState(settings.defaultThreadCount)
@@ -45,6 +45,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [categoryLimits, setCategoryLimits] = useState<Partial<Record<DownloadCategory, number>>>(
     settings.categorySpeedLimitsKbps ?? {}
   )
+
+  // Privacy & Cloudflare WARP / DoH State
+  const [enableDoH, setEnableDoH] = useState(settings.enableDoH ?? true)
+  const [dohProvider, setDohProvider] = useState(settings.dohProvider ?? 'cloudflare')
+  const [customDoHUrl, setCustomDoHUrl] = useState(settings.customDoHUrl ?? 'https://1.1.1.1/dns-query')
+  const [enableWarp, setEnableWarp] = useState(settings.enableWarp ?? false)
+  const [warpEndpoint, setWarpEndpoint] = useState(settings.warpEndpoint ?? '127.0.0.1:4001')
+  const [stripReferrer, setStripReferrer] = useState(settings.stripReferrer ?? true)
+  const [customUserAgent, setCustomUserAgent] = useState(
+    settings.customUserAgent ??
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+  )
+  const [forceTorrentEncryption, setForceTorrentEncryption] = useState(settings.forceTorrentEncryption ?? true)
+  const [disableP2PTracking, setDisableP2PTracking] = useState(settings.disableP2PTracking ?? false)
 
   const [savePath, setSavePath] = useState(settings.defaultSavePath)
   const [theme, setTheme] = useState(settings.theme || 'dark')
@@ -86,6 +100,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       proxyHost,
       proxyPort,
       categorySpeedLimitsKbps: categoryLimits,
+      enableDoH,
+      dohProvider,
+      customDoHUrl,
+      enableWarp,
+      warpEndpoint,
+      stripReferrer,
+      customUserAgent,
+      forceTorrentEncryption,
+      disableP2PTracking,
       defaultSavePath: savePath,
       theme,
       autoCategorize,
@@ -137,6 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {[
             { id: 'engine', label: 'Engine & Threads', icon: Cpu },
             { id: 'network', label: 'Bandwidth & RPC', icon: Network },
+            { id: 'privacy', label: 'Privacy & WARP', icon: Shield },
             { id: 'general', label: 'General & Storage', icon: Laptop }
           ].map((t) => {
             const Icon = t.icon
@@ -144,7 +168,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             return (
               <button
                 key={t.id}
-                onClick={() => setActiveTab(t.id as 'engine' | 'network' | 'general')}
+                onClick={() => setActiveTab(t.id as 'engine' | 'network' | 'privacy' | 'general')}
                 className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition cursor-pointer rounded-none ${
                   isActive
                     ? 'border-cyan-400 text-cyan-400 font-bold bg-white/5'
@@ -375,6 +399,152 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'privacy' && (
+            <div className="space-y-4">
+              {/* Cloudflare DNS-over-HTTPS (DoH) */}
+              <div className="p-3.5 bg-ide-bg/50 border border-ide-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Shield className="h-4 w-4 text-emerald-400" />
+                    DNS-over-HTTPS (DoH) Resolution
+                  </span>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={enableDoH}
+                      onChange={(e) => setEnableDoH(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-emerald-400 rounded-none cursor-pointer"
+                    />
+                    <span className="text-xs font-semibold text-emerald-400">Encrypted DNS</span>
+                  </label>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Resolves domain names via HTTPS endpoints (`https://1.1.1.1/dns-query`), preventing ISP DNS snooping, hijacking, and censorship.
+                </p>
+                {enableDoH && (
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">DoH Provider</label>
+                      <select
+                        value={dohProvider}
+                        onChange={(e) => setDohProvider(e.target.value as 'cloudflare' | 'quad9' | 'google' | 'custom')}
+                        className="w-full bg-ide-bg text-slate-200 px-2 py-1.5 border border-ide-border focus:border-emerald-400 font-mono text-xs cursor-pointer"
+                      >
+                        <option value="cloudflare">Cloudflare (1.1.1.1 Privacy DNS)</option>
+                        <option value="quad9">Quad9 (9.9.9.9 Secure DNS)</option>
+                        <option value="google">Google Public DNS</option>
+                        <option value="custom">Custom DoH Endpoint</option>
+                      </select>
+                    </div>
+                    {dohProvider === 'custom' && (
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1">Custom DoH URL</label>
+                        <input
+                          type="text"
+                          value={customDoHUrl}
+                          onChange={(e) => setCustomDoHUrl(e.target.value)}
+                          className="w-full bg-ide-bg text-slate-200 px-2 py-1.5 border border-ide-border focus:border-emerald-400 font-mono text-xs"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Cloudflare WARP Tunneling */}
+              <div className="p-3.5 bg-ide-bg/50 border border-ide-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Radio className="h-4 w-4 text-cyan-400" />
+                    Cloudflare WARP Integration
+                  </span>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={enableWarp}
+                      onChange={(e) => setEnableWarp(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-cyan-400 rounded-none cursor-pointer"
+                    />
+                    <span className="text-xs font-semibold text-cyan-400">WARP Active</span>
+                  </label>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Binds transfers directly to local Cloudflare WARP client endpoints (`127.0.0.1:4001`), routing all traffic through Cloudflare's encrypted WireGuard network.
+                </p>
+                {enableWarp && (
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">WARP Endpoint Address</label>
+                    <input
+                      type="text"
+                      value={warpEndpoint}
+                      onChange={(e) => setWarpEndpoint(e.target.value)}
+                      placeholder="127.0.0.1:4001"
+                      className="w-full bg-ide-bg text-slate-200 px-2.5 py-1.5 border border-ide-border focus:border-cyan-400 font-mono text-xs"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* BitTorrent Encryption & Tracking */}
+              <div className="p-3.5 bg-ide-bg/50 border border-ide-border space-y-3">
+                <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-purple-400" />
+                  BitTorrent P2P Privacy & Headers
+                </span>
+                <div className="space-y-2 pt-1">
+                  <label className="flex items-center justify-between cursor-pointer p-2 bg-ide-surface border border-ide-border">
+                    <div>
+                      <span className="text-xs font-semibold text-slate-200 block">Strict Anonymous P2P Mode</span>
+                      <span className="text-[10px] text-slate-400 block">Disable DHT & public P2P tracker discovery to enforce private torrent mode</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={disableP2PTracking}
+                      onChange={(e) => setDisableP2PTracking(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-purple-400 rounded-none"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between cursor-pointer p-2 bg-ide-surface border border-ide-border">
+                    <div>
+                      <span className="text-xs font-semibold text-slate-200 block">Enforce Protocol Encryption (MSE/PE)</span>
+                      <span className="text-[10px] text-slate-400 block">Encrypt BitTorrent peer wire headers to bypass ISP P2P throttling</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={forceTorrentEncryption}
+                      onChange={(e) => setForceTorrentEncryption(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-purple-400 rounded-none"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between cursor-pointer p-2 bg-ide-surface border border-ide-border">
+                    <div>
+                      <span className="text-xs font-semibold text-slate-200 block">Strip Referrer Header</span>
+                      <span className="text-[10px] text-slate-400 block">Remove HTTP Referer from outgoing requests to prevent web tracking</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={stripReferrer}
+                      onChange={(e) => setStripReferrer(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-purple-400 rounded-none"
+                    />
+                  </label>
+
+                  <div>
+                    <label className="text-[11px] text-slate-400 block mb-1">Custom User-Agent Mask</label>
+                    <input
+                      type="text"
+                      value={customUserAgent}
+                      onChange={(e) => setCustomUserAgent(e.target.value)}
+                      className="w-full bg-ide-bg text-slate-200 px-2.5 py-1.5 border border-ide-border focus:border-purple-400 font-mono text-xs"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}

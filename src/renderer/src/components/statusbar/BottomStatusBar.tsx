@@ -64,9 +64,13 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = React.memo(
             <span>U: 0 B/s ({formatBytes(totalUploaded)})</span>
           </span>
 
-          <span className="flex items-center gap-1 text-slate-300 border-l border-ide-border pl-3">
-            <ShieldCheck className="h-3 w-3 text-emerald-300" />
-            <span>Connection Normal</span>
+          <span className="flex items-center gap-1.5 text-slate-300 border-l border-ide-border pl-3">
+            <ShieldCheck className="h-3 w-3 text-emerald-400" />
+            <span className="text-emerald-400 font-semibold">DoH 1.1.1.1</span>
+          </span>
+
+          <span className="flex items-center gap-1 text-cyan-400 border-l border-ide-border pl-3 font-semibold">
+            <span>WARP SOCKS5</span>
           </span>
         </div>
       </footer>

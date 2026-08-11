@@ -109,6 +109,15 @@ export interface EngineSettings {
   proxyHost?: string
   proxyPort?: number
   categorySpeedLimitsKbps?: Partial<Record<DownloadCategory, number>>
+  enableDoH?: boolean
+  dohProvider?: 'cloudflare' | 'quad9' | 'google' | 'custom'
+  customDoHUrl?: string
+  enableWarp?: boolean
+  warpEndpoint?: string
+  stripReferrer?: boolean
+  customUserAgent?: string
+  forceTorrentEncryption?: boolean
+  disableP2PTracking?: boolean
 }
 
 export interface SpeedSample {

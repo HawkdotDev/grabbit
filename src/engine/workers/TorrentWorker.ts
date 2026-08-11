@@ -179,17 +179,18 @@ export class TorrentWorker {
   /**
    * Initializes or returns the shared WebTorrent client singleton instance asynchronously
    */
-  public static async getClient(): Promise<TorrentClientInstance> {
+  public static async getClient(opts?: { forceEncryption?: boolean; disableP2PTracking?: boolean }): Promise<TorrentClientInstance> {
     if (!this.client) {
       const WebTorrent = await getWebTorrentClass()
       const customPeerId = this.generatePeerId()
 
       this.client = new WebTorrent({
-        dht: true,
+        dht: !opts?.disableP2PTracking,
         webSeeds: true,
+        encrypt: opts?.forceEncryption ?? true,
         peerId: customPeerId,
         tracker: {
-          userAgent: 'Grabbit/0.1.1 (Desktop Download Manager)'
+          userAgent: 'Grabbit/0.1.1 (Desktop Download Manager - Privacy Encrypted)'
         }
       })
 

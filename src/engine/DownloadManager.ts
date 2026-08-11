@@ -452,6 +452,12 @@ export class DownloadManager extends EventEmitter {
         PostProcessor.handleDownloadEvent('onError', d).catch(() => {})
         PluginManager.executeHook('onDownloadError', d).catch(() => {})
         this.processQueue()
+      },
+      {
+        stripReferrer: this.settings.stripReferrer,
+        customUserAgent: this.settings.customUserAgent,
+        enableDoH: this.settings.enableDoH,
+        dohProvider: this.settings.dohProvider
       }
     )
   }

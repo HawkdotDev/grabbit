@@ -105,6 +105,12 @@ const api = {
   getQoSStatus: (): Promise<{ throttled: boolean; pingMs: number }> =>
     ipcRenderer.invoke('qos:getStatus'),
 
+  // Privacy API
+  resolveDoH: (args: { hostname: string; provider?: 'cloudflare' | 'quad9' | 'google' | 'custom'; customUrl?: string }): Promise<{ success: boolean; hostname: string; ip?: string; error?: string }> =>
+    ipcRenderer.invoke('privacy:resolveDoH', args),
+  getPrivacyStatus: (): Promise<{ dohEnabled: boolean; dohProvider: string; warpEnabled: boolean; warpEndpoint: string; stripReferrer: boolean; forceEncryption: boolean }> =>
+    ipcRenderer.invoke('privacy:getStatus'),
+
   getSpeedHistory: (): Promise<SpeedSample[]> => ipcRenderer.invoke('stats:getHistory'),
 
   openFileLocation: (path: string): Promise<boolean> =>

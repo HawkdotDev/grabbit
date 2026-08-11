@@ -13,7 +13,33 @@ import { CategoryManager } from '../engine/CategoryManager'
 import { Logger } from '../engine/Logger'
 import { DownloadCategory, DownloadItem, DownloadPriority, EngineSettings } from '../engine/types'
 
+import { DoHResolver } from '../engine/DoHResolver'
+
 export function setupIPC(downloadManager: DownloadManager): void {
+  // Privacy & DoH Handlers
+  ipcMain.handle(
+    'privacy:resolveDoH',
+    async (_, args: { hostname: string; provider?: 'cloudflare' | 'quad9' | 'google' | 'custom'; customUrl?: string }) => {
+      try {
+        const ip = await DoHResolver.resolve4(args.hostname, args.provider || 'cloudflare', args.customUrl)
+        return { success: true, hostname: args.hostname, ip }
+      } catch (err: unknown) {
+        return { success: false, hostname: args.hostname, error: (err as Error).message }
+      }
+    }
+  )
+
+  ipcMain.handle('privacy:getStatus', () => {
+    const settings = downloadManager.getSettings()
+    return {
+      dohEnabled: !!settings.enableDoH,
+      dohProvider: settings.dohProvider || 'cloudflare',
+      warpEnabled: !!settings.enableWarp,
+      warpEndpoint: settings.warpEndpoint || '127.0.0.1:4001',
+      stripReferrer: !!settings.stripReferrer,
+      forceEncryption: !!settings.forceTorrentEncryption
+    }
+  })
   // QoS Handlers
   ipcMain.handle('qos:getStatus', () => ({
     throttled: downloadManager.getAdaptiveQoS().isThrottled(),

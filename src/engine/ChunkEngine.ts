@@ -4,6 +4,7 @@ import { URL } from 'url'
 import { ChunkInfo, DownloadItem } from './types'
 import { DiskAllocator } from './DiskAllocator'
 import { RateLimiter } from './RateLimiter'
+import { DoHResolver } from './DoHResolver'
 
 export interface ChunkProgressEvent {
   downloadId: string
@@ -119,7 +120,8 @@ export class ChunkEngine {
     rateLimiter: RateLimiter,
     onProgress: (event: ChunkProgressEvent) => void,
     onChunkComplete: (chunkId: number) => void,
-    onError: (err: Error) => void
+    onError: (err: Error) => void,
+    options?: { stripReferrer?: boolean; customUserAgent?: string; enableDoH?: boolean; dohProvider?: 'cloudflare' | 'quad9' | 'google' | 'custom' }
   ): Promise<void> {
     // Pre-allocate destination file
     DiskAllocator.preallocateFile(download.savePath, download.totalSize)
@@ -139,7 +141,8 @@ export class ChunkEngine {
         rateLimiter,
         streams,
         onProgress,
-        onChunkComplete
+        onChunkComplete,
+        options
       )
     })
 
@@ -159,6 +162,7 @@ export class ChunkEngine {
     streams: Array<{ abort: () => void }>,
     onProgress: (event: ChunkProgressEvent) => void,
     onChunkComplete: (chunkId: number) => void,
+    options?: { stripReferrer?: boolean; customUserAgent?: string; enableDoH?: boolean; dohProvider?: 'cloudflare' | 'quad9' | 'google' | 'custom' },
     targetUrl?: string,
     redirectCount = 0
   ): Promise<void> {
@@ -167,16 +171,35 @@ export class ChunkEngine {
     }
     const currentUrl = targetUrl || download.url
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const parsedUrl = new URL(currentUrl)
+
+        // DNS-over-HTTPS (DoH) Domain Resolution if enabled
+        if (options?.enableDoH && parsedUrl.hostname) {
+          try {
+            const dohIp = await DoHResolver.resolve4(parsedUrl.hostname, options.dohProvider || 'cloudflare')
+            if (dohIp) {
+              parsedUrl.hostname = dohIp
+            }
+          } catch {
+            // Fallback to standard DNS on DoH query timeout
+          }
+        }
+
         const client = parsedUrl.protocol === 'https:' ? https : http
 
         const startByte = chunk.startByte + chunk.downloadedBytes
         const endByte = chunk.endByte
 
         const headers: Record<string, string> = {
-          'User-Agent': 'grabbit/1.0'
+          'User-Agent':
+            options?.customUserAgent ||
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+        }
+
+        if (options?.stripReferrer) {
+          delete headers['Referer']
         }
 
         if (download.totalSize > 0) {
@@ -202,6 +225,7 @@ export class ChunkEngine {
                 streams,
                 onProgress,
                 onChunkComplete,
+                options,
                 redirectUrl,
                 redirectCount + 1
               )

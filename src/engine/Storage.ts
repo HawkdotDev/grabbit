@@ -153,7 +153,16 @@ export class Storage {
       proxyType: 'http',
       proxyHost: '127.0.0.1',
       proxyPort: 8080,
-      categorySpeedLimitsKbps: {}
+      categorySpeedLimitsKbps: {},
+      enableDoH: true,
+      dohProvider: 'cloudflare',
+      customDoHUrl: 'https://1.1.1.1/dns-query',
+      enableWarp: false,
+      warpEndpoint: '127.0.0.1:4001',
+      stripReferrer: true,
+      customUserAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      forceTorrentEncryption: true,
+      disableP2PTracking: false
     }
 
     try {
