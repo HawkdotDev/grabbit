@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Grabbit Download Manager Integration",
+  "version": "1.0.0",
+  "description": "Companion browser extension for Grabbit Download Manager with high-speed multi-threaded acceleration.",
+  "permissions": [
+    "contextMenus",
+    "nativeMessaging",
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:6800/*",
+    "http://localhost:6800/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Grabbit Downloader"
+  }
+}

@@ -23,6 +23,16 @@ interface TopBarProps {
   globalSpeed?: number
   currentTheme?: string
   onThemeChange?: (theme: string) => void
+  density?: 'compact' | 'default' | 'comfortable'
+  onDensityChange?: (d: 'compact' | 'default' | 'comfortable') => void
+  zoomLevel?: number
+  onZoomChange?: (z: number) => void
+  showSidebar?: boolean
+  onToggleSidebar?: () => void
+  showInspector?: boolean
+  onToggleInspector?: () => void
+  showStatusBar?: boolean
+  onToggleStatusBar?: () => void
 }
 
 export const TopBar: React.FC<TopBarProps> = React.memo(
@@ -42,7 +52,17 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
     activeView,
     setActiveView,
     currentTheme,
-    onThemeChange
+    onThemeChange,
+    density,
+    onDensityChange,
+    zoomLevel,
+    onZoomChange,
+    showSidebar,
+    onToggleSidebar,
+    showInspector,
+    onToggleInspector,
+    showStatusBar,
+    onToggleStatusBar
   }) => {
     return (
       <header className="bg-ide-surface border-b border-ide-border flex flex-col select-none font-sans rounded-none relative z-50">
@@ -69,6 +89,16 @@ export const TopBar: React.FC<TopBarProps> = React.memo(
               setActiveView={setActiveView}
               currentTheme={currentTheme}
               onThemeChange={onThemeChange}
+              density={density}
+              onDensityChange={onDensityChange}
+              zoomLevel={zoomLevel}
+              onZoomChange={onZoomChange}
+              showSidebar={showSidebar}
+              onToggleSidebar={onToggleSidebar}
+              showInspector={showInspector}
+              onToggleInspector={onToggleInspector}
+              showStatusBar={showStatusBar}
+              onToggleStatusBar={onToggleStatusBar}
             />
           </div>
 

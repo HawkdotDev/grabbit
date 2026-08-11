@@ -63,6 +63,30 @@ export const PRESET_THEMES: Record<string, { label: string; colors: CustomThemeC
       bright: '#7dd3fc',
       tint: '#0e2e4a'
     }
+  },
+  light: {
+    label: 'Light Mode ☀️ (Clean Bright Slate)',
+    colors: {
+      bg: '#f8fafc',
+      surface: '#ffffff',
+      card: '#f1f5f9',
+      border: '#cbd5e1',
+      accent: '#7c3aed',
+      bright: '#6d28d9',
+      tint: '#ede9fe'
+    }
+  },
+  contrast: {
+    label: 'High Contrast ⚡ (Monochrome & Yellow)',
+    colors: {
+      bg: '#000000',
+      surface: '#0a0a0a',
+      card: '#121212',
+      border: '#ffffff',
+      accent: '#ffff00',
+      bright: '#ffff55',
+      tint: '#333300'
+    }
   }
 }
 

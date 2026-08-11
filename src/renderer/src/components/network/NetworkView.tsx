@@ -26,16 +26,15 @@ export const NetworkView: React.FC<NetworkViewProps> = React.memo(
     const peakSpeed = Math.max(...speedHistory.map((s) => s.downloadSpeed), globalSpeed, 0)
 
     const samples =
-      speedHistory.length >= 10
+      speedHistory.length > 0
         ? speedHistory
-        : Array.from({ length: 20 }, (_, i) => ({
-            timestamp: Date.now() - (20 - i) * 1000,
-            downloadSpeed: Math.max(
-              1000,
-              globalSpeed * (0.6 + 0.4 * Math.sin(i / 2)) + Math.random() * 5000
-            ),
-            uploadSpeed: Math.max(500, (globalSpeed / 3) * (0.5 + 0.5 * Math.cos(i / 3)))
-          }))
+        : [
+            {
+              timestamp: Date.now(),
+              downloadSpeed: globalSpeed,
+              uploadSpeed: downloads.reduce((acc, d) => acc + (d.upSpeed || 0), 0)
+            }
+          ]
 
     return (
       <div className="flex-1 flex flex-col h-full bg-[#121317] text-slate-100 p-2 md:p-4 overflow-y-auto font-sans text-xs select-none space-y-6">

@@ -99,6 +99,13 @@ export function App(): React.JSX.Element {
     tint: '#2c2244'
   })
 
+  // Layout & Density Preferences
+  const [density, setDensity] = useState<'compact' | 'default' | 'comfortable'>('default')
+  const [zoomLevel, setZoomLevel] = useState(100)
+  const [showSidebar, setShowSidebar] = useState(true)
+  const [showInspector, setShowInspector] = useState(true)
+  const [showStatusBar, setShowStatusBar] = useState(true)
+
   const handleOpenAddModal = (mode: 'link' | 'file' = 'link', initialUrl = ''): void => {
     setAddModalMode(mode)
     setAddModalInitialUrl(initialUrl)
@@ -224,7 +231,12 @@ export function App(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans select-none border border-ide-border rounded-none">
+    <div
+      style={{ zoom: `${zoomLevel}%` }}
+      className={`flex flex-col h-screen w-screen overflow-hidden bg-ide-bg text-slate-100 font-sans select-none border border-ide-border rounded-none ${
+        density === 'compact' ? 'text-[11px]' : density === 'comfortable' ? 'text-[13px]' : 'text-xs'
+      }`}
+    >
       {/* Top Application Header & Navigation Toolbar */}
       <TopBar
         activeView={activeMainView}
@@ -243,6 +255,16 @@ export function App(): React.JSX.Element {
         onClearCompleted={handleClearCompleted}
         currentTheme={settings.theme || 'dark'}
         onThemeChange={handleThemeChange}
+        density={density}
+        onDensityChange={(d) => setDensity(d)}
+        zoomLevel={zoomLevel}
+        onZoomChange={(z) => setZoomLevel(z)}
+        showSidebar={showSidebar}
+        onToggleSidebar={() => setShowSidebar((prev) => !prev)}
+        showInspector={showInspector}
+        onToggleInspector={() => setShowInspector((prev) => !prev)}
+        showStatusBar={showStatusBar}
+        onToggleStatusBar={() => setShowStatusBar((prev) => !prev)}
       />
 
       {/* Clipboard Link Auto-Detector Banner */}
@@ -269,25 +291,29 @@ export function App(): React.JSX.Element {
       ) : (
         <div className="flex-1 flex overflow-hidden min-h-0 relative">
           {/* Left Navigation Sidebar */}
-          <Sidebar
-            downloads={downloads}
-            activeStatusFilter={activeStatusFilter}
-            setActiveStatusFilter={setActiveStatusFilter}
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            activeTag={activeTag}
-            setActiveTag={setActiveTag}
-            width={sidebarWidth}
-            onResumeAll={handleResumeAll}
-            onPauseAll={handlePauseAll}
-          />
+          {showSidebar && (
+            <>
+              <Sidebar
+                downloads={downloads}
+                activeStatusFilter={activeStatusFilter}
+                setActiveStatusFilter={setActiveStatusFilter}
+                activeCategory={activeCategory}
+                setActiveCategory={setActiveCategory}
+                activeTag={activeTag}
+                setActiveTag={setActiveTag}
+                width={sidebarWidth}
+                onResumeAll={handleResumeAll}
+                onPauseAll={handlePauseAll}
+              />
 
-          {/* Vertical Resize Handle between Sidebar and Workspace */}
-          <div
-            onMouseDown={handleSidebarMouseDown}
-            className="w-0.5 cursor-col-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
-            title="Drag to resize sidebar"
-          />
+              {/* Vertical Resize Handle between Sidebar and Workspace */}
+              <div
+                onMouseDown={handleSidebarMouseDown}
+                className="w-0.5 cursor-col-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
+                title="Drag to resize sidebar"
+              />
+            </>
+          )}
 
           {/* Center Task Workspace Split (Table on Top, Detail Inspector on Bottom) */}
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
@@ -313,25 +339,28 @@ export function App(): React.JSX.Element {
               />
             </main>
 
-            {/* Horizontal Resize Handle between Task Table and Bottom Detail Inspector */}
-            <div
-              onMouseDown={handleInspectorMouseDown}
-              className="h-0.5 cursor-row-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
-              title="Drag to resize inspector panel"
-            />
+            {/* Bottom Detail Inspector Panel & Resize Handle */}
+            {showInspector && (
+              <>
+                <div
+                  onMouseDown={handleInspectorMouseDown}
+                  className="h-0.5 cursor-row-resize hover:bg-theme-accent active:bg-theme-bright bg-ide-border transition shrink-0 z-30"
+                  title="Drag to resize inspector panel"
+                />
 
-            {/* Lower Detail Inspector Panel */}
-            <BottomDetailInspector
-              download={selectedDownload}
-              height={inspectorHeight}
-              speedHistory={speedHistory}
-            />
+                <BottomDetailInspector
+                  download={selectedDownload}
+                  height={inspectorHeight}
+                  speedHistory={speedHistory}
+                />
+              </>
+            )}
           </div>
         </div>
       )}
 
       {/* Persistent Bottom Telemetry Status Bar */}
-      <BottomStatusBar downloads={downloads} globalSpeed={globalSpeed} />
+      {showStatusBar && <BottomStatusBar downloads={downloads} globalSpeed={globalSpeed} />}
 
       {/* Floating Action Modals */}
       {addModalMode === 'file' ? (

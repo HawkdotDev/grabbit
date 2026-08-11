@@ -57,26 +57,6 @@ app.whenReady().then(() => {
   downloadManager = new DownloadManager()
   setupIPC(downloadManager)
 
-  // Seed initial test tasks if empty
-  if (downloadManager.getDownloads().length === 0) {
-    downloadManager
-      .addDownload('https://httpbin.org/bytes/1048576', {
-        filename: 'sample_file_1mb.bin',
-        category: 'other'
-      })
-      .then((d) => {
-        downloadManager?.startDownload(d.id)
-      })
-
-    downloadManager.addDownload(
-      'magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337',
-      {
-        filename: 'Sintel.mp4',
-        category: 'video'
-      }
-    )
-  }
-
   // Start Remote Control JSON-RPC Gateway
   remoteServer = new RemoteServer(downloadManager)
   remoteServer.start(6800)

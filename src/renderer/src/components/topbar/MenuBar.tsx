@@ -46,6 +46,16 @@ interface MenuBarProps {
   setActiveView?: (view: 'home' | 'analytics' | 'network') => void
   currentTheme?: string
   onThemeChange?: (theme: string) => void
+  density?: 'compact' | 'default' | 'comfortable'
+  onDensityChange?: (d: 'compact' | 'default' | 'comfortable') => void
+  zoomLevel?: number
+  onZoomChange?: (z: number) => void
+  showSidebar?: boolean
+  onToggleSidebar?: () => void
+  showInspector?: boolean
+  onToggleInspector?: () => void
+  showStatusBar?: boolean
+  onToggleStatusBar?: () => void
 }
 
 export const MenuBar: React.FC<MenuBarProps> = ({
@@ -64,18 +74,64 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   activeView = 'home',
   setActiveView,
   currentTheme = 'dark',
-  onThemeChange
+  onThemeChange,
+  density: propDensity,
+  onDensityChange,
+  zoomLevel: propZoomLevel,
+  onZoomChange,
+  showSidebar: propShowSidebar,
+  onToggleSidebar,
+  showInspector: propShowInspector,
+  onToggleInspector,
+  showStatusBar: propShowStatusBar,
+  onToggleStatusBar
 }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
 
-  // Local view preferences state (theme is now managed by App via props)
-  const [density, setDensity] = useState<'compact' | 'default' | 'comfortable'>('default')
+  // Local view preferences fallback state
+  const [localDensity, setLocalDensity] = useState<'compact' | 'default' | 'comfortable'>('default')
   const [alwaysOnTop, setAlwaysOnTop] = useState(false)
-  const [zoomLevel, setZoomLevel] = useState(100)
-  const [showSidebar, setShowSidebar] = useState(true)
-  const [showInspector, setShowInspector] = useState(true)
-  const [showStatusBar, setShowStatusBar] = useState(true)
+  const [localZoomLevel, setLocalZoomLevel] = useState(100)
+  const [localShowSidebar, setLocalShowSidebar] = useState(true)
+  const [localShowInspector, setLocalShowInspector] = useState(true)
+  const [localShowStatusBar, setLocalShowStatusBar] = useState(true)
+
+  const density = propDensity ?? localDensity
+  const zoomLevel = propZoomLevel ?? localZoomLevel
+  const showSidebar = propShowSidebar ?? localShowSidebar
+  const showInspector = propShowInspector ?? localShowInspector
+  const showStatusBar = propShowStatusBar ?? localShowStatusBar
+
+  const setDensity = (d: 'compact' | 'default' | 'comfortable'): void => {
+    setLocalDensity(d)
+    if (onDensityChange) onDensityChange(d)
+  }
+
+  const setZoomLevel = (z: number): void => {
+    setLocalZoomLevel(z)
+    if (onZoomChange) onZoomChange(z)
+  }
+
+  const handleZoom = (delta: number): void => {
+    const next = Math.min(150, Math.max(50, zoomLevel + delta))
+    setZoomLevel(next)
+  }
+
+  const handleToggleSidebar = (): void => {
+    setLocalShowSidebar(!showSidebar)
+    if (onToggleSidebar) onToggleSidebar()
+  }
+
+  const handleToggleInspector = (): void => {
+    setLocalShowInspector(!showInspector)
+    if (onToggleInspector) onToggleInspector()
+  }
+
+  const handleToggleStatusBar = (): void => {
+    setLocalShowStatusBar(!showStatusBar)
+    if (onToggleStatusBar) onToggleStatusBar()
+  }
 
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -138,10 +194,6 @@ export const MenuBar: React.FC<MenuBarProps> = ({
     if (window.api?.maximizeWindow) {
       window.api.maximizeWindow()
     }
-  }
-
-  const handleZoom = (delta: number): void => {
-    setZoomLevel((prev) => Math.min(150, Math.max(75, prev + delta)))
   }
 
   const renderDropdownContent = (item: string): React.JSX.Element => {
@@ -521,7 +573,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                 <div className="absolute left-full top-0 ml-1 w-48 bg-ide-surface border border-ide-border shadow-2xl py-1 z-110 rounded-none text-slate-200">
                   <button
                     type="button"
-                    onClick={() => setShowSidebar(!showSidebar)}
+                    onClick={handleToggleSidebar}
                     className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
                   >
                     <span>Filter Sidebar</span>
@@ -529,7 +581,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowInspector(!showInspector)}
+                    onClick={handleToggleInspector}
                     className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
                   >
                     <span>Bottom Detail Inspector</span>
@@ -537,7 +589,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowStatusBar(!showStatusBar)}
+                    onClick={handleToggleStatusBar}
                     className="w-full text-left px-3 py-1.5 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center justify-between cursor-pointer font-medium"
                   >
                     <span>Status Bar Telemetry</span>

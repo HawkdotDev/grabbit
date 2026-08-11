@@ -8,9 +8,40 @@ import { TorrentWorker } from '../engine/workers/TorrentWorker'
 import { PluginManager } from '../engine/PluginManager'
 import { PostProcessor, AutomationRule } from '../engine/PostProcessor'
 import { Storage } from '../engine/Storage'
+import { MediaWorker } from '../engine/workers/MediaWorker'
+import { CategoryManager } from '../engine/CategoryManager'
+import { Logger } from '../engine/Logger'
 import { DownloadCategory, DownloadItem, DownloadPriority, EngineSettings } from '../engine/types'
 
 export function setupIPC(downloadManager: DownloadManager): void {
+  // QoS Handlers
+  ipcMain.handle('qos:getStatus', () => ({
+    throttled: downloadManager.getAdaptiveQoS().isThrottled(),
+    pingMs: downloadManager.getAdaptiveQoS().getLastPing()
+  }))
+  ipcMain.handle('media:extractFormats', (_, url: string) => MediaWorker.extractVideoFormats(url))
+
+  // Categories & Logs IPC
+  ipcMain.handle('categories:get', () => CategoryManager.getAllCategories())
+  ipcMain.handle('download:setCategory', (_, args: { id: string; category: DownloadCategory }) =>
+    downloadManager.setCategory(args.id, args.category)
+  )
+  ipcMain.handle('stats:getHistory', () => downloadManager.getStatsCollector().getHistory())
+  ipcMain.handle('logs:export', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) return false
+    const defaultPath = `grabbit_log_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`
+    const { filePath } = await dialog.showSaveDialog(win, {
+      title: 'Export Diagnostic Logs',
+      defaultPath,
+      filters: [{ name: 'Log Files', extensions: ['txt', 'log'] }]
+    })
+    if (filePath) {
+      return Logger.exportToFile(filePath)
+    }
+    return false
+  })
+
   // WebTorrent Specific IPC Handlers
   ipcMain.handle('torrent:addTracker', (_, args: { id: string; trackerUrl: string }) => {
     return TorrentWorker.addTracker(args.id, args.trackerUrl)
@@ -283,10 +314,7 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return false
   })
 
-  // Stats handler
-  ipcMain.handle('stats:getHistory', () => {
-    return downloadManager.getSpeedHistory()
-  })
+  // (stats:getHistory already registered above in Categories & Logs IPC block)
 
   // Window control handlers
   ipcMain.handle('window:minimize', (event) => {
@@ -327,23 +355,7 @@ export function setupIPC(downloadManager: DownloadManager): void {
     return false
   })
 
-  ipcMain.handle('logs:export', async (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (!win) return false
-    const { filePath } = await dialog.showSaveDialog(win, {
-      title: 'Export Transfer Diagnostics & Logs',
-      defaultPath: `grabbit_session_log_${Date.now()}.txt`,
-      filters: [{ name: 'Log File', extensions: ['txt', 'log'] }]
-    })
-
-    if (filePath) {
-      const logs = downloadManager.getSpeedHistory()
-      const content = `Grabbit v0.1.1 Session Log\nExported: ${new Date().toISOString()}\n\nTelemetry History:\n${JSON.stringify(logs, null, 2)}`
-      fs.writeFileSync(filePath, content, 'utf8')
-      return true
-    }
-    return false
-  })
+  // (logs:export already registered above in Categories & Logs IPC block)
 
   // Torrent Creator IPC Handler
   ipcMain.handle(
@@ -376,9 +388,16 @@ export function setupIPC(downloadManager: DownloadManager): void {
         fs.writeFileSync(outputPath, torrentBuffer)
 
         if (options.startSeeding) {
-          await downloadManager.addDownload(outputPath, {
+          const added = await downloadManager.addDownload(outputPath, {
             savePath: path.dirname(options.sourcePath)
           })
+          if (added) {
+            added.status = 'seeding'
+            if (added.totalSize > 0) {
+              added.downloadedSize = added.totalSize
+            }
+            downloadManager.startDownload(added.id)
+          }
         }
         return { success: true, torrentPath: outputPath }
       } catch (err: unknown) {
@@ -624,6 +643,7 @@ export function setupIPC(downloadManager: DownloadManager): void {
   downloadManager.on('downloadUpdated', (download) => {
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onUpdated', download)
+      win.webContents.send('downloads:onUpdated', downloadManager.getDownloads())
     })
   })
 
@@ -642,12 +662,14 @@ export function setupIPC(downloadManager: DownloadManager): void {
 
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onCompleted', download)
+      win.webContents.send('downloads:onUpdated', downloadManager.getDownloads())
     })
   })
 
   downloadManager.on('downloadError', (data) => {
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onError', data)
+      win.webContents.send('downloads:onUpdated', downloadManager.getDownloads())
     })
   })
 
@@ -655,12 +677,18 @@ export function setupIPC(downloadManager: DownloadManager): void {
     lastProgressEmit.delete(id)
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('download:onRemoved', id)
+      win.webContents.send('downloads:onUpdated', downloadManager.getDownloads())
     })
   })
 
   downloadManager.on('statsTick', (sample) => {
     BrowserWindow.getAllWindows().forEach((win) => {
       win.webContents.send('stats:onTick', sample)
+      win.webContents.send('speed:onUpdated', {
+        downloadSpeed: sample.downloadSpeed,
+        uploadSpeed: sample.uploadSpeed,
+        history: downloadManager.getStatsCollector().getHistory()
+      })
     })
   })
 }

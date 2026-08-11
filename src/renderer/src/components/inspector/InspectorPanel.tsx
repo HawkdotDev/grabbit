@@ -82,8 +82,16 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           </div>
 
           <div className="flex justify-between">
-            <span className="text-slate-500">Parallel Engine:</span>
-            <span className="text-theme-accent font-mono">32 Threads</span>
+            <span className="text-slate-500">
+              {download.url.startsWith('magnet:') || download.url.endsWith('.torrent') || !!download.infoHash
+                ? 'Swarm Connections:'
+                : 'Parallel Engine:'}
+            </span>
+            <span className="text-theme-accent font-mono font-semibold">
+              {download.url.startsWith('magnet:') || download.url.endsWith('.torrent') || !!download.infoHash
+                ? `${download.peersCount || 0} Peers (${download.seedsCount || 0} Seeds)`
+                : `${download.threadCount || (download.chunks && download.chunks.length > 0 ? download.chunks.length : 8)} Threads`}
+            </span>
           </div>
 
           {download.checksum && (
@@ -97,7 +105,13 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
           <div className="flex justify-between border-t border-[#292929] pt-1.5 mt-1.5">
             <span className="text-slate-500">Pre-Allocation:</span>
-            <span className="text-theme-accent font-semibold">ENABLED</span>
+            <span className="text-theme-accent font-semibold">
+              {download.downloadedSize > 0 || download.status === 'completed' || download.status === 'seeding'
+                ? 'ALLOCATED / READY'
+                : download.totalSize > 0
+                  ? 'ENABLED'
+                  : 'PENDING'}
+            </span>
           </div>
         </div>
       </div>

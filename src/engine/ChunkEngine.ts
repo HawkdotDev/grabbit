@@ -216,7 +216,12 @@ export class ChunkEngine {
           chunk.status = 'downloading'
 
           res.on('data', async (buffer: Buffer) => {
-            await rateLimiter.acquire(buffer.length)
+            res.pause()
+            try {
+              await rateLimiter.acquire(buffer.length)
+            } finally {
+              if (!res.destroyed) res.resume()
+            }
 
             // Direct-to-disk positioned write
             const currentWriteOffset = chunk.startByte + chunk.downloadedBytes

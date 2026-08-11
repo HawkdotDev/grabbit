@@ -117,10 +117,24 @@ export class PostProcessor {
 
     const ext = path.extname(filePath).toLowerCase()
     const isArchive = ['.zip', '.tar', '.gz', '.7z', '.rar'].includes(ext)
+    let extractedPath: string | undefined
+
+    if (isArchive) {
+      const outDir = path.join(path.dirname(filePath), path.basename(filePath, ext) + '_extracted')
+      try {
+        if (!fs.existsSync(outDir)) {
+          fs.mkdirSync(outDir, { recursive: true })
+        }
+        extractedPath = outDir
+      } catch {
+        // Fallback without created dir
+      }
+    }
 
     return {
       scanPassed: true,
       isArchive,
+      extractedPath,
       message: isArchive
         ? `Archive detected (${ext}). Ready for extraction.`
         : 'File integrity verified safe.'
@@ -186,9 +200,9 @@ export class PostProcessor {
           case 'script':
             if (rule.actionConfig?.scriptCommand) {
               const cmd = rule.actionConfig.scriptCommand
-                .replace('$FILE_NAME', `"${download.name}"`)
-                .replace('$FILE_PATH', `"${download.savePath}"`)
-                .replace('$DOWNLOAD_ID', `"${download.id}"`)
+                .replaceAll('$FILE_NAME', `"${download.name}"`)
+                .replaceAll('$FILE_PATH', `"${download.savePath}"`)
+                .replaceAll('$DOWNLOAD_ID', `"${download.id}"`)
 
               exec(cmd, {
                 env: {

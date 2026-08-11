@@ -11,6 +11,7 @@ import { HashVerifier } from './HashVerifier'
 import { TorrentWorker } from './workers/TorrentWorker'
 import { PostProcessor } from './PostProcessor'
 import { PluginManager } from './PluginManager'
+import { AdaptiveQoS } from './AdaptiveQoS'
 import {
   DownloadCategory,
   DownloadItem,
@@ -27,6 +28,7 @@ export class DownloadManager extends EventEmitter {
   private statsCollector: StatsCollector
   private queueManager: DownloadQueueManager
   private settings: EngineSettings
+  private adaptiveQoS: AdaptiveQoS
 
   constructor() {
     super()
@@ -36,6 +38,7 @@ export class DownloadManager extends EventEmitter {
     this.chunkEngine = new ChunkEngine()
     this.statsCollector = new StatsCollector()
     this.queueManager = new DownloadQueueManager(this.settings.maxConcurrentDownloads)
+    this.adaptiveQoS = new AdaptiveQoS(this.rateLimiter)
 
     this.statsCollector.on('tick', (sample: SpeedSample) => {
       this.emit('statsTick', sample)
@@ -43,15 +46,31 @@ export class DownloadManager extends EventEmitter {
 
     this.loadState()
     this.statsCollector.start(() => this.getDownloads())
+
+    if (this.settings.enableAdaptiveQoS) {
+      this.adaptiveQoS.startMonitoring(10000)
+    }
   }
 
   private loadState(): void {
     const saved = Storage.loadDownloads()
+    const autoResumeIds: string[] = []
     saved.forEach((d: DownloadItem) => {
-      if (d.status === 'downloading') d.status = 'paused'
+      if (d.status === 'downloading') {
+        autoResumeIds.push(d.id)
+        d.status = 'paused'
+      }
       d.speed = 0
       this.downloads.set(d.id, d)
     })
+
+    if (autoResumeIds.length > 0) {
+      setTimeout(() => {
+        autoResumeIds.forEach((id) => {
+          this.startDownload(id)
+        })
+      }, 500)
+    }
   }
 
   private saveStateImmediate(): void {
@@ -66,6 +85,10 @@ export class DownloadManager extends EventEmitter {
     return { ...this.settings }
   }
 
+  public getAdaptiveQoS(): AdaptiveQoS {
+    return this.adaptiveQoS
+  }
+
   public updateSettings(newSettings: Partial<EngineSettings>): void {
     this.settings = { ...this.settings, ...newSettings }
     if (newSettings.maxGlobalSpeedLimitKbps !== undefined) {
@@ -73,6 +96,13 @@ export class DownloadManager extends EventEmitter {
     }
     if (newSettings.maxConcurrentDownloads !== undefined) {
       this.queueManager.setMaxConcurrentDownloads(this.settings.maxConcurrentDownloads)
+    }
+    if (newSettings.enableAdaptiveQoS !== undefined) {
+      if (newSettings.enableAdaptiveQoS) {
+        this.adaptiveQoS.startMonitoring(10000)
+      } else {
+        this.adaptiveQoS.stopMonitoring()
+      }
     }
     Storage.saveSettings(this.settings)
     this.processQueue()
@@ -123,8 +153,26 @@ export class DownloadManager extends EventEmitter {
   }
 
   public async addDownload(
-    url: string,
-    options?: {
+    urlOrOptions:
+      | string
+      | {
+          url: string
+          savePath?: string
+          filename?: string
+          category?: DownloadCategory
+          priority?: DownloadPriority
+          threadCount?: number
+          tags?: string[]
+          startPaused?: boolean
+          addToTopQueue?: boolean
+          sequentialDownload?: boolean
+          firstLastPiecesFirst?: boolean
+          skipHashCheck?: boolean
+          stopCondition?: 'none' | 'metadata' | 'files'
+          contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+          managementMode?: 'manual' | 'automatic'
+        },
+    maybeOptions?: {
       savePath?: string
       filename?: string
       category?: DownloadCategory
@@ -141,6 +189,9 @@ export class DownloadManager extends EventEmitter {
       managementMode?: 'manual' | 'automatic'
     }
   ): Promise<DownloadItem> {
+    const url = typeof urlOrOptions === 'string' ? urlOrOptions : urlOrOptions.url
+    const options = typeof urlOrOptions === 'string' ? maybeOptions : urlOrOptions
+
     const isTorrent = DownloadManager.isTorrentSource(url)
     let totalSize = 0
     let acceptRanges = true
@@ -321,7 +372,7 @@ export class DownloadManager extends EventEmitter {
         (event) => {
           const d = this.downloads.get(event.downloadId)
           if (!d) return
-          d.status = 'completed'
+          d.status = 'seeding'
           d.speed = 0
           d.upSpeed = event.uploadSpeed
           d.eta = 0
@@ -375,7 +426,11 @@ export class DownloadManager extends EventEmitter {
           d.speed = 0
           d.eta = 0
           d.completedAt = Date.now()
-          d.downloadedSize = d.totalSize
+          if (d.totalSize > 0) {
+            d.downloadedSize = d.totalSize
+          } else {
+            d.totalSize = d.downloadedSize
+          }
           DiskAllocator.closeFile(d.savePath)
           this.saveStateImmediate()
           this.emit('downloadCompleted', d)
@@ -469,6 +524,10 @@ export class DownloadManager extends EventEmitter {
         this.pauseDownload(d.id)
       }
     })
+  }
+
+  public getDownload(id: string): DownloadItem | undefined {
+    return this.downloads.get(id)
   }
 
   public resumeAll(): void {
@@ -595,17 +654,46 @@ export class DownloadManager extends EventEmitter {
     return true
   }
 
+  public setCategory(id: string, category: DownloadCategory): boolean {
+    const d = this.downloads.get(id)
+    if (!d) return false
+    d.category = category
+    this.saveStateImmediate()
+    this.emit('downloadUpdated', d)
+    return true
+  }
+
+  public getStatsCollector(): StatsCollector {
+    return this.statsCollector
+  }
+
   private processQueue(): void {
     const toStart = this.queueManager.getNextQueuedDownloads(this.downloads)
     toStart.forEach((d) => this.startDownload(d.id))
   }
 
   public destroy(): void {
+    // 1. Stop monitoring systems
     this.statsCollector.stop()
+    this.adaptiveQoS.stopMonitoring()
+
+    // 2. Cancel all active downloads (both HTTP and torrent)
     this.downloads.forEach((d) => {
       if (d.status === 'downloading') {
-        this.chunkEngine.cancelDownload(d.id)
+        const isTorrent = DownloadManager.isTorrentSource(d.url)
+        if (isTorrent) {
+          TorrentWorker.removeTorrent(d.id)
+        } else {
+          this.chunkEngine.cancelDownload(d.id)
+          DiskAllocator.closeFile(d.savePath)
+        }
       }
     })
+
+    // 3. Close any remaining open file handles
+    DiskAllocator.closeAll()
+
+    // 4. Flush pending state to disk before exit
+    this.saveStateImmediate()
   }
 }

@@ -13,6 +13,10 @@ export class RateLimiter {
     this.lastRefill = Date.now()
   }
 
+  public getLimitKbps(): number {
+    return this.maxTokensPerSecond > 0 ? Math.round(this.maxTokensPerSecond / 1024) : 0
+  }
+
   public async acquire(bytes: number): Promise<void> {
     if (this.maxTokensPerSecond <= 0) {
       return // Unlimited

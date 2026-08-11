@@ -69,6 +69,16 @@ export interface GrabbitAPI {
   // Settings IPC
   getSettings: () => Promise<EngineSettings>
   updateSettings: (settings: Partial<EngineSettings>) => Promise<EngineSettings>
+  extractVideoFormats: (url: string) => Promise<
+    Array<{
+      formatId: string
+      extension: string
+      resolution: string
+      filesize?: number
+      note?: string
+    }>
+  >
+  getQoSStatus: () => Promise<{ throttled: boolean; pingMs: number }>
 
   // System & Hash Verification IPC
   verifyHash: (args: {

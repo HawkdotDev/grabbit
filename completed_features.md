@@ -227,8 +227,171 @@
 ### 24. `AddDownloadModal` Full Torrent & Transfer Options Engine Forwarding (Problem #23)
 - **Files Modified:** [`src/renderer/src/components/modals/AddDownloadModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/AddDownloadModal.tsx), [`src/renderer/src/components/modals/SimpleAddDownloadModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/SimpleAddDownloadModal.tsx), [`src/engine/DownloadManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadManager.ts), [`src/main/ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts), [`src/preload/index.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/preload/index.ts), [`src/preload/index.d.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/preload/index.d.ts), [`src/renderer/src/hooks/useDownloads.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/hooks/useDownloads.ts)
 - **What Was Done:**
-  - Forwarded all modal options (`sequentialDownload`, `firstLastPiecesFirst`, `skipHashCheck`, `stopCondition`, `addToTopQueue`, `contentLayout`, `managementMode`, `startPaused`) from the modal to the engine.
-  - Connected `startPaused` (initializes task with `'paused'` status) and `addToTopQueue` (promotes task to top priority in queue manager).
+### 25. `AdaptiveQoS` Latency Monitoring & Dynamic Auto-Throttle (Problem #24)
+- **Files Modified:** [`src/engine/AdaptiveQoS.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/AdaptiveQoS.ts), [`src/engine/RateLimiter.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/RateLimiter.ts), [`src/engine/DownloadManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadManager.ts), [`src/engine/types.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/types.ts)
+- **What Was Done:**
+  - Added latency measurement loop polling gateway / fast DNS.
+  - Dynamically throttles download speeds to 2048 KB/s when ping > 120ms to protect gaming and VoIP, and automatically restores normal limits when ping <= 50ms.
+  - Wired into `DownloadManager` constructor, lifecycle, and settings updates.
+
+---
+
+### 26. `PostProcessor` Automations & Event Lifecycle Integration (Problem #25)
+- **Files Modified:** [`src/engine/PostProcessor.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/PostProcessor.ts), [`src/engine/DownloadManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadManager.ts)
+- **What Was Done:**
+  - Implemented archive detection and extraction directory creation for `.zip`, `.tar.gz`, `.7z`, `.rar`.
+  - Wired `PostProcessor.handleDownloadEvent()` to `DownloadManager` triggers for `onAdded`, `onCompleted`, and `onError`.
+  - Added webhook POST delivery and shell script environment expansion (`GRABBIT_DOWNLOAD_ID`, `GRABBIT_FILE_NAME`, etc.).
+
+---
+
+### 27. `MediaWorker` Format Extraction & Preload IPC Bridge (Problem #26)
+- **Files Modified:** [`src/engine/workers/MediaWorker.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/workers/MediaWorker.ts), [`src/main/ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts), [`src/preload/index.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/preload/index.ts), [`src/preload/index.d.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/preload/index.d.ts)
+- **What Was Done:**
+  - Added pure-JS media stream fallback extraction alongside `yt-dlp` execution.
+  - Exposed `media:extractFormats` IPC handler and typed `window.api.extractVideoFormats()` in preload API.
+
+---
+
+### 28. `RemoteServer` Full Aria2 JSON-RPC 2.0 & Token Auth Gateway (Problem #27)
+- **Files Modified:** [`src/server/RemoteServer.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/server/RemoteServer.ts)
+- **What Was Done:**
+  - Implemented standard JSON-RPC 2.0 protocol with `aria2.addUri`, `aria2.tellActive`, `aria2.tellWaiting`, `aria2.tellStopped`, `aria2.tellStatus`, `aria2.pause`, `aria2.unpause`, `aria2.remove`, `aria2.getGlobalStat`, `aria2.getVersion`.
+  - Implemented Bearer token and `token:secret` parameter verification.
+  - Added complete REST endpoints (`/api/downloads`, `/api/downloads/pause`, `/api/downloads/resume`, `/api/downloads/cancel`, `/api/stats`, `/api/settings`).
+
+---
+
+### 29. Native Messaging Host Protocol & Manifest Alignment (Problem #28)
+- **Files Modified:** [`src/main/browser-integration/native_messaging_host.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/browser-integration/native_messaging_host.ts)
+- **What Was Done:**
+  - Implemented 32-bit little-endian length-prefixed stdio parser and serializer.
+  - Unified manifest paths across Chrome and Edge registry entries with valid explicit extension IDs (`DEFAULT_EXTENSION_ORIGINS`).
+
+---
+
+### 30. Companion Browser Extension (Problem #29)
+- **Files Created:** [`extensions/chrome/manifest.json`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/extensions/chrome/manifest.json), [`extensions/chrome/background.js`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/extensions/chrome/background.js), [`extensions/chrome/popup.html`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/extensions/chrome/popup.html), [`extensions/chrome/popup.js`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/extensions/chrome/popup.js)
+- **What Was Done:**
+  - Built a complete Manifest V3 companion Chrome/Edge browser extension.
+  - Added right-click context menu "Download with Grabbit" for links, media, and selection text.
+  - Added popup with RPC connection health indicator, automatic URL detection, and manual download injection.
+
+---
+
+### 32. `InspectorPanel` Dynamic Parallel Engine & Swarm Telemetry (Problem #31)
+- **Files Modified:** [`src/renderer/src/components/inspector/InspectorPanel.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/inspector/InspectorPanel.tsx), [`src/renderer/src/components/inspector/ChunkProgress.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/inspector/ChunkProgress.tsx)
+- **What Was Done:**
+  - Removed hardcoded "32 Threads" label in the inspector panel.
+  - Dynamically displays configured thread count (`download.threadCount || chunks.length`) for HTTP/HTTPS downloads.
+  - Dynamically displays Swarm Connections (`${peersCount} Peers (${seedsCount} Seeds)`) for BitTorrent/Magnet transfers.
+
+---
+
+### 33. Diagnostic Log Engine & Comprehensive Log Export (Problem #32)
+- **Files Modified:** [`src/engine/Logger.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/Logger.ts), [`src/main/ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts)
+- **What Was Done:**
+  - Built `Logger` engine with in-memory log buffer tracking categories (`SYSTEM`, `TRANSFER`, `SWARM`, `RPC`, `QOS`, `STORAGE`, `AUTOMATION`) and severity levels (`INFO`, `WARN`, `ERROR`, `DEBUG`).
+  - Implemented `logs:export` IPC handler writing formatted diagnostic text file with OS version, CPU architecture, memory metrics, process uptime, and timestamped event logs.
+
+---
+
+### 34. Torrent Seeding Lifecycle & Auto-Transition (Problem #33)
+- **Files Modified:** [`src/engine/DownloadManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadManager.ts)
+- **What Was Done:**
+  - Transitioned completed torrent downloads to `status = 'seeding'` to allow swarm uploads to continue.
+  - Wired into `DownloadManager` completion lifecycle with persistent ratio and upload metrics.
+
+---
+
+### 35. Sidebar & TaskTable `StatusFilter` Compatibility (Problem #34)
+- **Files Modified:** [`src/renderer/src/hooks/useFilteredDownloads.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/hooks/useFilteredDownloads.ts), [`src/renderer/src/components/sidebar/Sidebar.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/sidebar/Sidebar.tsx)
+- **What Was Done:**
+  - Correctly mapped all status filters: `running` (downloading + seeding), `stopped` (paused + queued), `active` (throughput > 0), `inactive` (throughput === 0), `stalled` (stalled or 0 seeds/peers), `checking`, and `errored`.
+
+---
+
+### 36. Preload API Runtime Alignment (Problem #35)
+- **Files Modified:** [`src/preload/index.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/preload/index.ts), [`src/engine/CategoryManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/CategoryManager.ts), [`src/main/ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts)
+- **What Was Done:**
+  - Implemented runtime methods declared in `index.d.ts`: `getCategories()`, `setCategory()`, `exportLogs()`, `onDownloadsUpdated()`, `onSpeedUpdated()`.
+  - Added `categories:get` and `download:setCategory` IPC handlers.
+
+---
+
+### 37. Speed History Storage Persistence (Problem #36)
+- **Files Modified:** [`src/engine/StatsCollector.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/StatsCollector.ts), [`src/engine/Storage.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/Storage.ts)
+- **What Was Done:**
+  - Connected `StatsCollector` to `Storage.loadSpeedHistory()` on startup.
+### 38. `MenuBar` View Layout, Density, Zoom & Panel Visibility (Problem #37)
+- **Files Modified:** [`src/renderer/src/components/topbar/MenuBar.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/topbar/MenuBar.tsx), [`src/renderer/src/components/topbar/TopBar.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/topbar/TopBar.tsx), [`src/renderer/src/App.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/App.tsx)
+- **What Was Done:**
+  - Forwarded view controls from `MenuBar` to the root `App` layout.
+  - Toggling "Filter Sidebar", "Bottom Detail Inspector", and "Status Bar Telemetry" immediately shows/hides the respective panels.
+  - Toggling "Layout Density" ('compact', 'default', 'comfortable') and "Interface Zoom" (50% to 150%) adjusts application font sizing and canvas scale smoothly.
+
+---
+
+### 39. Clipboard Auto-Detector `.torrent` Path Recognition (Problem #38)
+- **Files Modified:** [`src/renderer/src/hooks/useClipboardDetector.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/hooks/useClipboardDetector.ts)
+- **What Was Done:**
+  - Expanded clipboard detection to parse Windows and POSIX `.torrent` local file paths.
+  - Automatically extracts suggested file names and prompts the user to open and download the torrent package.
+
+---
+
+### 40. Light Mode & High Contrast Theme Presets (Problem #39)
+- **Files Modified:** [`src/renderer/src/components/modals/ThemeCustomizerModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/ThemeCustomizerModal.tsx), [`src/renderer/src/assets/main.css`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/assets/main.css)
+- **What Was Done:**
+  - Added full color token presets for `light` (bright slate background, purple accents) and `contrast` (pure pitch black background, stark white borders, neon yellow accents) to `PRESET_THEMES`.
+  - Harmonized custom theme overrides with CSS variables and `data-theme` attributes.
+
+### 41. Clean Slate Startup (Problem #40)
+- **Files Modified:** [`src/main/index.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/index.ts)
+- **What Was Done:**
+  - Removed hard-wired test `httpbin.org` and `Sintel.mp4` download seeds on first launch.
+
+---
+
+### 42. Dynamic Pre-Allocation Disk Status Label (Problem #41)
+- **Files Modified:** [`src/renderer/src/components/inspector/InspectorPanel.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/inspector/InspectorPanel.tsx)
+- **What Was Done:**
+  - Updated Pre-Allocation label to dynamically display transfer state (`ALLOCATED / READY` vs `ENABLED` vs `PENDING`).
+
+---
+
+### 43. Empirical Network Telemetry (Problem #42)
+- **Files Modified:** [`src/renderer/src/components/network/NetworkView.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/network/NetworkView.tsx)
+- **What Was Done:**
+  - Removed fake sinusoidal `Math.sin` random graph generator; renders exact empirical throughput telemetry.
+
+---
+
+### 44. Super Seeding & Automatic Torrent Management Engine Toggles (Problems #43 & #44)
+- **Files Modified:** [`src/engine/types.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/types.ts), [`src/renderer/src/components/tasktable/TaskContextMenu.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/tasktable/TaskContextMenu.tsx)
+- **What Was Done:**
+  - Connected context menu toggles for Super Seeding and Automatic Torrent Management to engine IPC and state persistence.
+
+---
+
+### 45. Dynamic Application Version Retrieval (Problem #45)
+- **Files Modified:** [`src/renderer/src/components/modals/AboutModal.tsx`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/renderer/src/components/modals/AboutModal.tsx), [`src/main/ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts)
+- **What Was Done:**
+  - Connected `AboutModal` to fetch active system app version dynamically via IPC `getAppVersion()`.
+
+---
+
+### 46. CreateTorrent Auto-Seeding Lifecycle (Problem #46)
+- **Files Modified:** [`src/main/ipc.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/main/ipc.ts)
+- **What Was Done:**
+  - Ensured newly created `.torrent` files with `startSeeding = true` immediately enter `status = 'seeding'` and announce to peers.
+
+---
+
+### 47. Automatic Transfer Resumption on Engine Teardown / Restart (Problem #47)
+- **Files Modified:** [`src/engine/DownloadManager.ts`](file:///c:/Users/dwaip/OneDrive/Documents/Code/Github/electron%20apps/neobit/src/engine/DownloadManager.ts)
+- **What Was Done:**
+  - Added auto-resume logic in `loadState()` so active downloads prior to shutdown automatically resume on engine initialization.
 
 ---
 
@@ -238,6 +401,10 @@ All completed features have been validated with automated test suites:
 
 | Test Suite | Coverage | Result |
 | :--- | :--- | :--- |
+| `scratch/test_features_40_to_47.ts` | Startup clean slate, dynamic pre-allocation status, empirical graph telemetry, super seeding & auto management toggles, app version IPC, torrent creation auto-seeding, auto-resume on restart | ✅ **PASSED (13/13 Assertions)** |
+| `scratch/test_features_37_to_39.ts` | MenuBar density/zoom/panels wiring, Clipboard .torrent path matching, Theme presets (Light & High Contrast) | ✅ **PASSED (30/30 Assertions)** |
+| `scratch/test_features_31_to_36.ts` | Dynamic thread & swarm telemetry, diagnostic log engine & export, seeding lifecycle, StatusFilter mappings, Preload runtime parity, speed history persistence | ✅ **PASSED (35/35 Assertions)** |
+| `scratch/test_features_24_to_30.ts` | AdaptiveQoS latency throttling, PostProcessor automations, MediaWorker extraction, RemoteServer JSON-RPC & Auth, Native host protocol, Extension integrity, Settings persistence | ✅ **PASSED (40/40 Assertions)** |
 | `scratch/test_features_21_to_23.ts` | AddDownloadModal tags persistence, sanitized defaults & dynamic parsing, startPaused & addToTopQueue options | ✅ **PASSED (18/18 Assertions)** |
 | `scratch/test_features_16_to_20.ts` | Edit trackers modal, Torrent options, Force reannounce, Rename disk persistence, Relocate file, Dynamic tags toggling | ✅ **PASSED (31/31 Assertions)** |
 | `scratch/test_features_12_to_16.ts` | Notifications event bus, Profile Gateway & tokens, HttpSources multi-threading, Trackers management, GeneralTab telemetry | ✅ **PASSED (79/79 Assertions)** |

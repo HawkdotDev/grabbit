@@ -31,17 +31,28 @@ export function useClipboardDetector(
       if (trimmed === lastSeenTextRef.current) return
       lastSeenTextRef.current = trimmed
 
-      // Match HTTP/HTTPS file URLs or Magnet URIs
+      // Match HTTP/HTTPS file URLs, Magnet URIs, or local/remote .torrent file paths
       const isUrl = /^https?:\/\/[^\s]+$/i.test(trimmed)
       const isMagnet = /^magnet:\?xt=urn:[a-z0-9]+/i.test(trimmed)
+      const isTorrentFile =
+        /\.torrent$/i.test(trimmed) ||
+        /^[a-zA-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]+\.torrent$/i.test(trimmed) ||
+        /^\/(?:[^/\0]+\/)*[^/\0]+\.torrent$/i.test(trimmed)
 
-      if (isUrl || isMagnet) {
+      if (isUrl || isMagnet || isTorrentFile) {
         // If this exact URL has already been dismissed or added, do not show again
         if (dismissedSetRef.current.has(trimmed)) return
 
         let suggestedName = 'New Download'
         if (isMagnet) {
           suggestedName = 'Magnet Link'
+        } else if (isTorrentFile) {
+          try {
+            const base = trimmed.split(/[\\/]/).pop()
+            if (base) suggestedName = decodeURIComponent(base)
+          } catch {
+            suggestedName = 'Torrent File'
+          }
         } else {
           try {
             const parsed = new URL(trimmed)

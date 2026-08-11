@@ -97,9 +97,6 @@ export class Storage {
     return []
   }
 
-  /**
-   * Save downloads immediately asynchronously.
-   */
   public static async saveDownloads(downloads: DownloadItem[]): Promise<void> {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout)
@@ -107,7 +104,9 @@ export class Storage {
     }
     this.pendingDownloads = undefined
     try {
-      await fs.promises.writeFile(this.downloadsFile, JSON.stringify(downloads, null, 2), 'utf8')
+      const tmpFile = `${this.downloadsFile}.tmp`
+      await fs.promises.writeFile(tmpFile, JSON.stringify(downloads, null, 2), 'utf8')
+      await fs.promises.rename(tmpFile, this.downloadsFile)
     } catch (err) {
       console.error('Failed to save downloads asynchronously:', err)
     }
@@ -125,8 +124,10 @@ export class Storage {
       if (this.pendingDownloads) {
         const data = this.pendingDownloads
         this.pendingDownloads = undefined
+        const tmpFile = `${this.downloadsFile}.tmp`
         fs.promises
-          .writeFile(this.downloadsFile, JSON.stringify(data, null, 2), 'utf8')
+          .writeFile(tmpFile, JSON.stringify(data, null, 2), 'utf8')
+          .then(() => fs.promises.rename(tmpFile, this.downloadsFile))
           .catch((err) => {
             console.error('Failed to save debounced downloads:', err)
           })
@@ -143,7 +144,16 @@ export class Storage {
       autoCategorize: true,
       enableNotifications: true,
       startOnBoot: false,
-      theme: 'dark'
+      theme: 'dark',
+      enableAdaptiveQoS: true,
+      enableRpcServer: true,
+      rpcPort: 6800,
+      rpcSecretToken: 'gbt_secret_rpc',
+      proxyEnabled: false,
+      proxyType: 'http',
+      proxyHost: '127.0.0.1',
+      proxyPort: 8080,
+      categorySpeedLimitsKbps: {}
     }
 
     try {

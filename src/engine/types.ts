@@ -77,6 +77,8 @@ export interface DownloadItem {
   tags?: string[]
   trackers?: TrackerInfo[]
   files?: DownloadFileItem[]
+  superSeeding?: boolean
+  managementMode?: 'manual' | 'automatic'
 }
 
 export interface CustomThemeColors {
@@ -98,6 +100,15 @@ export interface EngineSettings {
   enableNotifications: boolean
   startOnBoot: boolean
   theme: 'dark' | 'light' | 'contrast' | 'carrot' | 'custom' | 'system'
+  enableAdaptiveQoS?: boolean
+  enableRpcServer?: boolean
+  rpcPort?: number
+  rpcSecretToken?: string
+  proxyEnabled?: boolean
+  proxyType?: 'http' | 'socks5'
+  proxyHost?: string
+  proxyPort?: number
+  categorySpeedLimitsKbps?: Partial<Record<DownloadCategory, number>>
 }
 
 export interface SpeedSample {

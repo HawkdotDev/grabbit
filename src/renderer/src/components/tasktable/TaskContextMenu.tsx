@@ -64,10 +64,30 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const [activeSubmenu, setActiveSubmenu] = useState<'category' | 'tags' | 'copy' | null>(null)
-  const [autoManagement, setAutoManagement] = useState(true)
-  const [superSeeding, setSuperSeeding] = useState(false)
+  const [autoManagement, setAutoManagement] = useState(
+    () => download.managementMode !== 'manual'
+  )
+  const [superSeeding, setSuperSeeding] = useState(() => download.superSeeding ?? false)
   const [customTagInput, setCustomTagInput] = useState('')
   const [showCustomTagInput, setShowCustomTagInput] = useState(false)
+
+  const handleToggleSuperSeeding = async (): Promise<void> => {
+    const nextVal = !superSeeding
+    setSuperSeeding(nextVal)
+    if (window.api?.updateTorrentOptions) {
+      await window.api.updateTorrentOptions(download.id, { superSeeding: nextVal })
+    }
+    onUpdateDownload?.(download.id, { superSeeding: nextVal })
+  }
+
+  const handleToggleAutoManagement = async (): Promise<void> => {
+    const nextMode: 'manual' | 'automatic' = autoManagement ? 'manual' : 'automatic'
+    setAutoManagement(!autoManagement)
+    if (window.api?.updateTorrentOptions) {
+      await window.api.updateTorrentOptions(download.id, { managementMode: nextMode })
+    }
+    onUpdateDownload?.(download.id, { managementMode: nextMode })
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -369,7 +389,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
       {/* 9. Automatic Torrent Management */}
       <button
-        onClick={() => setAutoManagement(!autoManagement)}
+        onClick={handleToggleAutoManagement}
         className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
       >
         <div className="flex items-center gap-2.5">
@@ -397,7 +417,7 @@ export const TaskContextMenu: React.FC<TaskContextMenuProps> = ({
 
       {/* 11. Super seeding mode */}
       <button
-        onClick={() => setSuperSeeding(!superSeeding)}
+        onClick={handleToggleSuperSeeding}
         className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-theme-tint hover:text-theme-accent cursor-pointer transition-colors text-left font-medium"
       >
         <div className="flex items-center gap-2.5">

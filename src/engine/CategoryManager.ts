@@ -52,6 +52,20 @@ export class CategoryManager {
     return 'other'
   }
 
+  public static getAllCategories(): Record<DownloadCategory, string[]> {
+    return {
+      all: [],
+      other: [],
+      documents: [...CATEGORY_EXTENSIONS.documents],
+      compressed: [...CATEGORY_EXTENSIONS.compressed],
+      video: [...CATEGORY_EXTENSIONS.video],
+      audio: [...CATEGORY_EXTENSIONS.audio],
+      executables: [...CATEGORY_EXTENSIONS.executables],
+      images: [...CATEGORY_EXTENSIONS.images],
+      code: [...CATEGORY_EXTENSIONS.code]
+    }
+  }
+
   public static getCategoryLabel(category: DownloadCategory): string {
     switch (category) {
       case 'all':

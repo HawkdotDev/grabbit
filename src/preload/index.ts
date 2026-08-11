@@ -100,6 +100,10 @@ const api = {
   getSettings: (): Promise<EngineSettings> => ipcRenderer.invoke('settings:get'),
   updateSettings: (settings: Partial<EngineSettings>): Promise<EngineSettings> =>
     ipcRenderer.invoke('settings:update', settings),
+  extractVideoFormats: (url: string): Promise<Array<{ formatId: string; extension: string; resolution: string; filesize?: number; note?: string }>> =>
+    ipcRenderer.invoke('media:extractFormats', url),
+  getQoSStatus: (): Promise<{ throttled: boolean; pingMs: number }> =>
+    ipcRenderer.invoke('qos:getStatus'),
 
   getSpeedHistory: (): Promise<SpeedSample[]> => ipcRenderer.invoke('stats:getHistory'),
 
@@ -183,7 +187,34 @@ const api = {
     executionTimeMs: number
   }> => ipcRenderer.invoke('script:execute', code),
 
+  // Categories API
+  getCategories: (): Promise<Record<DownloadCategory, string[]>> =>
+    ipcRenderer.invoke('categories:get'),
+  setCategory: (id: string, category: DownloadCategory): Promise<boolean> =>
+    ipcRenderer.invoke('download:setCategory', { id, category }),
+
   // Listeners
+  onDownloadsUpdated: (callback: (downloads: DownloadItem[]) => void): (() => void) => {
+    const handler = (_: unknown, downloads: DownloadItem[]): void => callback(downloads)
+    ipcRenderer.on('downloads:onUpdated', handler)
+    return () => ipcRenderer.removeListener('downloads:onUpdated', handler)
+  },
+
+  onSpeedUpdated: (
+    callback: (speed: {
+      downloadSpeed: number
+      uploadSpeed: number
+      history: SpeedSample[]
+    }) => void
+  ): (() => void) => {
+    const handler = (
+      _: unknown,
+      speed: { downloadSpeed: number; uploadSpeed: number; history: SpeedSample[] }
+    ): void => callback(speed)
+    ipcRenderer.on('speed:onUpdated', handler)
+    return () => ipcRenderer.removeListener('speed:onUpdated', handler)
+  },
+
   onDownloadProgress: (callback: (download: DownloadItem) => void): (() => void) => {
     const handler = (_: unknown, download: DownloadItem): void => callback(download)
     ipcRenderer.on('download:onProgress', handler)
