@@ -3,9 +3,6 @@ import {
   Settings,
   Bell,
   User,
-  Sliders,
-  Zap,
-  Folder,
   Server,
   Key,
   Activity,
@@ -19,7 +16,6 @@ interface HeaderActionsProps {
 }
 
 export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenSettingsModal }) => {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
@@ -98,88 +94,24 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
 
   return (
     <div className="flex items-center gap-2.5">
-      {/* Settings Dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => {
-            setIsSettingsOpen((prev) => !prev)
-            setIsProfileOpen(false)
-            setIsNotificationOpen(false)
-          }}
-          className={`p-2 transition cursor-pointer rounded-none ${
-            isSettingsOpen
-              ? 'text-white bg-white/10'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
-          }`}
-          title="Settings & Preferences"
-        >
-          <Settings className="h-4 w-4" />
-        </button>
-
-        {isSettingsOpen && (
-          <>
-            <div className="fixed inset-0 z-90" onClick={() => setIsSettingsOpen(false)} />
-            <div className="absolute right-0 top-full mt-1.5 w-56 bg-ide-surface border border-ide-border shadow-2xl py-1 z-100 rounded-none text-slate-200 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-ide-border/50">
-                Quick Preferences
-              </div>
-
-              <button
-                onClick={() => {
-                  setIsSettingsOpen(false)
-                  onOpenSettingsModal()
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2.5 cursor-pointer font-medium"
-              >
-                <Sliders className="h-4 w-4 text-theme-accent" />
-                <div>
-                  <div className="font-bold text-slate-100">Engine Preferences</div>
-                  <div className="text-[10px] text-slate-400">
-                    All download &amp; thread settings
-                  </div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsSettingsOpen(false)
-                  onOpenSettingsModal()
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2.5 cursor-pointer font-medium border-t border-ide-border/50"
-              >
-                <Zap className="h-4 w-4 text-amber-200" />
-                <div>
-                  <div className="font-bold text-slate-100">Speed &amp; Bandwidth</div>
-                  <div className="text-[10px] text-slate-400">Global rate limiters</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => {
-                  setIsSettingsOpen(false)
-                  onOpenSettingsModal()
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-theme-tint hover:text-theme-accent text-xs flex items-center gap-2.5 cursor-pointer font-medium border-t border-ide-border/50"
-              >
-                <Folder className="h-4 w-4 text-sky-300" />
-                <div>
-                  <div className="font-bold text-slate-100">Storage Directories</div>
-                  <div className="text-[10px] text-slate-400">
-                    Default save paths &amp; categories
-                  </div>
-                </div>
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Settings Button (Directly opens Preferences Popup) */}
+      <button
+        onClick={() => {
+          onOpenSettingsModal()
+          setIsProfileOpen(false)
+          setIsNotificationOpen(false)
+        }}
+        className="p-2 text-slate-400 hover:text-white hover:bg-white/5 transition cursor-pointer rounded-none"
+        title="Settings & Preferences"
+      >
+        <Settings className="h-4 w-4 text-theme-accent" />
+      </button>
 
       {/* Notifications Dropdown */}
       <div className="relative">
         <button
           onClick={() => {
             setIsNotificationOpen((prev) => !prev)
-            setIsSettingsOpen(false)
             setIsProfileOpen(false)
           }}
           className={`p-2 transition cursor-pointer rounded-none relative ${
@@ -209,7 +141,6 @@ export const HeaderActions: React.FC<HeaderActionsProps> = React.memo(({ onOpenS
         <button
           onClick={() => {
             setIsProfileOpen((prev) => !prev)
-            setIsSettingsOpen(false)
             setIsNotificationOpen(false)
           }}
           className={`p-2 transition cursor-pointer rounded-none ${

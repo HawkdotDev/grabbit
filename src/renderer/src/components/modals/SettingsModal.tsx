@@ -150,16 +150,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onClose()
   }
 
-  const sidebarTabs: Array<{ id: TabType; label: string; icon: React.FC<{ className?: string }> }> =
+  const sidebarTabs: Array<{ id: TabType; label: string; icon: React.FC<{ className?: string }>; color: string }> =
     [
-      { id: 'behavior', label: 'Behavior', icon: Sliders },
-      { id: 'downloads', label: 'Downloads', icon: FolderDownIcon },
-      { id: 'connection', label: 'Connection', icon: NetworkNodesIcon },
-      { id: 'speed', label: 'Speed', icon: Gauge },
-      { id: 'bittorrent', label: 'BitTorrent', icon: Globe },
-      { id: 'rss', label: 'RSS & Rules', icon: Rss },
-      { id: 'webui', label: 'WebUI', icon: WebUIIcon },
-      { id: 'advanced', label: 'Advanced', icon: Wrench }
+      { id: 'behavior', label: 'Behavior', icon: Sliders, color: 'text-amber-400 opacity-90' },
+      { id: 'downloads', label: 'Downloads', icon: FolderDownIcon, color: 'text-sky-400 opacity-90' },
+      { id: 'connection', label: 'Connection', icon: NetworkNodesIcon, color: 'text-cyan-400 opacity-90' },
+      { id: 'speed', label: 'Speed', icon: Gauge, color: 'text-emerald-400 opacity-90' },
+      { id: 'bittorrent', label: 'BitTorrent', icon: Globe, color: 'text-indigo-400 opacity-90' },
+      { id: 'rss', label: 'RSS & Rules', icon: Rss, color: 'text-orange-400 opacity-90' },
+      { id: 'webui', label: 'WebUI', icon: WebUIIcon, color: 'text-purple-400 opacity-90' },
+      { id: 'advanced', label: 'Advanced', icon: Wrench, color: 'text-rose-400 opacity-90' }
     ]
 
   return (
@@ -208,13 +208,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-center rounded-none ${
+                  className={`w-full py-2.5 px-2 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer text-center rounded-none ${
                     isActive
                       ? 'bg-theme-tint text-theme-accent font-bold border-l-2 border-theme-accent'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 ${isActive ? 'text-theme-accent' : 'text-slate-400'}`} />
+                  <Icon className={`h-5 w-5 ${tab.color}`} />
                   <span className="text-[11px] font-medium leading-none">{tab.label}</span>
                 </button>
               )
