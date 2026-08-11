@@ -10,7 +10,7 @@
       <img src="https://img.shields.io/badge/License-Apache_2.0-009669.svg?style=for-the-badge" alt="License" />
     </a>
     <a href="https://github.com/HawkdotDev/grabbit/releases">
-      <img src="https://img.shields.io/badge/Version-0.1.1-009669.svg?style=for-the-badge" alt="Version" />
+      <img src="https://img.shields.io/badge/Version-0.3.0-009669.svg?style=for-the-badge" alt="Version" />
     </a>
     <a href="https://electronjs.org">
       <img src="https://img.shields.io/badge/Electron-v43-47848F.svg?style=for-the-badge&logo=electron&logoColor=white" alt="Electron" />
@@ -43,13 +43,17 @@
 
 - **Multi-Chunk Acceleration**: Splits large HTTP/HTTPS downloads into up to 32 parallel worker threads to saturate your internet bandwidth.
 - **Native WebTorrent BitTorrent Engine**: Full BitTorrent protocol support for magnet URIs (`magnet:?xt=`) and `.torrent` files with DHT, PeX, and LSD peer discovery.
+- **BEP 10 Extended Handshake & Swarm Client Decoding**: Real-time identification of P2P swarm peer client software (qBittorrent, µTorrent, Transmission, Deluge, WebTorrent, Vuze, BiglyBT, Grabbit) with dynamic Azureus Peer ID decoding.
+- **Dynamic Client Identification**: Broadcasts native client identity (`Grabbit v0.3.0` / `-GR0300-`) automatically mapped to `package.json` semver.
+- **Dedicated Diagnostic Inspector**: Independent diagnostic tabs for **Peers** (BitTorrent P2P swarm wires) and **Threads** (HTTP multi-thread chunk split visualizer).
+- **Task & File Removal Confirmation Modal**: Contextual confirmation popup when deleting tasks, offering **Remove Task Only** (keep downloaded files) or **Remove Task & Delete Files** (permanently delete files from disk).
 - **Two-Step Torrent Import Flow**: Interactive source picker with drag-and-drop zone, file browser, and magnet link parser, advancing directly to a 2-column options panel.
 - **Dedicated Modal UI**: Purpose-built distinct popups for **Normal Downloads** and **Torrent Downloads** featuring dark-themed fieldsets and custom focus glows.
 - **In-App Media Streaming Server**: Built-in HTTP media server powered by WebTorrent to stream video and audio files before torrent downloads complete.
 - **Dynamic Trackers & Swarm Telemetry**: Live peer wire inspection (IP address, port, client ID, choke status), custom announce tracker management, and piece-level progress maps.
 - **Granular File Selection & Priorities**: Choose individual files within multi-file torrents and adjust per-file priorities (`High`, `Normal`, `Low`, `Skip / Don't Download`).
 - **Automatic Clipboard Detector**: Instant 1-click **Add Download** notification whenever a URL or magnet link is copied.
-- **Home Dashboard Control**: Monitor recent tasks, track aggregate transfer metrics, and delete tasks directly from the home view.
+- **Home Dashboard Control**: Monitor recent tasks, track aggregate transfer metrics, and manage task actions directly from the home view.
 - **Smart Anti-Lag (QoS)**: Dynamic bandwidth throttle to prevent ping spikes during gaming or video calls.
 - **Export & Import Queues**: Export `.torrent` files or save full queue state to JSON to transfer tasks across machines.
 - **File Integrity Verification**: Built-in SHA-256, SHA-512, and MD5 verifiers to ensure downloaded files are untouched.
