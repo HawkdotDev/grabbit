@@ -55,7 +55,6 @@ export interface TorrentTaskInstance {
   pause: () => void
   resume: () => void
   destroy: () => void
-  destroyed?: boolean
   createServer?: () => {
     listen: (port: number, cb: () => void) => void
     address: () => { port: number } | null
