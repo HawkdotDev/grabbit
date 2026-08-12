@@ -47,10 +47,14 @@ export class TorrentClientManager {
     'udp://p4p.arenabg.com:1337/announce',
     'udp://tracker.tiny-vps.com:6969/announce',
     'udp://tracker.coppersurfer.tk:6969/announce',
+    'udp://open.demonii.com:1337/announce',
+    'udp://exodus.desync.com:6969/announce',
+    'udp://tracker.theoks.net:6969/announce',
+    'udp://tracker.filemail.com:6969/announce',
+    'udp://tracker.dler.org:6969/announce',
     'wss://tracker.openwebtorrent.com',
     'wss://tracker.webtorrent.dev',
-    'wss://tracker.btorrent.xyz',
-    'wss://tracker.files.fm:7073/announce'
+    'wss://tracker.btorrent.xyz'
   ]
 
   public static generatePeerId(): string {
@@ -87,8 +91,9 @@ export class TorrentClientManager {
       this.client = new WebTorrent({
         peerId: TorrentClientManager.generatePeerIdBuffer(),
         nodeId: crypto.randomBytes(20),
-        maxConns: 500,
+        maxConns: 1000,
         dht: opts?.disableP2PTracking ? false : {
+          concurrency: 64,
           bootstrap: [
             'router.bittorrent.com:6881',
             'dht.transmissionbt.com:6881',

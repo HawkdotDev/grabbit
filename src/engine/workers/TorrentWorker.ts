@@ -472,9 +472,18 @@ export class TorrentWorker {
               ...TorrentWorker.DEFAULT_PUBLIC_TRACKERS
             ])
           )
-          const opts: { path: string; announce?: string[]; maxConns?: number; strategy?: string } = {
+          const opts: {
+            path: string
+            announce?: string[]
+            maxConns?: number
+            strategy?: string
+            storeCacheSlots?: number
+            maxWebConns?: number
+          } = {
             path: savePath,
-            maxConns: 250,
+            maxConns: 500,
+            storeCacheSlots: 100,
+            maxWebConns: 8,
             strategy: 'sequential',
             announce: combinedAnnounce
           }
