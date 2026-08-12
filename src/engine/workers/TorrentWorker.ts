@@ -7,6 +7,7 @@ import { TorrentClientManager } from './torrent/TorrentClientManager'
 import { parsePeerClientName as parsePeerClientNameExt } from './torrent/TorrentWireTelemetry'
 import { TorrentPieceManager } from './torrent/TorrentPieceManager'
 import { TorrentTrackerService } from './torrent/TorrentTrackerService'
+import { TorrentSwarmSupervisor } from './torrent/TorrentSwarmSupervisor'
 
 export interface TorrentFileEntry {
   path?: string
@@ -524,8 +525,17 @@ export class TorrentWorker {
         this.emitProgressEvent(downloadId, torrent!, onProgress)
       }
 
+      let supervisorCycle = 0
       progressTimer = setInterval(() => {
         if (torrent && !torrent.destroyed) {
+          supervisorCycle++
+          if (supervisorCycle % 5 === 0) {
+            try {
+              TorrentSwarmSupervisor.optimizeSwarm(torrent)
+            } catch {
+              /* ignore supervisor errors */
+            }
+          }
           handleProgress()
         } else if (progressTimer) {
           clearInterval(progressTimer)
