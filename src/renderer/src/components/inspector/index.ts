@@ -1,0 +1,8 @@
+export { BottomDetailInspector } from './BottomDetailInspector'
+export { InspectorPanel } from './InspectorPanel'
+export { ChunkProgress } from './ChunkProgress'
+export { ContentFilesTab } from './ContentFilesTab'
+export { GeneralTab } from './GeneralTab'
+export { HttpSourcesTab } from './HttpSourcesTab'
+export { TrackersTab } from './TrackersTab'
+export { PeersTab } from './PeersTab'

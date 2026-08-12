@@ -1,0 +1,1109 @@
+import React, { useState, useEffect } from 'react'
+import { DownloadCategory, DownloadPriority } from '../../../../engine/types'
+import {
+  X,
+  Minus,
+  Square,
+  FolderOpen,
+  ChevronRight,
+  ChevronDown,
+  GripHorizontal,
+  HardDrive,
+  Settings2,
+  Info,
+  Check,
+  Search
+} from 'lucide-react'
+import { useDraggable } from '../../hooks/useDraggable'
+
+
+interface FileTreeNode {
+  id: string
+  name: string
+  size: number
+  selected: boolean
+  priority: DownloadPriority
+  type: 'file' | 'folder'
+  children?: FileTreeNode[]
+}
+
+interface AddDownloadModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onAdd: (args: {
+    url: string
+    filename?: string
+    savePath?: string
+    category?: DownloadCategory
+    priority?: DownloadPriority
+    threadCount?: number
+    tags?: string[]
+    startPaused?: boolean
+    addToTopQueue?: boolean
+    sequentialDownload?: boolean
+    firstLastPiecesFirst?: boolean
+    skipHashCheck?: boolean
+    stopCondition?: 'none' | 'metadata' | 'files'
+    contentLayout?: 'original' | 'subfolder' | 'nosubfolder'
+    managementMode?: 'manual' | 'automatic'
+  }) => void
+  defaultSavePath: string
+  initialMode?: 'link' | 'file'
+  initialUrl?: string
+}
+
+// Crisp classic folder icon
+const FolderIcon: React.FC = () => (
+  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M3 6.5C3 5.67 3.67 5 4.5 5H9.08C9.55 5 9.99 5.22 10.27 5.59L11.5 7.23C11.78 7.6 12.22 7.82 12.69 7.82H19.5C20.33 7.82 21 8.49 21 9.32V17.5C21 18.33 20.33 19 19.5 19H4.5C3.67 19 3 18.33 3 17.5V6.5Z"
+      fill="#eab308"
+    />
+    <path
+      d="M3 9.5C3 8.67 3.67 8 4.5 8H19.5C20.33 8 21 8.67 21 9.5V17.5C21 18.33 20.33 19 19.5 19H4.5C3.67 19 3 18.33 3 17.5V9.5Z"
+      fill="#facc15"
+    />
+  </svg>
+)
+
+// VLC Traffic Cone Icon
+const VlcConeIcon: React.FC = () => (
+  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+    <path d="M10.8 2.8C11.3 1.8 12.7 1.8 13.2 2.8L14.7 6.2H9.3L10.8 2.8Z" fill="#f97316" />
+    <path d="M8.8 7.5L7.4 10.8H16.6L15.2 7.5H8.8Z" fill="#ffffff" />
+    <path d="M6.9 12H17.1L15.8 15H8.2L6.9 12Z" fill="#f97316" />
+    <path d="M7.7 16H16.3L15.2 18.5H8.8L7.7 16Z" fill="#ffffff" />
+    <path
+      d="M3 21C3 20.45 3.45 20 4 20H20C20.55 20 21 20.45 21 21C21 21.55 20.55 22 20 22H4C3.45 22 3 21.55 3 21Z"
+      fill="#ea580c"
+    />
+    <path d="M5.5 19.5L6.5 17.2H17.5L18.5 19.5H5.5Z" fill="#ea580c" />
+  </svg>
+)
+
+// Blue Document NFO Icon
+const NfoDocIcon: React.FC = () => (
+  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+    <rect x="4" y="3" width="16" height="18" rx="2" fill="#3b82f6" />
+    <path d="M8 8H16M8 12H16M8 16H13" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+    <circle cx="15.5" cy="15.5" r="2.5" fill="#60a5fa" />
+    <path
+      d="M15.5 14.5V16.5M15.5 13.5H15.51"
+      stroke="#ffffff"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+export const AddDownloadModal: React.FC<AddDownloadModalProps> = ({
+  isOpen,
+  onClose,
+  onAdd,
+  defaultSavePath,
+  initialUrl = ''
+}) => {
+  const [url, setUrl] = useState(initialUrl)
+  const [filename, setFilename] = useState('')
+  const [savePath, setSavePath] = useState(defaultSavePath)
+  const [managementMode, setManagementMode] = useState<'manual' | 'automatic'>('manual')
+  const [useIncompletePath, setUseIncompletePath] = useState(false)
+  const [incompleteSavePath, setIncompleteSavePath] = useState(
+    (defaultSavePath || '') + '\\Incomplete'
+  )
+  const [rememberPath, setRememberPath] = useState(true)
+
+  const [category, setCategory] = useState<DownloadCategory>('other')
+  const [setAsDefaultCategory, setSetAsDefaultCategory] = useState(false)
+  const [tagsInput, setTagsInput] = useState('')
+  const [isTagPickerOpen, setIsTagPickerOpen] = useState(false)
+  const [startTorrent, setStartTorrent] = useState(true)
+  const [stopCondition, setStopCondition] = useState<'none' | 'metadata' | 'files'>('none')
+  const [addToTopQueue, setAddToTopQueue] = useState(false)
+  const [skipHashCheck, setSkipHashCheck] = useState(false)
+  const [sequentialDownload, setSequentialDownload] = useState(false)
+  const [firstLastPiecesFirst, setFirstLastPiecesFirst] = useState(false)
+  const [contentLayout, setContentLayout] = useState<'original' | 'subfolder' | 'nosubfolder'>(
+    'original'
+  )
+  const [neverShowAgain, setNeverShowAgain] = useState(false)
+
+  const [fileFilter, setFileFilter] = useState('')
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
+    f_root: true
+  })
+  const [filesTree, setFilesTree] = useState<FileTreeNode[]>([])
+
+  const [prevSyncKey, setPrevSyncKey] = useState('')
+  const currentSyncKey = `${isOpen}-${initialUrl}-${defaultSavePath}`
+
+  if (currentSyncKey !== prevSyncKey) {
+    setPrevSyncKey(currentSyncKey)
+    if (isOpen) {
+      setUrl(initialUrl)
+      if (initialUrl) {
+        if (initialUrl.startsWith('magnet:')) {
+          const dnMatch = initialUrl.match(/[?&]dn=([^&]+)/)
+          const rawDn = dnMatch ? dnMatch[1] : undefined
+          if (rawDn) {
+            try {
+              setFilename(decodeURIComponent(rawDn.replace(/\+/g, ' ')))
+            } catch {
+              setFilename(rawDn)
+            }
+          } else {
+            setFilename('Magnet Download')
+          }
+        } else {
+          const base = initialUrl.split('/').pop()?.split('?')[0]
+          if (base) {
+            try {
+              setFilename(decodeURIComponent(base))
+            } catch {
+              setFilename(base)
+            }
+          } else {
+            setFilename('')
+          }
+        }
+      } else {
+        setFilename('')
+      }
+      if (defaultSavePath) {
+        setSavePath(defaultSavePath)
+        setIncompleteSavePath(defaultSavePath + '\\Incomplete')
+      }
+    }
+  }
+
+  // ─── Metadata Fetching ───
+  const [metaLoading, setMetaLoading] = useState(false)
+  const [metaError, setMetaError] = useState<string | null>(null)
+  const [torrentMeta, setTorrentMeta] = useState<{
+    name: string
+    infoHash: string
+    totalSize: number
+    files: Array<{ name: string; path: string; size: number }>
+    trackers: string[]
+    created?: string
+    comment?: string
+  } | null>(null)
+
+  useEffect(() => {
+    const targetUrl = (url || initialUrl).trim()
+    if (!isOpen || !targetUrl) return
+
+    const isMagnet = targetUrl.startsWith('magnet:')
+    const isTorrentFile = targetUrl.endsWith('.torrent')
+    const isTorrentUrl =
+      (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) && targetUrl.includes('.torrent')
+
+    if (!isMagnet && !isTorrentFile && !isTorrentUrl) return
+    if (!window.api?.parseTorrentMetadata) return
+
+    let cancelled = false
+    setMetaLoading(true)
+    setMetaError(null)
+    setTorrentMeta(null)
+
+    window.api
+      .parseTorrentMetadata(targetUrl)
+      .then((meta) => {
+        if (cancelled) return
+
+        setTorrentMeta(meta)
+
+        if (meta.name && meta.name !== 'Magnet Download') {
+          setFilename(meta.name)
+        }
+
+        if (meta.files && meta.files.length > 0) {
+          // Build the file tree from metadata
+          const rootChildren: FileTreeNode[] = meta.files.map((f, i) => ({
+            id: `file_${i}`,
+            name: f.name,
+            size: f.size,
+            selected: true,
+            priority: 'normal' as DownloadPriority,
+            type: 'file' as const
+          }))
+
+          const rootNode: FileTreeNode = {
+            id: 'f_root',
+            name: meta.name || 'Torrent',
+            size: meta.totalSize,
+            selected: true,
+            priority: 'normal',
+            type: 'folder',
+            children: rootChildren
+          }
+
+          setFilesTree([rootNode])
+          setExpandedFolders((prev) => ({ ...prev, f_root: true }))
+        }
+
+        setMetaLoading(false)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        console.warn('[AddDownloadModal] Metadata fetch failed:', err)
+        setMetaError(
+          err instanceof Error ? err.message : 'Failed to fetch torrent metadata'
+        )
+        setMetaLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isOpen, url, initialUrl])
+
+  const { position, isDragging, isBlinking, handleMouseDown, handleBackdropClick, modalRef } =
+    useDraggable(isOpen)
+
+  const handleBrowseSavePath = async (): Promise<void> => {
+    if (window.api?.selectDirectory) {
+      const selected = await window.api.selectDirectory(savePath)
+      if (selected) setSavePath(selected)
+    }
+  }
+
+  const handleBrowseIncompletePath = async (): Promise<void> => {
+    if (window.api?.selectDirectory) {
+      const selected = await window.api.selectDirectory(incompleteSavePath)
+      if (selected) setIncompleteSavePath(selected)
+    }
+  }
+
+  const toggleFolder = (id: string, e: React.MouseEvent): void => {
+    e.stopPropagation()
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }))
+  }
+
+  const toggleNodeSelect = (nodeId: string): void => {
+    const updateRecursive = (nodes: FileTreeNode[]): FileTreeNode[] => {
+      return nodes.map((node) => {
+        if (node.id === nodeId) {
+          const nextSelected = !node.selected
+          const updateChildren = (children?: FileTreeNode[]): FileTreeNode[] | undefined => {
+            if (!children) return undefined
+            return children.map((c) => ({
+              ...c,
+              selected: nextSelected,
+              children: updateChildren(c.children)
+            }))
+          }
+          return {
+            ...node,
+            selected: nextSelected,
+            children: updateChildren(node.children)
+          }
+        }
+        if (node.children) {
+          return {
+            ...node,
+            children: updateRecursive(node.children)
+          }
+        }
+        return node
+      })
+    }
+    setFilesTree((prev) => updateRecursive(prev))
+  }
+
+  const updateFilePriority = (nodeId: string, prio: DownloadPriority): void => {
+    const updateRecursive = (nodes: FileTreeNode[]): FileTreeNode[] => {
+      return nodes.map((node) => {
+        if (node.id === nodeId) {
+          return { ...node, priority: prio }
+        }
+        if (node.children) {
+          return { ...node, children: updateRecursive(node.children) }
+        }
+        return node
+      })
+    }
+    setFilesTree((prev) => updateRecursive(prev))
+  }
+
+  const toggleSelectAll = (select: boolean): void => {
+    const updateRecursive = (nodes: FileTreeNode[]): FileTreeNode[] => {
+      return nodes.map((node) => ({
+        ...node,
+        selected: select,
+        children: node.children ? updateRecursive(node.children) : undefined
+      }))
+    }
+    setFilesTree((prev) => updateRecursive(prev))
+  }
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return '0 B'
+    const k = 1024
+    if (bytes < k) return `${bytes} B`
+    if (bytes < k * k) return `${(bytes / k).toFixed(1)} KiB`
+    if (bytes < k * k * k) return `${(bytes / (k * k)).toFixed(1)} MiB`
+    return `${(bytes / (k * k * k)).toFixed(1)} GiB`
+  }
+
+  const handleTagChipClick = (tag: string): void => {
+    const currentTags = tagsInput
+      .split(/[,;\s]+/)
+      .map((t) => t.trim())
+      .filter(Boolean)
+    if (currentTags.includes(tag)) {
+      setTagsInput(currentTags.filter((t) => t !== tag).join(', '))
+    } else {
+      setTagsInput([...currentTags, tag].join(', '))
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent): void => {
+    e.preventDefault()
+    const targetUrl = url.trim()
+    if (!targetUrl) return
+
+    const parsedTags = tagsInput
+      .split(/[,;\s]+/)
+      .map((t) => t.trim())
+      .filter(Boolean)
+
+    onAdd({
+      url: targetUrl,
+      filename: filename.trim() || undefined,
+      savePath: savePath.trim() || undefined,
+      category,
+      priority: 'normal',
+      threadCount: 8,
+      tags: parsedTags.length > 0 ? parsedTags : undefined,
+      startPaused: !startTorrent,
+      addToTopQueue,
+      sequentialDownload,
+      firstLastPiecesFirst,
+      skipHashCheck,
+      stopCondition,
+      contentLayout,
+      managementMode
+    })
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  const inputCls =
+    'bg-ide-bg text-slate-100 text-xs px-2.5 py-1.5 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-sans transition w-full'
+  const selectCls =
+    'bg-ide-bg text-slate-100 text-xs px-2 py-1 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent cursor-pointer font-sans transition'
+  const fieldsetCls = 'border border-ide-border p-3 rounded-none bg-ide-bg/40 relative space-y-2'
+  const legendCls =
+    'text-[10px] font-bold text-theme-accent uppercase tracking-wider px-1.5 select-none -ml-1 flex items-center gap-1'
+
+  // Custom rounded blue checkbox matching reference image
+  const renderCheckbox = (checked: boolean, onChange: () => void): React.JSX.Element => (
+    <div
+      onClick={(e) => {
+        e.stopPropagation()
+        onChange()
+      }}
+      className={`h-4 w-4 rounded-none border flex items-center justify-center cursor-pointer select-none transition shrink-0 ${checked
+          ? 'bg-theme-accent border-theme-accent text-slate-950 shadow-sm font-bold'
+          : 'bg-ide-bg border-ide-border hover:border-slate-400'
+        }`}
+    >
+      {checked && <Check className="h-3 w-3 stroke-3" />}
+    </div>
+  )
+
+  return (
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 select-none font-sans text-xs"
+    >
+      <div
+        ref={modalRef}
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
+        className={`bg-ide-surface border border-ide-border rounded-none w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-180 ${isDragging ? 'transition-none duration-0' : ''
+          } ${isBlinking ? 'animate-modal-blink' : ''}`}
+      >
+        {/* ─── 1. Pinned Header with Drag Grip (shrink-0) ─── */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="px-4 py-2 bg-linear-to-r from-ide-surface via-ide-bg to-ide-surface border-b border-ide-border flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
+        >
+          <div className="flex items-center gap-3 overflow-hidden">
+            <GripHorizontal className="h-4 w-4 text-slate-500 shrink-0" />
+            <div className="p-1 bg-theme-tint text-theme-accent rounded-none border border-theme-accent/20 flex items-center justify-center font-bold text-[10px] shrink-0">
+              qb
+            </div>
+            <div className="min-w-0">
+              <span className="font-bold text-slate-100 text-xs truncate block">{filename}</span>
+              <span className="text-[10px] text-slate-400 block truncate">
+                Configure torrent payload, destination storage, and individual file selection
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 style-no-drag shrink-0">
+            <button
+              type="button"
+              className="h-6 w-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              className="h-6 w-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 rounded-none transition cursor-pointer"
+            >
+              <Square className="h-3 w-3" />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-6 w-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500/80 rounded-none transition cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* ─── 2. Scrollable Body: 2-Column Split (flex-1 min-h-0 overflow-y-auto) ─── */}
+        <form
+          id="torrent-download-form"
+          onSubmit={handleSubmit}
+          className="flex-1 min-h-0 overflow-y-auto p-3.5 bg-ide-surface flex flex-col"
+        >
+          <div className="grid grid-cols-12 gap-3.5 items-stretch flex-1 min-h-0">
+            {/* ─── LEFT PANEL (Torrent Settings & Options) ─── */}
+            <div className="col-span-12 lg:col-span-5 flex flex-col gap-2.5">
+              {/* Torrent Management Mode */}
+              <div className="flex items-center justify-between text-xs bg-ide-bg/60 px-3 py-1.5 border border-ide-border">
+                <label className="text-slate-300 font-semibold">Torrent Management Mode:</label>
+                <select
+                  value={managementMode}
+                  onChange={(e) => setManagementMode(e.target.value as 'manual' | 'automatic')}
+                  className={`${selectCls} w-32`}
+                >
+                  <option value="manual">Manual</option>
+                  <option value="automatic">Automatic</option>
+                </select>
+              </div>
+
+              {/* Save at Fieldset */}
+              <fieldset className={fieldsetCls}>
+                <legend className={legendCls}>
+                  <HardDrive className="h-3 w-3" />
+                  <span>Save at</span>
+                </legend>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={savePath}
+                      onChange={(e) => setSavePath(e.target.value)}
+                      className={`flex-1 font-mono ${inputCls}`}
+                    />
+                    <select
+                      className={`${selectCls} px-1 text-center`}
+                      onChange={(e) => {
+                        if (e.target.value) setSavePath(e.target.value)
+                      }}
+                      value=""
+                      title="Quick Save Locations"
+                    >
+                      <option value="" disabled hidden></option>
+                      {defaultSavePath && <option value={defaultSavePath}>Default Folder</option>}
+                      <option value={defaultSavePath ? defaultSavePath.replace(/[/\\][^/\\]+$/, '\\Downloads') : 'Downloads'}>Downloads</option>
+                      <option value={defaultSavePath ? defaultSavePath.replace(/[/\\][^/\\]+$/, '\\Videos') : 'Videos'}>Videos</option>
+                      <option value={defaultSavePath ? defaultSavePath.replace(/[/\\][^/\\]+$/, '\\Documents') : 'Documents'}>Documents</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handleBrowseSavePath}
+                      className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 hover:text-white rounded-none cursor-pointer transition flex items-center justify-center shrink-0"
+                      title="Browse Save Path"
+                    >
+                      <FolderOpen className="h-3.5 w-3.5 text-theme-bright" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5 pt-0.5">
+                    <label className="flex items-center gap-2 text-[11px] text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useIncompletePath}
+                        onChange={(e) => setUseIncompletePath(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Use another path for incomplete torrent</span>
+                    </label>
+
+                    {useIncompletePath && (
+                      <div className="flex items-center gap-1.5 pl-5">
+                        <input
+                          type="text"
+                          value={incompleteSavePath}
+                          onChange={(e) => setIncompleteSavePath(e.target.value)}
+                          className={`flex-1 font-mono ${inputCls}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleBrowseIncompletePath}
+                          className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 rounded-none cursor-pointer transition"
+                        >
+                          <FolderOpen className="h-3.5 w-3.5 text-cyan-400" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end pt-0.5">
+                      <label className="flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={rememberPath}
+                          onChange={(e) => setRememberPath(e.target.checked)}
+                          className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                        />
+                        <span>Remember last used save path</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Torrent options Fieldset */}
+              <fieldset className={fieldsetCls}>
+                <legend className={legendCls}>
+                  <Settings2 className="h-3 w-3" />
+                  <span>Torrent options</span>
+                </legend>
+                <div className="space-y-2 text-[11px]">
+                  {/* Category */}
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-slate-300 font-medium">Category:</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value as DownloadCategory)}
+                      className={`${selectCls} flex-1 max-w-47.5`}
+                    >
+                      <option value="other">Uncategorized</option>
+                      <option value="video">Videos</option>
+                      <option value="audio">Audio</option>
+                      <option value="documents">Documents</option>
+                      <option value="compressed">Compressed</option>
+                      <option value="executables">Programs</option>
+                    </select>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <label className="flex items-center gap-1.5 text-[10px] text-slate-400 hover:text-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={setAsDefaultCategory}
+                        onChange={(e) => setSetAsDefaultCategory(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Set as default category</span>
+                    </label>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="text-slate-300 font-medium">Tags:</label>
+                      <div className="flex-1 flex gap-1 items-center">
+                        <input
+                          type="text"
+                          value={tagsInput}
+                          onChange={(e) => setTagsInput(e.target.value)}
+                          placeholder="e.g. work, iso, media"
+                          className={`flex-1 ${inputCls} placeholder:text-slate-500`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsTagPickerOpen(!isTagPickerOpen)}
+                          className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 font-bold rounded-none cursor-pointer transition text-xs"
+                          title="Quick Tag Picker"
+                        >
+                          ...
+                        </button>
+                      </div>
+                    </div>
+
+                    {isTagPickerOpen && (
+                      <div className="p-2 bg-ide-bg border border-ide-border space-y-1.5 animate-in fade-in">
+                        <div className="text-[10px] text-slate-400 font-medium">Click to add/remove tags:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {['work', 'iso', 'media', 'software', 'archives', 'grabbit', 'urgent'].map((t) => {
+                            const isSelected = tagsInput
+                              .split(/[,;\s]+/)
+                              .map((s) => s.trim())
+                              .includes(t)
+                            return (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => handleTagChipClick(t)}
+                                className={`px-2 py-0.5 text-[10px] font-mono border transition cursor-pointer ${isSelected
+                                    ? 'bg-cyan-950/70 text-cyan-300 border-cyan-500/50 font-bold'
+                                    : 'bg-white/5 text-slate-400 border-ide-border hover:text-slate-200'
+                                  }`}
+                              >
+                                {isSelected ? `✓ ${t}` : `+ ${t}`}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Checkbox Rows Matching Reference Layout */}
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-1 border-t border-ide-border/50">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={startTorrent}
+                        onChange={(e) => setStartTorrent(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Start torrent</span>
+                    </label>
+
+                    <div className="flex items-center gap-1 justify-end">
+                      <span className="text-slate-400 text-[10.5px]">Stop condition:</span>
+                      <select
+                        value={stopCondition}
+                        onChange={(e) =>
+                          setStopCondition(e.target.value as 'none' | 'metadata' | 'files')
+                        }
+                        className={`${selectCls} text-[10.5px] px-1 py-0.5`}
+                      >
+                        <option value="none">None</option>
+                        <option value="metadata">Metadata received</option>
+                        <option value="files">Files checked</option>
+                      </select>
+                    </div>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={addToTopQueue}
+                        onChange={(e) => setAddToTopQueue(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Add to top of queue</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={skipHashCheck}
+                        onChange={(e) => setSkipHashCheck(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Skip hash check</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={sequentialDownload}
+                        onChange={(e) => setSequentialDownload(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Download in sequential order</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={firstLastPiecesFirst}
+                        onChange={(e) => setFirstLastPiecesFirst(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+                      />
+                      <span>Download first and last pieces first</span>
+                    </label>
+                  </div>
+
+                  {/* Content layout */}
+                  <div className="flex items-center justify-between pt-1 border-t border-ide-border/50">
+                    <span className="text-slate-300 font-medium">Content layout:</span>
+                    <select
+                      value={contentLayout}
+                      onChange={(e) =>
+                        setContentLayout(e.target.value as 'original' | 'subfolder' | 'nosubfolder')
+                      }
+                      className={`${selectCls} w-36`}
+                    >
+                      <option value="original">Original</option>
+                      <option value="subfolder">Create subfolder</option>
+                      <option value="nosubfolder">Don&apos;t create subfolder</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Torrent information Fieldset */}
+              <fieldset className={fieldsetCls}>
+                <legend className={legendCls}>
+                  <Info className="h-3 w-3" />
+                  <span>Torrent information</span>
+                </legend>
+                <div className="space-y-1 text-[11px] text-slate-300 font-sans">
+                  <div className="flex justify-between">
+                    <span className="w-24 text-slate-400">Size:</span>
+                    <span className="text-slate-200 font-mono">
+                      {torrentMeta && torrentMeta.totalSize > 0
+                        ? formatBytes(torrentMeta.totalSize)
+                        : metaLoading
+                          ? 'Resolving...'
+                          : 'Magnet metadata pending'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="w-24 text-slate-400">Upload date:</span>
+                    <span className="text-slate-300">
+                      {torrentMeta?.created || (metaLoading ? 'Resolving...' : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="w-24 text-slate-400 shrink-0">Info hash v1:</span>
+                    <span className="font-mono text-[10.5px] text-theme-bright truncate select-all">
+                      {torrentMeta?.infoHash || (metaLoading ? 'Resolving...' : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="w-24 text-slate-400">Info hash v2:</span>
+                    <span className="text-slate-400">N/A</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="w-24 text-slate-400">Trackers:</span>
+                    <span className="text-slate-300 font-mono text-[10.5px]">
+                      {torrentMeta?.trackers
+                        ? `${torrentMeta.trackers.length} tracker${torrentMeta.trackers.length !== 1 ? 's' : ''}`
+                        : metaLoading
+                          ? 'Resolving...'
+                          : 'None'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="w-24 text-slate-400">Comment:</span>
+                    <span className="text-slate-400">
+                      {url.startsWith('magnet:') ? 'Magnet link' : ''}
+                    </span>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+
+            {/* ─── RIGHT PANEL: File Browser (Exact Match to Reference Image) ─── */}
+            <div className="col-span-12 lg:col-span-7 flex flex-col bg-ide-bg border border-ide-border rounded-none min-h-95 h-full overflow-hidden">
+              {/* Toolbar: Select All / Select None & Search */}
+              <div className="p-2 border-b border-ide-border flex items-center justify-between shrink-0 bg-ide-surface">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleSelectAll(true)}
+                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 text-xs font-semibold rounded-none cursor-pointer transition"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSelectAll(false)}
+                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-200 text-xs font-semibold rounded-none cursor-pointer transition"
+                  >
+                    Select None
+                  </button>
+                </div>
+
+                <div className="relative w-48">
+                  <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={fileFilter}
+                    onChange={(e) => setFileFilter(e.target.value)}
+                    placeholder="Filter files..."
+                    className="w-full bg-ide-bg text-slate-100 placeholder-slate-500 text-xs pl-8 pr-2 py-1 rounded-none border border-ide-border focus:outline-none focus:border-theme-accent font-sans transition"
+                  />
+                </div>
+              </div>
+
+              {/* Table Header: Name, Total Size, Download Priority */}
+              <div className="grid grid-cols-12 bg-ide-surface border-b border-ide-border text-[12px] font-normal text-slate-300 px-3 py-1.5 select-none shrink-0">
+                <div className="col-span-7 flex items-center justify-between pr-4">
+                  <span>Name</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                </div>
+                <div className="col-span-2 text-right pr-2">Total Size</div>
+                <div className="col-span-3 text-left pl-4">Download Priority</div>
+              </div>
+
+              {/* File Browser Canvas */}
+              <div className="flex-1 overflow-y-auto overflow-x-auto text-[13px] font-sans bg-ide-bg/90 p-2 space-y-1">
+                {filesTree.length === 0 ? (
+                  <div className="h-full min-h-48 flex flex-col items-center justify-center p-6 text-center text-slate-500 font-sans select-none">
+                    {metaLoading ? (
+                      <>
+                        <div className="h-8 w-8 border-2 border-theme-accent/30 border-t-theme-accent rounded-full animate-spin mb-2" />
+                        <div className="text-xs font-semibold text-theme-accent/80">
+                          Fetching torrent metadata...
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                          Connecting to peers and resolving file information.
+                        </div>
+                      </>
+                    ) : metaError ? (
+                      <>
+                        <FolderOpen className="h-8 w-8 text-red-400/60 mb-2" />
+                        <div className="text-xs font-semibold text-red-400">
+                          Metadata fetch failed
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                          {metaError}. The download will still proceed — file info will resolve after connecting to the swarm.
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <FolderOpen className="h-8 w-8 text-slate-600 mb-2 opacity-50" />
+                        <div className="text-xs font-semibold text-slate-400">
+                          {url ? (url.startsWith('magnet:') ? 'Magnet swarm metadata pending...' : 'Payload structure ready') : 'No download payload loaded'}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 max-w-xs">
+                          Files will be organized and downloaded automatically into the destination folder upon transfer start.
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  filesTree.map((rootNode) => (
+                    <div key={rootNode.id} className="space-y-1">
+                      {/* Row 1: Root Folder */}
+                      <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none">
+                        <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={(e) => toggleFolder(rootNode.id, e)}
+                            className="p-0.5 text-slate-300 hover:text-white"
+                          >
+                            {expandedFolders[rootNode.id] ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                          </button>
+                          {renderCheckbox(rootNode.selected, () => toggleNodeSelect(rootNode.id))}
+                          <FolderIcon />
+                          <span className="truncate text-slate-100 font-normal text-[13px]">
+                            {rootNode.name}
+                          </span>
+                        </div>
+                        <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                          {formatBytes(rootNode.size)}
+                        </div>
+                        <div className="col-span-3 text-left pl-4">
+                          <span className="text-slate-300 text-[13px]">Normal</span>
+                        </div>
+                      </div>
+
+                      {/* Children Items */}
+                      {expandedFolders[rootNode.id] &&
+                        rootNode.children?.map((child) => (
+                          <React.Fragment key={child.id}>
+                            {child.type === 'folder' ? (
+                              // Row 2: Subfolder (Screens)
+                              <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-6">
+                                <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => toggleFolder(child.id, e)}
+                                    className="p-0.5 text-slate-300 hover:text-white"
+                                  >
+                                    {expandedFolders[child.id] ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                  {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
+                                  <FolderIcon />
+                                  <span className="truncate text-slate-100 font-normal text-[13px]">
+                                    {child.name}
+                                  </span>
+                                </div>
+                                <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                                  {formatBytes(child.size)}
+                                </div>
+                                <div className="col-span-3 text-left pl-4">
+                                  <span className="text-slate-300 text-[13px]">Normal</span>
+                                </div>
+                              </div>
+                            ) : child.name.endsWith('.mkv') ||
+                              child.name.endsWith('.mp4') ||
+                              child.name.endsWith('.avi') ? (
+                              // Row 3: Video File (.mkv with VLC Cone Icon)
+                              <div className="grid grid-cols-12 items-center py-1 px-1 bg-white/5 border border-ide-border/40 select-none rounded-none pl-10">
+                                <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                  {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
+                                  <VlcConeIcon />
+                                  <span className="truncate text-slate-100 font-semibold text-[13px]">
+                                    {child.name}
+                                  </span>
+                                </div>
+                                <div className="col-span-2 text-right pr-2 text-[13px] text-slate-200 font-medium">
+                                  {formatBytes(child.size)}
+                                </div>
+                                <div className="col-span-3 text-left pl-4">
+                                  <select
+                                    value={child.priority}
+                                    onChange={(e) =>
+                                      updateFilePriority(child.id, e.target.value as DownloadPriority)
+                                    }
+                                    className="bg-transparent text-slate-200 text-[13px] focus:outline-none cursor-pointer"
+                                  >
+                                    <option value="normal" className="bg-ide-surface">
+                                      Normal
+                                    </option>
+                                    <option value="high" className="bg-ide-surface">
+                                      High
+                                    </option>
+                                    <option value="low" className="bg-ide-surface">
+                                      Low
+                                    </option>
+                                    <option value="ignore" className="bg-ide-surface">
+                                      Do not download
+                                    </option>
+                                  </select>
+                                </div>
+                              </div>
+                            ) : (
+                              // Row 4: Document File (.nfo with Blue Doc Icon)
+                              <div className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-10">
+                                <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                  {renderCheckbox(child.selected, () => toggleNodeSelect(child.id))}
+                                  <NfoDocIcon />
+                                  <span className="truncate text-slate-100 font-normal text-[13px]">
+                                    {child.name}
+                                  </span>
+                                </div>
+                                <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                                  {formatBytes(child.size)}
+                                </div>
+                                <div className="col-span-3 text-left pl-4">
+                                  <span className="text-slate-300 text-[13px]">Normal</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Nested Screen Images (if Screens folder is expanded) */}
+                            {child.type === 'folder' &&
+                              expandedFolders[child.id] &&
+                              child.children?.map((nested) => (
+                                <div
+                                  key={nested.id}
+                                  className="grid grid-cols-12 items-center py-1 px-1 hover:bg-white/5 transition cursor-pointer select-none rounded-none pl-14"
+                                >
+                                  <div className="col-span-7 flex items-center gap-2 overflow-hidden">
+                                    {renderCheckbox(nested.selected, () =>
+                                      toggleNodeSelect(nested.id)
+                                    )}
+                                    <NfoDocIcon />
+                                    <span className="truncate text-slate-200 font-normal text-[13px]">
+                                      {nested.name}
+                                    </span>
+                                  </div>
+                                  <div className="col-span-2 text-right pr-2 text-[13px] text-slate-300 font-normal">
+                                    {formatBytes(nested.size)}
+                                  </div>
+                                  <div className="col-span-3 text-left pl-4">
+                                    <span className="text-slate-300 text-[13px]">Normal</span>
+                                  </div>
+                                </div>
+                              ))}
+                          </React.Fragment>
+                        ))}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {/* ─── 3. Pinned Bottom Footer Action Bar (ALWAYS visible without scrolling!) ─── */}
+        <div className="px-4 py-2.5 bg-ide-surface/95 border-t border-ide-border flex items-center justify-between text-xs shrink-0 select-none">
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-slate-300 hover:text-white cursor-pointer transition">
+              <input
+                type="checkbox"
+                checked={neverShowAgain}
+                onChange={(e) => setNeverShowAgain(e.target.checked)}
+                className="h-3.5 w-3.5 accent-theme-accent cursor-pointer rounded-none"
+              />
+              <span>Never show again</span>
+            </label>
+
+            {metaLoading ? (
+              <span className="text-theme-accent font-medium flex items-center gap-1.5">
+                <div className="h-3 w-3 border-2 border-theme-accent/30 border-t-theme-accent rounded-full animate-spin" />
+                Fetching metadata...
+              </span>
+            ) : metaError ? (
+              <span className="text-amber-400 font-medium flex items-center gap-1.5">
+                Metadata fetch incomplete
+              </span>
+            ) : torrentMeta && filesTree.length > 0 ? (
+              <span className="text-emerald-400 font-medium flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5" />
+                Metadata retrieval complete
+              </span>
+            ) : (
+              <span className="text-amber-400 font-medium flex items-center gap-1.5">
+                Swarm metadata pending
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={async () => {
+                if (savePath && window.api?.createTorrent) {
+                  const res = await window.api.createTorrent({ sourcePath: savePath })
+                  if (res.success && res.torrentPath) {
+                    alert(`Torrent metainfo saved to:\n${res.torrentPath}`)
+                  } else {
+                    alert(`Failed to save .torrent: ${res.error || 'Unknown error'}`)
+                  }
+                }
+              }}
+              className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white rounded-none cursor-pointer transition text-xs"
+            >
+              Save as .torrent file...
+            </button>
+          </div>
+
+          {/* Themed Primary OK & Cancel Buttons */}
+          <div className="flex items-center gap-2.5">
+            <button
+              form="torrent-download-form"
+              type="submit"
+              className="px-6 py-1.5 bg-theme-accent hover:bg-theme-bright text-slate-950 font-bold text-xs rounded-none cursor-pointer transition shadow-lg shadow-theme-accent/20 active:scale-[0.98] flex items-center gap-1.5"
+            >
+              <Check className="h-4 w-4" />
+              <span>OK</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-1.5 bg-white/5 hover:bg-white/10 border border-ide-border text-slate-300 hover:text-white font-medium text-xs rounded-none cursor-pointer transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

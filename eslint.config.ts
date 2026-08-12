@@ -26,12 +26,14 @@ const config: Linter.Config[] = [
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
       ...eslintPluginReactRefresh.configs.vite.rules,
+      'react/prop-types': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }]
     }
   },
   eslintConfigPrettier as Linter.Config,
   {
     rules: {
+      'react/prop-types': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }]
     }
   }

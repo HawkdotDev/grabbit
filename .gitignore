@@ -1,6 +1,9 @@
 node_modules
 dist
 out
+downloads
+grabbit_data
 .DS_Store
 .eslintcache
 *.log*
+*.tsbuildinfo

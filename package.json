@@ -1,6 +1,6 @@
 {
-  "name": "neobit",
-  "version": "1.0.0",
+  "name": "grabbit",
+  "version": "0.3.0",
   "description": "High-performance, feature-rich modern download manager built with Electron, React, and TypeScript.",
   "main": "./out/main/index.js",
   "author": {
@@ -8,13 +8,13 @@
     "url": "https://github.com/HawkdotDev"
   },
   "license": "Apache-2.0",
-  "homepage": "https://github.com/HawkdotDev/neobit#readme",
+  "homepage": "https://github.com/HawkdotDev/grabbit#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HawkdotDev/neobit.git"
+    "url": "git+https://github.com/HawkdotDev/grabbit.git"
   },
   "bugs": {
-    "url": "https://github.com/HawkdotDev/neobit/issues"
+    "url": "https://github.com/HawkdotDev/grabbit/issues"
   },
   "keywords": [
     "electron",
@@ -71,29 +71,32 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
-    "electron-updater": "^6.3.9"
+    "electron-updater": "^6.8.9",
+    "lucide-react": "^1.28.0",
+    "webtorrent": "^3.0.21"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^22.19.1",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "electron": "^39.2.6",
-    "electron-builder": "^26.0.12",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@types/webtorrent": "^0.110.1",
+    "@vitejs/plugin-react": "^6.0.5",
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
-    "eslint": "^9.39.1",
+    "eslint": "^10.8.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "prettier": "^3.7.4",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "prettier": "^3.9.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3",
-    "vite": "^7.2.6"
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0"
   }
 }

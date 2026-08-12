@@ -1,0 +1,303 @@
+import React, { useMemo } from 'react'
+import { DownloadCategory, DownloadItem, StatusFilter } from '../../../../engine/types'
+import {
+  Inbox,
+  Folder,
+  FileText,
+  Archive,
+  Film,
+  Music,
+  Cpu,
+  Image as ImageIcon,
+  Code2,
+  Tag,
+  CheckCircle2,
+  AlertTriangle,
+  Pause,
+  Play,
+  Activity,
+  Search,
+  Upload,
+  Download as DownloadIcon
+} from 'lucide-react'
+import { SidebarSection } from './SidebarSection'
+import { SidebarFilterItem } from './SidebarFilterItem'
+
+interface SidebarProps {
+  width?: number
+  activeStatusFilter: StatusFilter
+  setActiveStatusFilter: (status: StatusFilter) => void
+  activeCategory: DownloadCategory
+  setActiveCategory: (cat: DownloadCategory) => void
+  activeTag: string
+  setActiveTag: (tag: string) => void
+  downloads: DownloadItem[]
+  onResumeAll?: () => void
+  onPauseAll?: () => void
+}
+
+export const Sidebar: React.FC<SidebarProps> = React.memo(
+  ({
+    width = 240,
+    activeStatusFilter,
+    setActiveStatusFilter,
+    activeCategory,
+    setActiveCategory,
+    activeTag,
+    setActiveTag,
+    downloads,
+    onResumeAll,
+    onPauseAll
+  }) => {
+    // Memoize status counts map
+    const statusCounts = useMemo(() => {
+      const counts: Record<StatusFilter, number> = {
+        all: downloads.length,
+        downloading: 0,
+        seeding: 0,
+        completed: 0,
+        running: 0,
+        stopped: 0,
+        active: 0,
+        inactive: 0,
+        stalled: 0,
+        checking: 0,
+        errored: 0
+      }
+
+      downloads.forEach((d) => {
+        if (d.status === 'downloading') counts.downloading = (counts.downloading || 0) + 1
+        if (d.status === 'seeding') counts.seeding = (counts.seeding || 0) + 1
+        if (d.status === 'completed') counts.completed = (counts.completed || 0) + 1
+        if (d.status === 'downloading' || d.status === 'seeding')
+          counts.running = (counts.running || 0) + 1
+        if (d.status === 'paused' || d.status === 'queued')
+          counts.stopped = (counts.stopped || 0) + 1
+        if (d.speed > 0 || (d.upSpeed || 0) > 0) counts.active = (counts.active || 0) + 1
+        if (d.speed === 0 && (d.upSpeed || 0) === 0) counts.inactive = (counts.inactive || 0) + 1
+        if (d.status === 'stalled') counts.stalled = (counts.stalled || 0) + 1
+        if (d.status === 'checking') counts.checking = (counts.checking || 0) + 1
+        if (d.status === 'error') counts.errored = (counts.errored || 0) + 1
+      })
+
+      return counts
+    }, [downloads])
+
+    // Memoize category counts map
+    const categoryCounts = useMemo(() => {
+      const counts: Record<DownloadCategory, number> = {
+        all: downloads.length,
+        other: 0,
+        documents: 0,
+        compressed: 0,
+        video: 0,
+        audio: 0,
+        executables: 0,
+        images: 0,
+        code: 0
+      }
+
+      downloads.forEach((d) => {
+        const cat = d.category in counts ? d.category : 'other'
+        counts[cat] = (counts[cat] || 0) + 1
+      })
+
+      return counts
+    }, [downloads])
+
+    const statusItems: Array<{ id: StatusFilter; label: string; icon: React.JSX.Element }> =
+      useMemo(
+        () => [
+          {
+            id: 'all',
+            label: 'All',
+            icon: <Inbox className="h-3.5 w-3.5 text-slate-400/85" />
+          },
+          {
+            id: 'downloading',
+            label: 'Downloading',
+            icon: <DownloadIcon className="h-3.5 w-3.5 text-violet-400/85" />
+          },
+          {
+            id: 'seeding',
+            label: 'Seeding',
+            icon: <Upload className="h-3.5 w-3.5 text-emerald-400/85" />
+          },
+          {
+            id: 'completed',
+            label: 'Completed',
+            icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400/85" />
+          },
+          {
+            id: 'running',
+            label: 'Running',
+            icon: <Play className="h-3.5 w-3.5 fill-current text-cyan-400/85" />
+          },
+          {
+            id: 'stopped',
+            label: 'Stopped',
+            icon: <Pause className="h-3.5 w-3.5 fill-current text-amber-400/85" />
+          },
+          {
+            id: 'active',
+            label: 'Active',
+            icon: <Activity className="h-3.5 w-3.5 text-emerald-400/85" />
+          },
+          {
+            id: 'inactive',
+            label: 'Inactive',
+            icon: <Pause className="h-3.5 w-3.5 fill-current text-slate-500/85" />
+          },
+          {
+            id: 'stalled',
+            label: 'Stalled',
+            icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-400/85" />
+          },
+          {
+            id: 'checking',
+            label: 'Checking',
+            icon: <Search className="h-3.5 w-3.5 text-sky-400/85" />
+          },
+          {
+            id: 'errored',
+            label: 'Errored',
+            icon: <AlertTriangle className="h-3.5 w-3.5 text-rose-400/85" />
+          }
+        ],
+        []
+      )
+
+    const categories: Array<{ id: DownloadCategory; label: string; icon: React.JSX.Element }> =
+      useMemo(
+        () => [
+          {
+            id: 'all',
+            label: 'All',
+            icon: <Inbox className="h-3.5 w-3.5 text-slate-400/85" />
+          },
+          {
+            id: 'documents',
+            label: 'Documents',
+            icon: <FileText className="h-3.5 w-3.5 text-amber-400/85" />
+          },
+          {
+            id: 'compressed',
+            label: 'Compressed',
+            icon: <Archive className="h-3.5 w-3.5 text-purple-400/85" />
+          },
+          {
+            id: 'video',
+            label: 'Videos',
+            icon: <Film className="h-3.5 w-3.5 text-sky-400/85" />
+          },
+          {
+            id: 'audio',
+            label: 'Audio',
+            icon: <Music className="h-3.5 w-3.5 text-emerald-400/85" />
+          },
+          {
+            id: 'executables',
+            label: 'Programs',
+            icon: <Cpu className="h-3.5 w-3.5 text-rose-400/85" />
+          },
+          {
+            id: 'images',
+            label: 'Images',
+            icon: <ImageIcon className="h-3.5 w-3.5 text-pink-400/85" />
+          },
+          {
+            id: 'code',
+            label: 'Source Code',
+            icon: <Code2 className="h-3.5 w-3.5 text-cyan-400/85" />
+          },
+          {
+            id: 'other',
+            label: 'Other',
+            icon: <Folder className="h-3.5 w-3.5 text-slate-500/85" />
+          }
+        ],
+        []
+      )
+
+    return (
+      <aside
+        style={{ width }}
+        className="bg-ide-surface flex flex-col justify-between h-full select-none font-sans text-xs p-2 overflow-y-auto shrink-0 rounded-none"
+      >
+        <div className="space-y-3">
+          {/* Top Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onResumeAll}
+              className="flex-1 py-1.5 px-2 bg-emerald-300 text-slate-950 hover:bg-emerald-200 active:scale-[0.98] border border-emerald-300 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+              title="Resume All Downloads"
+            >
+              <Play className="h-3.5 w-3.5 text-slate-950 fill-slate-950" />
+              <span>Resume</span>
+            </button>
+
+            <button
+              onClick={onPauseAll}
+              className="flex-1 py-1.5 px-2 bg-amber-300 text-slate-950 hover:bg-amber-200 active:scale-[0.98] border border-amber-300 rounded-none font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+              title="Pause All Downloads"
+            >
+              <Pause className="h-3.5 w-3.5 text-slate-950 fill-slate-950" />
+              <span>Pause</span>
+            </button>
+          </div>
+
+          {/* STATUS FILTER SECTION */}
+          <SidebarSection title="STATUS">
+            {statusItems.map((st) => (
+              <SidebarFilterItem
+                key={st.id}
+                id={st.id}
+                label={st.label}
+                icon={st.icon}
+                count={statusCounts[st.id] || 0}
+                isActive={activeStatusFilter === st.id}
+                onClick={() => setActiveStatusFilter(st.id)}
+              />
+            ))}
+          </SidebarSection>
+
+          {/* CATEGORIES SECTION */}
+          <SidebarSection title="CATEGORIES">
+            {categories.map((cat) => (
+              <SidebarFilterItem
+                key={cat.id}
+                id={cat.id}
+                label={cat.label}
+                icon={cat.icon}
+                count={categoryCounts[cat.id] || 0}
+                isActive={activeCategory === cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+              />
+            ))}
+          </SidebarSection>
+
+          {/* TAGS SECTION */}
+          <SidebarSection title="TAGS">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'untagged', label: 'Untagged' },
+              { id: 'grabbit', label: 'grabbit' }
+            ].map((tg) => (
+              <SidebarFilterItem
+                key={tg.id}
+                id={tg.id}
+                label={tg.label}
+                icon={<Tag className="h-3.5 w-3.5 text-cyan-400/85" />}
+                count={downloads.length}
+                isActive={activeTag === tg.id}
+                onClick={() => setActiveTag(tg.id)}
+              />
+            ))}
+          </SidebarSection>
+        </div>
+      </aside>
+    )
+  }
+)
+
+Sidebar.displayName = 'Sidebar'

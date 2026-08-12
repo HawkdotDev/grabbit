@@ -1,24 +1,70 @@
-appId: com.neobit.app
-productName: neobit
+appId: com.grabbit.app
+productName: Grabbit
+copyright: Copyright © 2026 HawkdotDev
 directories:
+  output: dist
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.ts,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/*'
+  - 'out/**/*'
+  - '!out/main/index.js.map'
+  - '!out/preload/index.js.map'
+  - '!out/renderer/index.js.map'
 asarUnpack:
   - resources/**
+
+protocols:
+  - name: Magnet URI Scheme
+    schemes:
+      - magnet
+
+fileAssociations:
+  - ext: torrent
+    name: BitTorrent Metainfo File
+    description: BitTorrent Download File
+    mimeType: application/x-bittorrent
+    icon: build/icon.ico
+
 win:
-  executableName: neobit
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  executableName: grabbit
+  icon: build/icon.ico
+
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  allowElevation: true
+  displayLanguageSelector: true
   createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Grabbit
+  uninstallDisplayName: Grabbit Download Manager
+  artifactName: ${productName}-${version}-Setup.${ext}
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+
 mac:
+  category: public.app-category.utilities
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  icon: build/icon.icns
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -26,18 +72,38 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 130
+      y: 220
+      type: file
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
 linux:
   target:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: HawkdotDev <https://github.com/HawkdotDev>
   category: Utility
+  icon: build/icon.png
+  mimeTypes:
+    - application/x-bittorrent
+    - x-scheme-handler/magnet
+
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
+
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: HawkdotDev
+  repo: grabbit

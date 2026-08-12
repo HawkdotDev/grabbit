@@ -1,1 +1,245 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --color-ide-bg: #0d0e12;
+  --color-ide-surface: #14151c;
+  --color-ide-card: #1b1c26;
+  --color-ide-border: #272938;
+  --color-theme-accent: #b497ff;
+  --color-theme-bright: #c4b5fd;
+  --color-theme-tint: #2c2244;
+
+  /* Custom Pastel Accents */
+  --color-pastel-mint: #a7f3d0;
+  --color-pastel-lavender: #ddd6fe;
+  --color-pastel-rose: #fecdd3;
+  --color-pastel-sky: #bae6fd;
+  --color-pastel-peach: #fde68a;
+  --color-pastel-pink: #fbcfe8;
+  --color-pastel-cyan: #a5f3fc;
+}
+
+/* Apply Sora/Inter globally to all elements with smooth scrolling */
+html,
+body {
+  scroll-behavior: smooth;
+  background-color: var(--color-ide-bg);
+  color: #f3f4f6;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light Theme Overrides */
+html[data-theme='light'] {
+  --color-ide-bg: #f8fafc;
+  --color-ide-surface: #ffffff;
+  --color-ide-card: #f1f5f9;
+  --color-ide-border: #cbd5e1;
+  --color-theme-accent: #7c3aed;
+  --color-theme-bright: #6d28d9;
+  --color-theme-tint: #ede9fe;
+  color: #0f172a;
+}
+
+/* High Contrast Theme Overrides */
+html[data-theme='contrast'] {
+  --color-ide-bg: #000000;
+  --color-ide-surface: #0a0a0a;
+  --color-ide-card: #121212;
+  --color-ide-border: #ffffff;
+  --color-theme-accent: #ffff00;
+  --color-theme-bright: #ffff55;
+  --color-theme-tint: #333300;
+  color: #ffffff;
+}
+
+/* Carrot Theme Overrides (#101010 Background, 50% Pastel Orange & 50% Pastel Green Element Balance) */
+html[data-theme='carrot'] {
+  --color-ide-bg: #101010;
+  --color-ide-surface: #171816;
+  --color-ide-card: #1d1f1c;
+  --color-ide-border: #2c3429;
+  --color-theme-accent: #ff9e43; /* 50% Pastel Carrot Orange */
+  --color-theme-bright: #4ade80; /* 50% Pastel Mint Green */
+  --color-theme-tint: #1c281a; /* Balanced 50/50 Green & Amber Tint */
+
+  /* 50/50 Dual Accents & Gradient Tokens */
+  --color-theme-orange: #ff9e43;
+  --color-theme-green: #4ade80;
+  --color-theme-dual-gradient: linear-gradient(
+    135deg,
+    #ff9e43 0%,
+    #ffb86c 50%,
+    #4ade80 50%,
+    #86efac 100%
+  );
+  --color-theme-dual-soft: linear-gradient(
+    to right,
+    #ff9e43 0%,
+    #ffb86c 48%,
+    #4ade80 52%,
+    #86efac 100%
+  );
+
+  --color-carrot-orange-deep: #f97316;
+  --color-carrot-orange-main: #ff9e43;
+  --color-carrot-orange-light: #ffc085;
+
+  --color-carrot-green-mint: #4ade80;
+  --color-carrot-green-emerald: #6ee7b7;
+  --color-carrot-green-lime: #a3e635;
+
+  --color-pastel-mint: #4ade80;
+  --color-pastel-peach: #ffc085;
+  color: #f3f4f6;
+}
+
+/* Green Buttons in Carrot Theme */
+html[data-theme='carrot'] button.bg-theme-accent,
+html[data-theme='carrot'] .btn-primary,
+html[data-theme='carrot'] button[type='submit'] {
+  background-color: #4ade80 !important;
+  color: #052e16 !important;
+  border-color: #22c55e !important;
+  font-weight: 700;
+}
+
+html[data-theme='carrot'] button.bg-theme-accent:hover,
+html[data-theme='carrot'] .btn-primary:hover,
+html[data-theme='carrot'] button[type='submit']:hover {
+  background-color: #86efac !important;
+  color: #022c14 !important;
+}
+
+/* Quick Action & Icon Buttons Green Accents in Carrot Theme */
+html[data-theme='carrot'] .quick-action-btn:hover,
+html[data-theme='carrot'] button:hover > .text-theme-accent {
+  color: #4ade80 !important;
+}
+
+/* Speed Metrics */
+html[data-theme='carrot'] .speed-down {
+  color: #ff9e43 !important;
+}
+
+html[data-theme='carrot'] .speed-up {
+  color: #4ade80 !important;
+}
+
+/* Dual Progress Bar in Carrot Theme */
+html[data-theme='carrot'] .progress-active {
+  background: linear-gradient(90deg, #ff9e43 0%, #ffb86c 48%, #4ade80 52%, #86efac 100%) !important;
+}
+
+/* Dual Glow & Selection Highlight */
+html[data-theme='carrot'] ::selection {
+  background: #1c281a;
+  color: #4ade80;
+}
+
+*,
+*::before,
+*::after {
+  font-family:
+    'Sora',
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  border-radius: 0 !important;
+}
+
+/* GPU Hardware Acceleration & Smooth Transitions */
+.smooth-gpu {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.smooth-transition {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.style-drag {
+  -webkit-app-region: drag;
+}
+
+.style-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Slim Sleek Scrollbars with sharp square styling */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 0 !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Green Slim Scrollbars in Carrot Theme */
+html[data-theme='carrot'] ::-webkit-scrollbar-thumb {
+  background: rgba(74, 222, 128, 0.15);
+}
+
+html[data-theme='carrot'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 222, 128, 0.5);
+}
+
+/* Smooth Progress Fill Pulse Animation */
+@keyframes progressPulse {
+  0% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+
+.progress-active {
+  background: linear-gradient(90deg, var(--color-theme-accent) 0%, var(--color-theme-bright) 100%);
+  animation: progressPulse 2s infinite ease-in-out;
+}
+
+/* Modal Border Blink Animation on Backdrop Click */
+@keyframes modalBlink {
+  0% {
+    border-color: #272938;
+    box-shadow: 0 0 0 0 rgba(180, 151, 255, 0);
+  }
+  50% {
+    border-color: #c4b5fd;
+    box-shadow:
+      0 0 0 3px rgba(180, 151, 255, 0.4),
+      0 0 16px rgba(180, 151, 255, 0.3);
+  }
+  100% {
+    border-color: #272938;
+    box-shadow: 0 0 0 0 rgba(180, 151, 255, 0);
+  }
+}
+
+.animate-modal-blink {
+  animation: modalBlink 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
