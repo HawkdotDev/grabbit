@@ -37,6 +37,7 @@ export interface ChunkInfo {
 }
 
 export interface DownloadFileItem {
+  name?: string
   path: string
   size: number
   downloaded: number

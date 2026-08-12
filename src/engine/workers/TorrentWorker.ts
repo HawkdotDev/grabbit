@@ -3,6 +3,10 @@ import * as path from 'path'
 import { ChunkInfo, DownloadFileItem, TrackerInfo } from '../types'
 import { DiskAllocator } from '../DiskAllocator'
 import packageJson from '../../../package.json'
+import { TorrentClientManager } from './torrent/TorrentClientManager'
+import { parsePeerClientName as parsePeerClientNameExt } from './torrent/TorrentWireTelemetry'
+import { TorrentPieceManager } from './torrent/TorrentPieceManager'
+import { TorrentTrackerService } from './torrent/TorrentTrackerService'
 
 export interface TorrentFileEntry {
   path?: string
@@ -70,19 +74,7 @@ export interface TorrentClientInstance {
   on: (event: string, handler: (err: Error | string) => void) => void
 }
 
-type WebTorrentConstructor = new (opts?: Record<string, unknown>) => TorrentClientInstance
 type ParseTorrentFunction = (source: string | Buffer) => Promise<InstanceTorrentData>
-
-let _WebTorrentClass: WebTorrentConstructor | null = null
-async function getWebTorrentClass(): Promise<WebTorrentConstructor> {
-  if (!_WebTorrentClass) {
-    const mod = await (new Function('m', 'return import(m)')('webtorrent') as Promise<{
-      default?: WebTorrentConstructor
-    }>)
-    _WebTorrentClass = (mod.default || mod) as unknown as WebTorrentConstructor
-  }
-  return _WebTorrentClass
-}
 
 let _parseTorrentFn: ParseTorrentFunction | null = null
 export async function getParseTorrentFn(): Promise<ParseTorrentFunction> {
@@ -190,75 +182,7 @@ export interface TorrentProgressEvent {
 }
 
 export function parsePeerClientName(w: any): string {
-  if (!w) return 'BitTorrent Peer'
-
-  // 1. Check BEP 10 Extension Handshake version string (e.g. "qBittorrent/4.6.0", "Transmission/3.00")
-  const extName =
-    w.peerExtendedHandshake?.v ||
-    w.extendedHandshake?.v ||
-    w.peerExtendedHandshake?.client ||
-    w.extendedHandshake?.client
-
-  if (extName && typeof extName === 'string' && extName.trim().length > 0) {
-    return extName.trim()
-  }
-
-  // 2. Parse 20-byte Peer ID (Azureus-style -XXYYYY- or Shadow-style)
-  const peerIdRaw = w.peerId || w.id || w._peerId
-  let peerIdStr = ''
-  if (typeof peerIdRaw === 'string') {
-    peerIdStr = peerIdRaw
-  } else if (Buffer.isBuffer(peerIdRaw)) {
-    peerIdStr = peerIdRaw.toString('utf8')
-  } else if (peerIdRaw && typeof peerIdRaw === 'object' && 'toString' in peerIdRaw) {
-    peerIdStr = String(peerIdRaw)
-  }
-
-  if (peerIdStr) {
-    const azMatch = peerIdStr.match(/^-([A-Za-z0-9~]{2})([A-Za-z0-9]{4})-/)
-    if (azMatch && azMatch[1] && azMatch[2]) {
-      const code = azMatch[1]
-      const ver = azMatch[2]
-      const clientMap: Record<string, string> = {
-        qB: 'qBittorrent',
-        UT: 'µTorrent',
-        TR: 'Transmission',
-        DE: 'Deluge',
-        WW: 'WebTorrent',
-        AZ: 'Vuze',
-        BI: 'BiglyBT',
-        BC: 'BitComet',
-        FD: 'Free Download Manager',
-        KT: 'KTorrent',
-        LT: 'libtorrent',
-        BR: 'BitTorrent',
-        GB: 'Grabbit',
-        GR: 'Grabbit',
-        qG: 'Grabbit',
-        NB: 'Grabbit',
-        qN: 'Grabbit'
-      }
-      const client = clientMap[code] || `Client [${code}]`
-
-      const v0 = parseInt(ver.charAt(0), 36)
-      const v1 = parseInt(ver.charAt(1), 36)
-      const v2 = parseInt(ver.charAt(2), 36)
-      if (!isNaN(v0) && !isNaN(v1) && !isNaN(v2)) {
-        return `${client} ${v0}.${v1}.${v2}`
-      }
-      return client
-    }
-
-    if (peerIdStr.startsWith('M') || peerIdStr.startsWith('-Mainline')) {
-      return 'Mainline BitTorrent'
-    }
-  }
-
-  if (w.type && typeof w.type === 'string' && w.type !== 'webSeed') {
-    return w.type
-  }
-
-  return 'BitTorrent Peer'
+  return parsePeerClientNameExt(w)
 }
 
 export function formatGrabbitPeerIdPrefix(verStr?: string): string {
@@ -280,261 +204,38 @@ export function formatGrabbitPeerIdPrefix(verStr?: string): string {
 }
 
 export class TorrentWorker {
-  private static client: TorrentClientInstance | null = null
-  private static torrentsMap: Map<string, TorrentTaskInstance> = new Map()
+  public static readonly torrentsMap: Map<string, TorrentTaskInstance> = TorrentClientManager.torrentsMap
   private static wireListeners: WeakSet<object> = new WeakSet()
-
-  public static readonly DEFAULT_PUBLIC_TRACKERS = [
-    'udp://tracker.opentrackr.org:1337/announce',
-    'udp://open.stealth.si:80/announce',
-    'udp://tracker.torrent.eu.org:451/announce',
-    'udp://explodie.org:6969/announce',
-    'udp://tracker.openbittorrent.com:6969/announce',
-    'http://tracker.opentrackr.org:1337/announce',
-    'https://tracker.tamersunion.org:443/announce',
-    'https://tracker.imgoingto.icu:443/announce'
-  ]
-
-  public static generatePeerId(): string {
-    const prefix = formatGrabbitPeerIdPrefix(packageJson.version)
-    const hex = '0123456789abcdef'
-    let randomPart = ''
-    for (let i = 0; i < 12; i++) {
-      randomPart += hex.charAt(Math.floor(Math.random() * hex.length))
-    }
-    return prefix + randomPart
+  private static get client(): TorrentClientInstance | null {
+    return TorrentClientManager.getRawClient()
   }
 
-  /**
-   * Initializes or returns the shared WebTorrent client singleton instance asynchronously
-   */
+  public static get DEFAULT_PUBLIC_TRACKERS(): string[] {
+    return TorrentClientManager.DEFAULT_PUBLIC_TRACKERS
+  }
+
+  public static generatePeerId(): string {
+    return TorrentClientManager.generatePeerId()
+  }
+
   public static async getClient(opts?: {
     forceEncryption?: boolean
     disableP2PTracking?: boolean
     downloadLimitKbps?: number
     uploadLimitKbps?: number
   }): Promise<TorrentClientInstance> {
-    if (!this.client) {
-      const WebTorrent = await getWebTorrentClass()
-
-      const dlLimit = opts?.downloadLimitKbps && opts.downloadLimitKbps > 0
-        ? opts.downloadLimitKbps * 1024
-        : -1
-      const ulLimit = opts?.uploadLimitKbps && opts.uploadLimitKbps > 0
-        ? opts.uploadLimitKbps * 1024
-        : -1
-
-      this.client = new WebTorrent({
-        peerId: TorrentWorker.generatePeerId(),
-        nodeId: TorrentWorker.generatePeerId(),
-        maxConns: 500,
-        dht: opts?.disableP2PTracking ? false : {
-          bootstrap: [
-            'router.bittorrent.com:6881',
-            'dht.transmissionbt.com:6881',
-            'router.utorrent.com:6881',
-            'dht.libtorrent.org:25401',
-            'dht.aelitis.com:6881'
-          ]
-        },
-        lsd: true,
-        downloadLimit: dlLimit,
-        uploadLimit: ulLimit,
-        tracker: {
-          announce: TorrentWorker.DEFAULT_PUBLIC_TRACKERS
-        }
-      })
-
-      this.client.on('error', (err: Error | string) => {
-        const msg = (typeof err === 'string' ? err : err?.message || '').toLowerCase()
-        if (msg.includes('peerconnection') || msg.includes('tracker') || msg.includes('enotfound') || msg.includes('already exists')) return
-        console.error('[WebTorrent Client Error]', err)
-      })
-    }
-    return this.client
+    return TorrentClientManager.getClient(opts)
   }
 
-  /**
-   * Parses magnet URIs (magnet:?xt=urn:btih:...&dn=...&tr=...)
-   */
   public static parseMagnetURI(magnetUrl: string): MagnetInfo {
-    const info: MagnetInfo = {
-      infoHash: '',
-      name: '',
-      trackers: []
-    }
-
-    try {
-      const urlObj = new URL(magnetUrl)
-      const params = urlObj.searchParams
-
-      // Extract BTIH InfoHash
-      const xt = params.get('xt') || ''
-      if (xt.includes('urn:btih:')) {
-        info.infoHash = xt.replace('urn:btih:', '').toLowerCase()
-      }
-
-      // Extract Display Name
-      const dn = params.get('dn')
-      if (dn) {
-        info.name = decodeURIComponent(dn)
-      }
-
-      // Extract Trackers
-      const trList = params.getAll('tr')
-      if (trList.length > 0) {
-        info.trackers = trList.map((t) => decodeURIComponent(t))
-      }
-    } catch {
-      // Fallback regex parsing
-      const hashMatch = magnetUrl.match(/xt=urn:btih:([a-zA-Z0-9]+)/i)
-      if (hashMatch && hashMatch[1]) {
-        info.infoHash = hashMatch[1].toLowerCase()
-      }
-
-      const nameMatch = magnetUrl.match(/dn=([^&]+)/i)
-      if (nameMatch && nameMatch[1]) {
-        info.name = decodeURIComponent(nameMatch[1])
-      }
-    }
-
-    if (!info.name) {
-      info.name = info.infoHash ? `Magnet (${info.infoHash.substring(0, 8)})` : 'Magnet Download'
-    }
-
-    return info
+    return TorrentTrackerService.parseMagnetURI(magnetUrl)
   }
 
-  /**
-   * Dynamically resolves magnet metadata from WebTorrent swarm over DHT/trackers
-   */
-  /**
-   * Dynamically resolves magnet metadata from WebTorrent swarm over DHT/trackers
-   */
   public static async fetchMagnetMetadata(
     magnetUrl: string,
     timeoutMs: number = 10000
   ): Promise<ParsedTorrentMeta> {
-    const mag = this.parseMagnetURI(magnetUrl)
-    const fallbackTrackers = Array.from(
-      new Set([...mag.trackers, ...this.DEFAULT_PUBLIC_TRACKERS])
-    )
-
-    try {
-      const client = await this.getClient()
-
-      return await new Promise((resolve) => {
-        let isDone = false
-        let createdTemporary = false
-
-        const cleanupAndResolve = (result: ParsedTorrentMeta): void => {
-          if (isDone) return
-          isDone = true
-          if (timer) clearTimeout(timer)
-          // Destroy the temporary torrent instance so it doesn't collide with
-          // a subsequent startTorrentDownload() call for the same magnet
-          if (createdTemporary && torrentInstance && typeof torrentInstance.destroy === 'function') {
-            try { torrentInstance.destroy() } catch { /* ignore */ }
-          }
-          resolve(result)
-        }
-
-        const timer = setTimeout(() => {
-          cleanupAndResolve({
-            name: mag.name || 'Magnet Download',
-            infoHash: mag.infoHash,
-            totalSize: 0,
-            files: [],
-            trackers: fallbackTrackers
-          })
-        }, timeoutMs)
-
-        let torrentInstance: TorrentTaskInstance | null = null
-        if (mag.infoHash) {
-          const found = (client as unknown as { get: (id: string) => TorrentTaskInstance | null }).get(mag.infoHash)
-          if (found && typeof found.on === 'function') torrentInstance = found
-        }
-        if (!torrentInstance) {
-          const found = (client as unknown as { get: (id: string) => TorrentTaskInstance | null }).get(magnetUrl)
-          if (found && typeof found.on === 'function') torrentInstance = found
-        }
-
-        if (!torrentInstance) {
-          try {
-            torrentInstance = client.add(magnetUrl, {
-              path: process.cwd(),
-              announce: this.DEFAULT_PUBLIC_TRACKERS
-            })
-            createdTemporary = true
-          } catch (addErr) {
-            console.warn('[fetchMagnetMetadata] client.add error:', addErr)
-          }
-        }
-
-        if (!torrentInstance || typeof torrentInstance.on !== 'function') {
-          cleanupAndResolve({
-            name: mag.name || 'Magnet Download',
-            infoHash: mag.infoHash,
-            totalSize: 0,
-            files: [],
-            trackers: fallbackTrackers
-          })
-          return
-        }
-
-        const inspectMetadata = (): void => {
-          if (torrentInstance && torrentInstance.files && torrentInstance.files.length > 0) {
-            const fileList = torrentInstance.files.map((f: TorrentFileEntry) => ({
-              name: f.name || f.path || 'file',
-              path: f.path || f.name || 'file',
-              size: f.length || 0
-            }))
-            const totalSize = torrentInstance.length || fileList.reduce((acc, f) => acc + f.size, 0)
-            const trackers = Array.from(
-              new Set([
-                ...(torrentInstance.announce || []),
-                ...fallbackTrackers
-              ])
-            )
-            const created = torrentInstance.created
-              ? new Date(torrentInstance.created).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                })
-              : undefined
-            const comment = torrentInstance.comment || undefined
-
-            cleanupAndResolve({
-              name: torrentInstance.name || mag.name || 'Magnet Download',
-              infoHash: torrentInstance.infoHash || mag.infoHash,
-              totalSize,
-              files: fileList,
-              trackers,
-              created,
-              comment
-            })
-          }
-        }
-
-        torrentInstance.on('metadata', inspectMetadata)
-        torrentInstance.on('ready', inspectMetadata)
-        torrentInstance.on('infoHash', inspectMetadata)
-
-        if (torrentInstance.files && torrentInstance.files.length > 0) {
-          inspectMetadata()
-        }
-      })
-    } catch (err) {
-      console.warn('[fetchMagnetMetadata] error:', err)
-      return {
-        name: mag.name || 'Magnet Download',
-        infoHash: mag.infoHash,
-        totalSize: 0,
-        files: [],
-        trackers: fallbackTrackers
-      }
-    }
+    return TorrentTrackerService.fetchMagnetMetadata(magnetUrl, timeoutMs)
   }
 
   /**
@@ -774,7 +475,7 @@ export class TorrentWorker {
           const opts: { path: string; announce?: string[]; maxConns?: number; strategy?: string } = {
             path: savePath,
             maxConns: 250,
-            strategy: 'rarest',
+            strategy: 'sequential',
             announce: combinedAnnounce
           }
           torrent = client.add(torrentSource, opts)
@@ -915,6 +616,11 @@ export class TorrentWorker {
           const msg = (typeof warn === 'string' ? warn : warn?.message || '').toLowerCase()
           const isNonFatalTrackerError =
             msg.includes('peerconnection') ||
+            msg.includes('connection error') ||
+            msg.includes('constructor') ||
+            msg.includes('peer_id') ||
+            msg.includes('failed to provide valid peer_id') ||
+            msg.includes('abort') ||
             msg.includes('wss://') ||
             msg.includes('ws://') ||
             msg.includes('tracker') ||
@@ -1329,57 +1035,7 @@ export class TorrentWorker {
     torrent: TorrentTaskInstance,
     callback: (event: TorrentProgressEvent) => void
   ): void {
-    const totalSize = torrent.length || 0
     const totalPiecesCount = torrent.pieces ? torrent.pieces.length : 0
-    // Issue #12 fix: For small torrents (< 32 pieces), use actual piece count
-    // to avoid duplicate index ranges and visual compression artifacts
-    const virtualBlocks = totalPiecesCount > 0
-      ? Math.min(32, totalPiecesCount)
-      : 32
-    const chunks: ChunkInfo[] = []
-
-    if (torrent.pieces && torrent.pieces.length > 0 && totalSize > 0) {
-      const totalPieces = torrent.pieces.length
-      const blockByteSize = Math.max(1, Math.floor(totalSize / virtualBlocks))
-
-      for (let b = 0; b < virtualBlocks; b++) {
-        const startPieceIdx = Math.floor((b * totalPieces) / virtualBlocks)
-        const endPieceIdx = Math.min(
-          totalPieces - 1,
-          Math.floor(((b + 1) * totalPieces) / virtualBlocks) - 1
-        )
-        const piecesInSlice = Math.max(1, endPieceIdx - startPieceIdx + 1)
-
-        let completedInSlice = 0
-        for (let p = startPieceIdx; p <= endPieceIdx; p++) {
-          const piece = torrent.pieces[p] as { missing?: number } | undefined
-          if (piece && piece.missing === 0) {
-            completedInSlice++
-          }
-        }
-
-        const startByte = b * blockByteSize
-        const endByte = b === virtualBlocks - 1 ? totalSize - 1 : (b + 1) * blockByteSize - 1
-        const sliceByteSize = Math.max(1, endByte - startByte + 1)
-        const downloadedBytes = Math.min(
-          sliceByteSize,
-          Math.round((completedInSlice / piecesInSlice) * sliceByteSize)
-        )
-        const isDone = completedInSlice === piecesInSlice
-        const status = isDone ? 'completed' : downloadedBytes > 0 ? 'downloading' : 'queued'
-
-        chunks.push({
-          id: b,
-          startByte,
-          endByte,
-          downloadedBytes,
-          speed: isDone ? 0 : Math.round(torrent.downloadSpeed / virtualBlocks),
-          status
-        })
-      }
-    } else {
-      chunks.push(...this.createTorrentChunks(32))
-    }
 
     // Inspect actual tracker status from WebTorrent internals
     const internalTrackers = (torrent as unknown as {
@@ -1732,57 +1388,9 @@ export class TorrentWorker {
 
     // No dummy/fallback peers — only real wire data is emitted
 
-    // Calculate real 100-slice pieceMap (completion ratio 0.0 to 1.0) and availabilityMap
-    const numSlices = 100
-    const pieceMap: number[] = new Array(numSlices).fill(0)
-    const availabilityMap: number[] = new Array(numSlices).fill(0)
-    let totalAvailSum = 0
-
-    if (torrent.pieces && torrent.pieces.length > 0) {
-      const totalPieces = torrent.pieces.length
-      for (let s = 0; s < numSlices; s++) {
-        const startIdx = Math.floor((s * totalPieces) / numSlices)
-        const endIdx = Math.min(totalPieces - 1, Math.floor(((s + 1) * totalPieces) / numSlices) - 1)
-        const count = Math.max(1, endIdx - startIdx + 1)
-
-        let doneCount = 0
-        let wireHaveCount = 0
-
-        for (let p = startIdx; p <= endIdx; p++) {
-          const piece = torrent.pieces[p] as { missing?: number } | undefined
-          if (piece && piece.missing === 0) {
-            doneCount++
-          }
-
-          if (wiresList.length > 0) {
-            for (const wire of wiresList) {
-              const w = wire as any
-              if (w.peerPieces && typeof w.peerPieces.get === 'function' && w.peerPieces.get(p)) {
-                wireHaveCount++
-              }
-            }
-          }
-        }
-
-        pieceMap[s] = Math.round((doneCount / count) * 100) / 100
-        const baseAvail = (torrent.progress === 1 || doneCount === count) ? Math.max(1, seedersCount) : 0
-        const sliceAvail = baseAvail + (count > 0 ? wireHaveCount / count : 0)
-        availabilityMap[s] = Math.round(sliceAvail * 1000) / 1000
-        totalAvailSum += sliceAvail
-      }
-    } else {
-      const prog = torrent.progress || 0
-      const doneSlices = Math.round(prog * numSlices)
-      for (let s = 0; s < numSlices; s++) {
-        pieceMap[s] = s < doneSlices ? 1.0 : 0.0
-        availabilityMap[s] = prog === 1 ? Math.max(1, seedersCount) : (s < doneSlices ? 1.0 : 0.0)
-      }
-      totalAvailSum = prog === 1 ? Math.max(1, seedersCount) * numSlices : doneSlices
-    }
-
-    const calculatedAvailability = torrent.progress === 1
-      ? Math.max(1, seedersCount)
-      : Math.round((totalAvailSum / numSlices) * 1000) / 1000
+    const chunks = TorrentPieceManager.calculateChunks(torrent)
+    const { pieceMap, availabilityMap, availability: calculatedAvailability } =
+      TorrentPieceManager.calculateBitfields(torrent, wiresList, seedersCount)
 
     const event: TorrentProgressEvent = {
       downloadId,

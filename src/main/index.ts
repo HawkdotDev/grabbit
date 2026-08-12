@@ -9,11 +9,16 @@ import { registerWindowsNativeMessagingHost } from './browser-integration/native
 
 process.on('uncaughtException', (err: Error | unknown) => {
   const msg = typeof err === 'string' ? err : (err as Error)?.message || ''
+  const name = (err as Error)?.name || ''
   if (
+    name === 'AbortError' ||
+    msg.includes('aborted') ||
+    msg.includes('AbortError') ||
     msg.includes('length 20') ||
     msg.includes('PeerConnection') ||
     msg.includes('handshake') ||
     msg.includes('bittorrent') ||
+    msg.includes('tracker') ||
     msg.includes('Wire')
   ) {
     return
@@ -23,11 +28,16 @@ process.on('uncaughtException', (err: Error | unknown) => {
 
 process.on('unhandledRejection', (reason: unknown) => {
   const msg = typeof reason === 'string' ? reason : (reason as Error)?.message || ''
+  const name = (reason as Error)?.name || ''
   if (
+    name === 'AbortError' ||
+    msg.includes('aborted') ||
+    msg.includes('AbortError') ||
     msg.includes('length 20') ||
     msg.includes('PeerConnection') ||
     msg.includes('handshake') ||
-    msg.includes('bittorrent')
+    msg.includes('bittorrent') ||
+    msg.includes('tracker')
   ) {
     return
   }
