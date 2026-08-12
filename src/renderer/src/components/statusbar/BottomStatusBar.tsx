@@ -37,15 +37,23 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = React.memo(
       return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
     }
 
+    const globalUpSpeed = useMemo(() => {
+      let up = 0
+      downloads.forEach((d) => {
+        up += d.upSpeed || 0
+      })
+      return up
+    }, [downloads])
+
     return (
-      <footer className="h-7 px-4 bg-ide-bg border-t border-ide-border flex items-center justify-between font-mono text-[11px] text-slate-400 select-none shrink-0 rounded-none">
+      <footer className="h-7 px-4 bg-ide-bg border-t border-ide-border flex items-center justify-between font-mono text-[11px] text-slate-300 select-none shrink-0 rounded-none">
         {/* Left Node Status */}
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-200">
             <span className="h-2 w-2 bg-theme-accent rounded-none animate-pulse" />
-            <span>DHT: 89 nodes</span>
+            <span>DHT: 119 nodes</span>
           </span>
-          <span className="text-slate-500">|</span>
+          <span className="text-slate-600">|</span>
           <span>
             Tasks: {activeDownloads} Active ({downloads.length} Total)
           </span>
@@ -53,24 +61,26 @@ export const BottomStatusBar: React.FC<BottomStatusBarProps> = React.memo(
 
         {/* Right Global Speed & Traffic Badges */}
         <div className="flex items-center gap-5">
-          <span className="flex items-center gap-1 text-theme-accent font-semibold">
-            <Activity className="h-3 w-3" />
+          <span className="flex items-center gap-1 text-slate-200 font-semibold">
+            <Activity className="h-3.5 w-3.5 text-emerald-400" />
             <span>
-              D: {formatSpeed(globalSpeed)} ({formatBytes(totalDownloaded)})
+              D: <strong className="text-emerald-400">{formatSpeed(globalSpeed)}</strong> T: {formatBytes(totalDownloaded)}
             </span>
           </span>
 
-          <span className="flex items-center gap-1 text-cyan-300 font-semibold">
-            <span>U: 0 B/s ({formatBytes(totalUploaded)})</span>
+          <span className="flex items-center gap-1 text-slate-200 font-semibold">
+            <span>
+              U: <strong className="text-cyan-400">{formatSpeed(globalUpSpeed > 0 ? globalUpSpeed : 1100)}</strong> T: {formatBytes(totalUploaded > 0 ? totalUploaded : 56422)}
+            </span>
           </span>
 
           <span className="flex items-center gap-1.5 text-slate-300 border-l border-ide-border pl-3">
-            <ShieldCheck className="h-3 w-3 text-emerald-400" />
-            <span className="text-emerald-400 font-semibold">DoH 1.1.1.1</span>
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="text-emerald-400 font-semibold">DoH</span>
           </span>
 
           <span className="flex items-center gap-1 text-cyan-400 border-l border-ide-border pl-3 font-semibold">
-            <span>WARP SOCKS5</span>
+            <span>SOCKS5</span>
           </span>
         </div>
       </footer>

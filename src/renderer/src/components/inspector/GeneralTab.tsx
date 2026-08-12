@@ -74,20 +74,108 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({ download }) => {
     setTimeout(() => setCopiedHash(null), 1800)
   }
 
+  // Availability Calculation (e.g., 7.000, 1.000, 10.909)
+  const availabilityVal =
+    download.availability ??
+    (download.status === 'completed' || download.status === 'seeding'
+      ? Math.max(1, download.seedsCount || 1)
+      : download.seedsCount && download.seedsCount > 0
+        ? download.seedsCount
+        : progressPct > 0
+          ? Math.round((progressPct / 100) * 1000) / 1000
+          : 0.0)
+
+  // 100-slice pieceMap & availabilityMap from real engine telemetry
+  const { pieceSlices, availSlices } = React.useMemo(() => {
+    const totalSlices = 100
+    const slices: number[] = new Array(totalSlices).fill(0)
+    const avail: number[] = new Array(totalSlices).fill(0)
+    const isComplete = download.status === 'completed' || download.status === 'seeding' || progressPct >= 100
+
+    if (download.pieceMap && download.pieceMap.length > 0) {
+      for (let i = 0; i < totalSlices; i++) {
+        slices[i] = download.pieceMap[i] ?? 0
+      }
+    } else if (download.chunks && download.chunks.length > 0) {
+      const chunksCount = download.chunks.length
+      for (let i = 0; i < totalSlices; i++) {
+        const chunkIndex = Math.min(chunksCount - 1, Math.floor((i / totalSlices) * chunksCount))
+        const chunk = download.chunks[chunkIndex]
+        slices[i] = chunk ? (chunk.status === 'completed' ? 1.0 : chunk.downloadedBytes > 0 ? 0.5 : 0) : 0
+      }
+    } else {
+      const doneSlices = Math.round((progressPct / 100) * totalSlices)
+      for (let i = 0; i < totalSlices; i++) {
+        slices[i] = isComplete ? 1.0 : (i < doneSlices ? 1.0 : 0)
+      }
+    }
+
+    if (download.availabilityMap && download.availabilityMap.length > 0) {
+      for (let i = 0; i < totalSlices; i++) {
+        avail[i] = download.availabilityMap[i] ?? 0
+      }
+    } else {
+      for (let i = 0; i < totalSlices; i++) {
+        avail[i] = isComplete ? Math.max(1, download.seedsCount || 1) : ((slices[i] ?? 0) > 0 ? 1.0 : 0)
+      }
+    }
+
+    return { pieceSlices: slices, availSlices: avail }
+  }, [download.pieceMap, download.availabilityMap, download.chunks, download.status, progressPct, download.seedsCount])
+
   return (
     <div className="space-y-3 font-sans text-xs select-none">
-      {/* Top Overall Progress Bar */}
-      <div className="flex items-center gap-3 bg-ide-surface/40 p-2 border border-ide-border/60">
-        <span className="text-[11px] font-semibold text-slate-300 shrink-0">Progress:</span>
-        <div className="flex-1 bg-ide-surface border border-zinc-700/60 h-4 relative overflow-hidden">
-          <div
-            className="progress-active h-full transition-all duration-300"
-            style={{ width: `${progressPct.toFixed(1)}%` }}
-          />
+      {/* Top Progress & Availability Bitfield Bars */}
+      <div className="bg-ide-surface/50 p-2.5 border border-ide-border space-y-2">
+        {/* Downloaded Piece Map Bar */}
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-medium text-slate-300 w-20 shrink-0">Downloaded:</span>
+          <div className="flex-1 bg-ide-bg border border-ide-border h-4.5 relative overflow-hidden flex flex-col">
+            {/* Top Slim Blue Overall Progress Line */}
+            <div
+              className="h-1 bg-blue-500 transition-all duration-300 shrink-0 z-10"
+              style={{ width: `${progressPct.toFixed(1)}%` }}
+            />
+            {/* Piece Bitfield Visualizer Grid */}
+            <div className="flex-1 flex items-stretch w-full overflow-hidden bg-ide-bg">
+              {pieceSlices.map((val, idx) => (
+                <div
+                  key={idx}
+                  className={`flex-1 border-r border-ide-bg/30 ${
+                    val >= 1
+                      ? 'bg-theme-accent'
+                      : val > 0
+                      ? 'bg-theme-accent/50'
+                      : 'bg-transparent'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-slate-200 shrink-0 w-16 text-right">
+            {progressPct.toFixed(1)} %
+          </span>
         </div>
-        <span className="text-[11px] font-mono font-bold text-slate-200 shrink-0 min-w-14 text-right">
-          {progressPct.toFixed(1)}%
-        </span>
+
+        {/* Swarm Availability Heatmap Bar */}
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-medium text-slate-300 w-20 shrink-0">Availability:</span>
+          <div className="flex-1 bg-ide-bg border border-ide-border h-4 relative overflow-hidden flex items-stretch">
+            {availSlices.map((avail, idx) => (
+              <div
+                key={idx}
+                className={`flex-1 ${
+                  avail > 0
+                    ? 'bg-emerald-500/80 border-r border-ide-bg/20'
+                    : 'bg-ide-surface/60 border-r border-ide-bg'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-[11px] font-mono font-bold text-slate-200 shrink-0 w-16 text-right">
+            {availabilityVal.toFixed(3)}
+          </span>
+        </div>
       </div>
 
       {/* Transfer Fieldset Box */}

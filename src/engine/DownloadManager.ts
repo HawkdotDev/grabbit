@@ -104,6 +104,19 @@ export class DownloadManager extends EventEmitter {
         this.adaptiveQoS.stopMonitoring()
       }
     }
+
+    // Issue #4 fix: Propagate speed limit settings to WebTorrent client
+    if (
+      newSettings.globalDownloadLimitKbps !== undefined ||
+      newSettings.globalUploadLimitKbps !== undefined ||
+      newSettings.maxGlobalSpeedLimitKbps !== undefined
+    ) {
+      TorrentWorker.setSpeedLimits({
+        downloadLimitKbps: newSettings.globalDownloadLimitKbps ?? newSettings.maxGlobalSpeedLimitKbps ?? this.settings.globalDownloadLimitKbps ?? this.settings.maxGlobalSpeedLimitKbps,
+        uploadLimitKbps: newSettings.globalUploadLimitKbps ?? this.settings.globalUploadLimitKbps
+      }).catch(() => { /* ignore */ })
+    }
+
     Storage.saveSettings(this.settings)
     this.processQueue()
   }
@@ -356,6 +369,9 @@ export class DownloadManager extends EventEmitter {
           if (event.trackers && event.trackers.length > 0) d.trackers = event.trackers
           if (event.files && event.files.length > 0) d.files = event.files
           if (event.peersInfo) d.peersInfo = event.peersInfo
+          if (event.pieceMap) d.pieceMap = event.pieceMap
+          if (event.availabilityMap) d.availabilityMap = event.availabilityMap
+          if (event.availability !== undefined) d.availability = event.availability
 
           this.saveStateDebounced()
           this.emit('progress', d)
@@ -375,7 +391,22 @@ export class DownloadManager extends EventEmitter {
           PluginManager.executeHook('onDownloadCompleted', d).catch(() => { })
           this.processQueue()
         }
-      ).catch((err) => {
+      ).then((torrent) => {
+        // Issue #11 fix: If the torrent is already 100% complete (e.g. resumed seeding),
+        // transition directly to 'seeding' since WebTorrent won't re-fire 'done'.
+        if (torrent && torrent.progress >= 1) {
+          const d = this.downloads.get(id)
+          if (d && d.status === 'downloading') {
+            d.status = 'seeding'
+            d.speed = 0
+            d.eta = 0
+            d.downloadedSize = d.totalSize || torrent.length || 0
+            d.completedAt = d.completedAt || Date.now()
+            this.saveStateImmediate()
+            this.emit('downloadUpdated', d)
+          }
+        }
+      }).catch((err) => {
         const d = this.downloads.get(id)
         if (!d) return
         d.status = 'error'
@@ -507,6 +538,10 @@ export class DownloadManager extends EventEmitter {
     d.chunks.forEach((c) => {
       if (c.status !== 'completed') c.status = 'queued'
     })
+
+    // Issue #11 fix: If a completed/seeding torrent is resumed,
+    // startDownload() will detect progress === 1 and transition to 'seeding'
+
     this.saveStateImmediate()
     this.emit('downloadUpdated', d)
     this.processQueue()
@@ -672,9 +707,46 @@ export class DownloadManager extends EventEmitter {
     if (!d) return false
 
     Object.assign(d, options)
+
+    // Issue #3 fix: Forward torrent-specific options to the live WebTorrent instance
+    const isTorrent = DownloadManager.isTorrentSource(d.url)
+    if (isTorrent) {
+      TorrentWorker.applyTorrentOptions(id, {
+        sequentialDownload: (options as { sequentialDownload?: boolean }).sequentialDownload,
+        firstLastPiecesFirst: (options as { firstLastPiecesFirst?: boolean }).firstLastPiecesFirst,
+        priority: options.priority
+      })
+    }
+
     this.saveStateImmediate()
     this.emit('downloadUpdated', d)
     return true
+  }
+
+  /**
+   * Issue #7 fix: Sets file priority on a torrent download and persists the change to state.
+   */
+  public setFilePriority(
+    id: string,
+    filePath: string,
+    priority: 'high' | 'normal' | 'low' | 'ignore'
+  ): boolean {
+    const d = this.downloads.get(id)
+    if (!d) return false
+
+    const isTorrent = DownloadManager.isTorrentSource(d.url)
+    if (!isTorrent) return false
+
+    const applied = TorrentWorker.setFilePriority(id, filePath, priority)
+    if (applied && d.files) {
+      const fileEntry = d.files.find((f) => f.path === filePath)
+      if (fileEntry) {
+        fileEntry.priority = priority
+      }
+      this.saveStateImmediate()
+      this.emit('downloadUpdated', d)
+    }
+    return applied
   }
 
   public setCategory(id: string, category: DownloadCategory): boolean {

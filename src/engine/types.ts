@@ -45,8 +45,17 @@ export interface DownloadFileItem {
 
 export interface TrackerInfo {
   url: string
-  status: 'working' | 'error' | 'disabled'
-  peers: number
+  tier?: number
+  protocol?: string
+  status: 'working' | 'error' | 'disabled' | 'not working' | 'unreachable' | 'updating' | 'Working' | 'Not working' | 'Unreachable' | 'Updating' | 'Disabled'
+  peers: number | 'N/A'
+  seeds?: number | 'N/A'
+  leeches?: number | 'N/A'
+  downloaded?: number | 'N/A'
+  message?: string
+  nextAnnounce?: string
+  minAnnounce?: string
+  endpoints?: TrackerInfo[]
 }
 
 export interface DownloadItem {
@@ -88,6 +97,9 @@ export interface DownloadItem {
   downloadLimit?: number
   uploadLimit?: number
   popularity?: number
+  availability?: number
+  pieceMap?: number[]
+  availabilityMap?: number[]
   reannounceIn?: number
   maxConnections?: number
   totalSeeds?: number
@@ -105,9 +117,20 @@ export interface DownloadItem {
   peersInfo?: Array<{
     ip: string
     port: number
+    country?: string
+    countryName?: string
+    connection?: string
+    flags?: string
     clientName?: string
+    progress?: number
     downloadSpeed: number
     uploadSpeed: number
+    reqs?: string
+    peerDlSpeed?: number
+    downloaded?: number
+    uploaded?: number
+    relevance?: number
+    files?: string
     choked: boolean
   }>
 }
