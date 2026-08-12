@@ -129,7 +129,10 @@ export const PeersTab: React.FC<PeersTabProps> = ({ download }) => {
         peerDlSpeed: p.peerDlSpeed || 0,
         relevance: (p.relevance ?? 0) * 100,
         files: p.files || (download?.files && download.files.length > 0 ? (download.files[0]?.name || download.files[0]?.path || 'All files') : 'All files'),
-        choked: p.choked ?? true
+        choked: p.choked ?? true,
+        isTopTier: p.isTopTier,
+        isSeeder: p.isSeeder,
+        usefulPiecesCount: p.usefulPiecesCount
       }
     })
   }, [download?.peersInfo, download?.files])

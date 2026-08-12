@@ -136,12 +136,22 @@ export function extractWirePeersInfo(wiresList: any[], totalPiecesCount: number)
     const peerDlSpeed = speedUp > 0 ? speedUp : 0
 
     let relevance = 0.0
+    let isSeeder = false
+    let peerPiecesCount = 0
+
     if (w.peerPieces && totalPiecesCount > 0) {
-      const peerHas = typeof w.peerPieces.cardinality === 'function'
+      peerPiecesCount = typeof w.peerPieces.cardinality === 'function'
         ? w.peerPieces.cardinality()
         : (w.peerPieces.length || 0)
-      relevance = Math.round((peerHas / totalPiecesCount) * 100) / 100
+      relevance = Math.round((peerPiecesCount / totalPiecesCount) * 100) / 100
+      isSeeder = Boolean(w.isSeeder || peerPiecesCount === totalPiecesCount)
+    } else if (w.isSeeder) {
+      isSeeder = true
+      relevance = 1.0
+      peerPiecesCount = totalPiecesCount
     }
+
+    const isTopTier = speedDown > 0 || (isSeeder && relevance >= 1.0)
 
     return {
       ip: ipStr,
@@ -158,7 +168,10 @@ export function extractWirePeersInfo(wiresList: any[], totalPiecesCount: number)
       downloaded: wireDownloaded,
       uploaded: wireUploaded,
       relevance,
-      choked: w.peerChoking !== undefined ? !!w.peerChoking : !!w.peerChoked
+      choked: w.peerChoking !== undefined ? !!w.peerChoking : !!w.peerChoked,
+      isTopTier,
+      isSeeder,
+      usefulPiecesCount: peerPiecesCount
     }
   })
 }

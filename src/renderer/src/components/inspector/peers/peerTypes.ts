@@ -23,6 +23,9 @@ export interface PeerRowData {
   relevance: number
   files: string
   choked: boolean
+  isTopTier?: boolean
+  isSeeder?: boolean
+  usefulPiecesCount?: number
 }
 
 export type PeerColumnId =

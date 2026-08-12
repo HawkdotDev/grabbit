@@ -101,7 +101,16 @@ export const PeersTable: React.FC<PeersTableProps> = React.memo(({
                   </td>
                 )}
                 {visibleColumns.ip !== false && (
-                  <td className="py-1 px-2 font-mono text-slate-200 font-medium truncate max-w-xs">{peer.ip}</td>
+                  <td className="py-1 px-2 font-mono text-slate-200 font-medium truncate max-w-xs">
+                    <div className="flex items-center gap-1.5">
+                      <span>{peer.ip}</span>
+                      {peer.isTopTier && (
+                        <span className="px-1 py-0.5 text-[9px] font-sans font-semibold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0" title="Top 24 Active Swarm Seeder">
+                          Top 24
+                        </span>
+                      )}
+                    </div>
+                  </td>
                 )}
                 {visibleColumns.port !== false && (
                   <td className="py-1 px-2 text-right font-mono text-slate-300">{peer.port || ''}</td>
