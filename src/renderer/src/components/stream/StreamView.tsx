@@ -9,12 +9,8 @@ import {
   Music,
   ExternalLink,
   Zap,
-  CheckCircle2,
-  AlertCircle,
   FileVideo,
-  ListVideo,
-  Clock,
-  HardDrive
+  ListVideo
 } from 'lucide-react'
 import { DownloadItem } from '../../../../engine/types'
 
@@ -63,6 +59,11 @@ function formatTime(seconds: number): string {
     return `${hrs}:${remMins < 10 ? '0' : ''}${remMins}:${secs < 10 ? '0' : ''}${secs}`
   }
   return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`
+}
+
+function getItemProgress(d: DownloadItem): number {
+  if (d.status === 'completed') return 1
+  return d.totalSize > 0 ? d.downloadedSize / d.totalSize : 0
 }
 
 export const StreamView: React.FC<StreamViewProps> = React.memo(
@@ -209,15 +210,14 @@ export const StreamView: React.FC<StreamViewProps> = React.memo(
         target = `${target}/${activeFile.path}`.replace(/\\/g, '/')
       }
       try {
-        if (window.api?.openPath) {
-          window.api.openPath(target)
+        if (window.api?.openFile) {
+          window.api.openFile(target)
         }
       } catch (err) {
         console.error('Failed to open external player:', err)
       }
     }
 
-    const streamProgress = currentDownload ? currentDownload.progress * 100 : 0
     const isAudio = activeFile && (activeFile.name || activeFile.path).toLowerCase().match(/\.(mp3|flac|wav|m4a|aac|ogg)$/)
 
     return (
@@ -249,7 +249,8 @@ export const StreamView: React.FC<StreamViewProps> = React.memo(
             ) : (
               mediaDownloads.map((d) => {
                 const isSelected = d.id === selectedStreamId
-                const isComplete = d.progress >= 1
+                const progressVal = getItemProgress(d)
+                const isComplete = progressVal >= 1
                 const isDownloading = d.status === 'downloading'
 
                 return (
@@ -290,7 +291,7 @@ export const StreamView: React.FC<StreamViewProps> = React.memo(
                               ? 'bg-linear-to-r from-cyan-500 to-emerald-400'
                               : 'bg-slate-600'
                         }`}
-                        style={{ width: `${Math.min(100, Math.max(0, d.progress * 100))}%` }}
+                        style={{ width: `${Math.min(100, Math.max(0, progressVal * 100))}%` }}
                       />
                     </div>
 
@@ -299,11 +300,11 @@ export const StreamView: React.FC<StreamViewProps> = React.memo(
                       <div className="flex items-center gap-1.5">
                         {isDownloading && (
                           <span className="text-cyan-400 font-semibold">
-                            {(d.downloadSpeed / 1024).toFixed(0)} KB/s
+                            {(d.speed / 1024).toFixed(0)} KB/s
                           </span>
                         )}
                         <span className="font-semibold text-slate-300">
-                          {(d.progress * 100).toFixed(0)}%
+                          {(progressVal * 100).toFixed(0)}%
                         </span>
                       </div>
                     </div>
@@ -337,7 +338,7 @@ export const StreamView: React.FC<StreamViewProps> = React.memo(
                       </span>
                       <span>•</span>
                       <span className="text-slate-400">
-                        {currentDownload.progress >= 1 ? 'Ready (Completed)' : 'Streaming in Real-Time'}
+                        {getItemProgress(currentDownload) >= 1 ? 'Ready (Completed)' : 'Streaming in Real-Time'}
                       </span>
                     </div>
                   </div>

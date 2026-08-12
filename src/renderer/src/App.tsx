@@ -325,7 +325,7 @@ export function App(): React.JSX.Element {
       ) : activeMainView === 'stream' ? (
         <StreamView
           downloads={downloads}
-          activeDownloadId={selectedId}
+          activeDownloadId={selectedDownload?.id || null}
           onSelectDownload={(id) => setSelectedId(id)}
         />
       ) : (
