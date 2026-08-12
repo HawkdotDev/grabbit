@@ -18,8 +18,8 @@ interface TopBarProps {
   onOpenAutomations?: () => void
   onOpenScriptConsole?: () => void
   onOpenThemeCustomizer?: () => void
-  activeView: 'home' | 'analytics' | 'network'
-  setActiveView: (view: 'home' | 'analytics' | 'network') => void
+  activeView: 'home' | 'analytics' | 'network' | 'stream'
+  setActiveView: (view: 'home' | 'analytics' | 'network' | 'stream') => void
   globalSpeed?: number
   currentTheme?: string
   onThemeChange?: (theme: string) => void

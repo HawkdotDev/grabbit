@@ -29,6 +29,7 @@ import {
   ConfirmRemoveModal,
   AnalyticsView,
   NetworkView,
+  StreamView,
   ClipboardBanner
 } from './components'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
@@ -72,7 +73,7 @@ export function App(): React.JSX.Element {
     useResizablePanes(230, 240)
 
   // 4. Navigation & Modals State
-  const [activeMainView, setActiveMainView] = useState<'home' | 'analytics' | 'network'>('home')
+  const [activeMainView, setActiveMainView] = useState<'home' | 'analytics' | 'network' | 'stream'>('home')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [addModalMode, setAddModalMode] = useState<'link' | 'file'>('link')
   const [addModalInitialUrl, setAddModalInitialUrl] = useState('')
@@ -321,6 +322,12 @@ export function App(): React.JSX.Element {
         />
       ) : activeMainView === 'network' ? (
         <NetworkView downloads={downloads} speedHistory={speedHistory} globalSpeed={globalSpeed} />
+      ) : activeMainView === 'stream' ? (
+        <StreamView
+          downloads={downloads}
+          activeDownloadId={selectedId}
+          onSelectDownload={(id) => setSelectedId(id)}
+        />
       ) : (
         <div className="flex-1 flex overflow-hidden min-h-0 relative">
           {/* Left Navigation Sidebar */}

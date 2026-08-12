@@ -1,3 +1,5 @@
+import { TorrentPeerInfo } from '../TorrentWorker'
+
 export class TorrentWireTelemetry {
   public static parsePeerClientName(w: any): string {
     return parsePeerClientName(w)

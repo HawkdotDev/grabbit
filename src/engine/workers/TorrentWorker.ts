@@ -41,11 +41,13 @@ export interface TorrentTaskInstance {
   timeRemaining: number
   pieceLength?: number
   pieces?: Array<{ missing?: number }>
+  bitfield?: { get: (index: number) => boolean } | any
   announce: string[]
   files: TorrentFileEntry[]
   created?: Date | number | string
   comment?: string
   wires?: TorrentWireEntry[]
+  destroyed?: boolean
   torrentFile?: Buffer
   addPeer?: (addr: string) => void
   addTracker?: (url: string) => void

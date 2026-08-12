@@ -133,6 +133,9 @@ export interface DownloadItem {
     relevance?: number
     files?: string
     choked: boolean
+    isTopTier?: boolean
+    isSeeder?: boolean
+    usefulPiecesCount?: number
   }>
 }
 

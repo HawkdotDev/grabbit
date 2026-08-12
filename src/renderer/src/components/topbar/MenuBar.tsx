@@ -42,8 +42,8 @@ interface MenuBarProps {
   onResumeAll?: () => void
   onPauseAll?: () => void
   onClearCompleted?: () => void
-  activeView?: 'home' | 'analytics' | 'network'
-  setActiveView?: (view: 'home' | 'analytics' | 'network') => void
+  activeView?: 'home' | 'analytics' | 'network' | 'stream'
+  setActiveView?: (view: 'home' | 'analytics' | 'network' | 'stream') => void
   currentTheme?: string
   onThemeChange?: (theme: string) => void
   density?: 'compact' | 'default' | 'comfortable'
@@ -489,7 +489,8 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                     [
                       { id: 'home', label: 'Transfers Table' },
                       { id: 'analytics', label: 'Analytics Dashboard' },
-                      { id: 'network', label: 'Network Telemetry' }
+                      { id: 'network', label: 'Network Telemetry' },
+                      { id: 'stream', label: 'Media Stream Player' }
                     ] as const
                   ).map((w) => (
                     <button
